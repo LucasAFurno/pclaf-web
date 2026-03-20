@@ -265,19 +265,10 @@ tr:hover td{background:var(--black3);}
         <button class="fbtn" onclick="setF('listo',this)">Listos</button>
         <button class="fbtn" onclick="setF('entregado',this)">Entregados</button>
         <input class="srch" id="srch" placeholder="Buscar cliente, equipo, #número..." oninput="renderList()"/>
-        <button class="fbtn" onclick="toggleSearch()" style="white-space:nowrap">🔍 Por cliente</button>
         <button class="abtn" onclick="openModal()">
           <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M8 2v12M2 8h12"/></svg>
           Nueva reparación
         </button>
-      </div>
-      <!-- SEARCH BY CLIENT PANEL -->
-      <div class="search-panel" id="searchPanel">
-        <div style="display:flex;gap:8px;align-items:center">
-          <input class="srch" id="clientSearch" placeholder="Nombre o código del cliente..." oninput="buscarClientes(this.value)" style="flex:1"/>
-          <button class="smbtn s" onclick="toggleSearch()">✕ Cerrar</button>
-        </div>
-        <div class="sp-results" id="clientResults"></div>
       </div>
       </div>
       <div id="rlist" class="rlist"><div class="empty"><div class="spinner"></div>Cargando...</div></div>
