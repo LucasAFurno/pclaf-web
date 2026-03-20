@@ -429,7 +429,7 @@ function renderList(){
             <div class="stl" id="st-${r.id}"><div style="color:var(--text3);font-size:12px;text-align:center;padding:8px">Cargando...</div></div>
             <div class="sf">
               <div class="sr2"><input class="sin" id="sti-${r.id}" placeholder="Título del paso"/><select class="sse" id="ses-${r.id}"><option value="done">✅ Hecho</option><option value="active">🔧 En curso</option><option value="pending">⏳ Pendiente</option></select></div>
-              <div class="sr2"><input class="sin" id="sno-${r.id}" placeholder="Nota (opcional)"/><input class="sin" id="sfe-${r.id}" placeholder="Fecha" style="max-width:110px"/><button class="smbtn" onclick="addPaso('${r.id}')">+ Paso</button></div>
+              <div class="sr2"><input class="sin" id="sno-${r.id}" placeholder="Nota (opcional)"/><input class="sin" id="sfe-${r.id}" placeholder="Fecha" style="max-width:110px" value="${new Date().toLocaleDateString('es-AR',{day:'numeric',month:'short'})}"/><button class="smbtn" onclick="addPaso('${r.id}')">+ Paso</button></div>
             </div>
           </div>
         </div>
@@ -474,7 +474,8 @@ async function addPaso(id){
   const cl=aC.find(c=>c.id===eq.cliente_id)||{};
   if(cl.telefono && no){
     const msg=encodeURIComponent(`Hola ${cl.nombre?.split(' ')[0]||''}! Actualización de tu ${eq.nombre||'equipo'} (#${rep?.numero}): *${t}*${no?' — '+no:''}.`);
-    mostrarWA(cl.telefono, msg, 'Paso agregado ✓');
+    toast('Paso agregado ✓');
+    abrirWA(cl.telefono, msg);
   } else {
     toast('Paso agregado ✓');
   }
@@ -506,8 +507,8 @@ async function chEst(id,st,btn){
       entregado:`Hola ${nombre}! 📦 Confirmamos la entrega de tu ${equipo} (#${num}). ¡Gracias por elegirnos! Si tuviste algún problema no dudes en escribirnos.`,
       espera:`Hola ${nombre}! ⏳ Tu ${equipo} (#${num}) está en espera. Te avisamos cuando arranquemos con la reparación.`,
     };
-    if(msgs[st]) mostrarWA(cl.telefono, encodeURIComponent(msgs[st]), `Estado → "${LB[st]}" ✓`);
-    else toast(`Estado → "${LB[st]}" ✓`);
+    toast(`Estado → "${LB[st]}" ✓`);
+    if(msgs[st]) abrirWA(cl.telefono, encodeURIComponent(msgs[st]));
   } else {
     toast(`Estado → "${LB[st]}" ✓`);
   }
@@ -520,15 +521,10 @@ async function savePr(id){
   toast('Presupuesto guardado ✓');
 }
 
-// ── WhatsApp helper ──
-// Muestra un toast con botón para abrir WA directo
-function mostrarWA(telefono, msgEncoded, toastMsg){
-  const tel=telefono.replace(/\D/g,'');
-  const t=document.getElementById('toast');
-  t.innerHTML=`${toastMsg} &nbsp;<a href="https://wa.me/54${tel}?text=${msgEncoded}" target="_blank" style="color:#25d366;font-weight:700;text-decoration:none;border:1px solid #25d366;border-radius:5px;padding:2px 8px;margin-left:4px;">📱 Enviar WA</a>`;
-  t.className='toast show';
-  clearTimeout(tt);
-  tt=setTimeout(()=>{t.className='toast';t.innerHTML='';},8000);
+// ── WhatsApp — abre directo sin toast intermedio ──
+function abrirWA(telefono, msgEncoded){
+  const tel = telefono.replace(/\D/g,'');
+  window.open(`https://wa.me/54${tel}?text=${msgEncoded}`, '_blank');
 }
 
 // MODAL — número automático
@@ -593,7 +589,7 @@ async function crearRep(){
         `(usá tu código: *${cod}*)\n\n` +
         `Te avisamos cada novedad. ¡Gracias! 🙏`
       );
-      mostrarWA(tel, msg, `Reparación #${num} creada ✓`);
+      toast(`Reparación #${num} creada ✓`); abrirWA(tel, msg);
     } else {
       toast(`Reparación #${num} creada ✓`);
     }
