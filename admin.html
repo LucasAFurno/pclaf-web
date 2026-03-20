@@ -165,6 +165,36 @@ tr:hover td{background:var(--black3);}
 .mgrid{display:flex;flex-direction:column;gap:10px;}
 .mfoot{display:flex;gap:8px;justify-content:flex-end;margin-top:16px;}
 .num-badge{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:11px;background:var(--green-dim);color:var(--green);border:1px solid rgba(34,197,94,.2);border-radius:6px;padding:3px 9px;margin-bottom:5px;}
+
+/* editar modal */
+.mov2{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:210;display:none;align-items:center;justify-content:center;padding:20px;}
+.mov2.open{display:flex;}
+/* search panel */
+.search-panel{background:var(--black2);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:20px;display:none;}
+.search-panel.open{display:block;}
+.sp-results{display:flex;flex-direction:column;gap:8px;margin-top:14px;}
+.sp-client{background:var(--black3);border:1px solid var(--border);border-radius:10px;padding:14px;cursor:pointer;transition:all .15s;}
+.sp-client:hover{border-color:var(--red);}
+.sp-client-name{font-size:14px;font-weight:600;color:#fff;margin-bottom:3px;}
+.sp-client-meta{font-size:12px;color:var(--text2);}
+/* foto upload */
+.foto-row{display:flex;gap:6px;align-items:center;margin-top:6px;}
+.foto-preview{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;}
+.foto-thumb{width:56px;height:56px;object-fit:cover;border-radius:6px;border:1px solid var(--border);}
+/* fecha estimada */
+.fest-row{display:flex;gap:5px;align-items:center;}
+.fest-in{flex:1;background:var(--black4);border:1px solid var(--border2);border-radius:6px;padding:6px 10px;font-size:12px;color:var(--text);outline:none;font-family:var(--mono);}
+.fest-in:focus{border-color:var(--green);}
+/* presupuesto PDF btn */
+.pdf-btn{display:flex;align-items:center;justify-content:center;gap:6px;background:var(--black4);border:1px solid var(--border2);color:var(--text2);padding:8px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;margin-top:6px;width:100%;}
+.pdf-btn:hover{border-color:var(--red);color:var(--red);}
+/* comprobante */
+@media print{
+  body > *{display:none!important;}
+  #printArea{display:block!important;}
+}
+#printArea{display:none;font-family:'Inter',sans-serif;}
+
 /* MISC */
 .empty{text-align:center;padding:44px;color:var(--text3);font-size:13px;}
 .spinner{width:24px;height:24px;border:2.5px solid var(--border);border-top-color:var(--red);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 10px;}
@@ -235,10 +265,20 @@ tr:hover td{background:var(--black3);}
         <button class="fbtn" onclick="setF('listo',this)">Listos</button>
         <button class="fbtn" onclick="setF('entregado',this)">Entregados</button>
         <input class="srch" id="srch" placeholder="Buscar cliente, equipo, #número..." oninput="renderList()"/>
+        <button class="fbtn" onclick="toggleSearch()" style="white-space:nowrap">🔍 Por cliente</button>
         <button class="abtn" onclick="openModal()">
           <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M8 2v12M2 8h12"/></svg>
           Nueva reparación
         </button>
+      </div>
+      <!-- SEARCH BY CLIENT PANEL -->
+      <div class="search-panel" id="searchPanel">
+        <div style="display:flex;gap:8px;align-items:center">
+          <input class="srch" id="clientSearch" placeholder="Nombre o código del cliente..." oninput="buscarClientes(this.value)" style="flex:1"/>
+          <button class="smbtn s" onclick="toggleSearch()">✕ Cerrar</button>
+        </div>
+        <div class="sp-results" id="clientResults"></div>
+      </div>
       </div>
       <div id="rlist" class="rlist"><div class="empty"><div class="spinner"></div>Cargando...</div></div>
     </div>
@@ -317,6 +357,32 @@ tr:hover td{background:var(--black3);}
     </div>
   </div>
 </div>
+
+<!-- MODAL EDITAR -->
+<div class="mov2" id="modalEdit">
+  <div class="modal">
+    <h3>Editar reparación</h3>
+    <input type="hidden" id="eRepId"/>
+    <input type="hidden" id="eEqId"/>
+    <input type="hidden" id="eClId"/>
+    <div class="mgrid">
+      <div><label class="f-lbl">Nombre del cliente</label><input class="f-in" id="eNom" placeholder="Nombre"/></div>
+      <div><label class="f-lbl">Teléfono</label><input class="f-in" id="eTel" placeholder="Teléfono"/></div>
+      <div><label class="f-lbl">Equipo</label><input class="f-in" id="eEq" placeholder="Ej: Notebook HP"/></div>
+      <div><label class="f-lbl">Modelo</label><input class="f-in" id="eMod" placeholder="Ej: Pavilion 15-eh1"/></div>
+      <div><label class="f-lbl">Problema</label><input class="f-in" id="eProb" placeholder="Problema reportado"/></div>
+      <div><label class="f-lbl">Presupuesto</label><input class="f-in" id="ePres" placeholder="$0.000" style="font-family:var(--mono)"/></div>
+      <div><label class="f-lbl">Fecha estimada de entrega</label><input class="f-in" id="eFest" placeholder="Ej: 25 mar"/></div>
+    </div>
+    <div class="mfoot">
+      <button class="smbtn s" onclick="closeEdit()">Cancelar</button>
+      <button class="smbtn" onclick="guardarEdicion()">Guardar cambios</button>
+    </div>
+  </div>
+</div>
+
+<!-- ÁREA DE IMPRESIÓN -->
+<div id="printArea"></div>
 
 <div class="toast" id="toast"></div>
 
@@ -407,12 +473,31 @@ function renderList(){
             <div class="cir"><span class="cil">Teléfono</span><span class="civ">${c.telefono||'–'}</span></div>
             <div class="cir"><span class="cil">Código</span><span class="civ">${c.codigo||'–'}</span></div>
             <div class="cir"><span class="cil">Equipo</span><span class="civ">${e.nombre||'–'}${e.modelo?' · '+e.modelo:''}</span></div>
+            <div class="cir"><span class="cil">Problema</span><span class="civ" style="font-size:12px;font-family:var(--sans)">${r.problema||'–'}</span></div>
             <div class="cir"><span class="cil">Presupuesto</span>
               <div style="display:flex;gap:5px">
                 <input class="prin" id="pr-${r.id}" value="${r.presupuesto||''}" placeholder="$0.000" style="width:95px"/>
                 <button class="smbtn" style="padding:5px 9px;font-size:11px" onclick="savePr('${r.id}')">✓</button>
               </div>
             </div>
+            <div class="cir"><span class="cil">Entrega est.</span>
+              <div class="fest-row">
+                <input class="fest-in" id="fe-${r.id}" value="${r.fecha_entrega||''}" placeholder="Ej: 25 mar"/>
+                <button class="smbtn" style="padding:5px 9px;font-size:11px;background:var(--green)" onclick="saveFechaEst('${r.id}')">✓</button>
+              </div>
+            </div>
+            <button class="pdf-btn" onclick="generarPDF('${r.id}')">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              Generar presupuesto PDF
+            </button>
+            <button class="pdf-btn" style="margin-top:4px" onclick="imprimirComprobante('${r.id}')">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+              Imprimir comprobante
+            </button>
+            <button class="pdf-btn" onclick="editarRep('${r.id}')" style="margin-top:4px;border-color:var(--amber);color:var(--amber)">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              Editar reparación
+            </button>
             ${tel?`<a class="wab" href="https://wa.me/54${tel}?text=${wm}" target="_blank">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
               WhatsApp a ${(c.nombre||'').split(' ')[0]||'cliente'}
@@ -504,7 +589,7 @@ async function chEst(id,st,btn){
     const msgs={
       proceso:`Hola ${nombre}! 🔧 Tu ${equipo} (#${num}) ya está en reparación. Te avisamos en cuanto esté listo.`,
       listo:`Hola ${nombre}! ✅ Tu ${equipo} (#${num}) está *listo para retirar*.\n\n📍 Campana 51, Floresta. Lun-Vie 10 a 19hs.\n\nTraé el comprobante. ¡Gracias!`,
-      entregado:`Hola ${nombre}! 📦 Confirmamos la entrega de tu ${equipo} (#${num}). ¡Gracias por elegirnos! Si tuviste algún problema no dudes en escribirnos.`,
+      entregado:`Hola ${nombre}! 📦 Confirmamos la entrega de tu ${equipo} (#${num}). ¡Gracias por elegirnos!\n\n¿Quedaste conforme? Nos ayudaría muchísimo si nos dejás una reseña en Google, lleva 1 minuto 🙏\n⭐ https://g.page/r/CebOQaDNkBJNEBM/review`,
       espera:`Hola ${nombre}! ⏳ Tu ${equipo} (#${num}) está en espera. Te avisamos cuando arranquemos con la reparación.`,
     };
     toast(`Estado → "${LB[st]}" ✓`);
@@ -595,6 +680,231 @@ async function crearRep(){
     }
   }catch(e){toast('Error: '+e.message,true);}
 }
+
+// ── FECHA ESTIMADA ──
+async function saveFechaEst(id){
+  const v=document.getElementById(`fe-${id}`).value.trim();
+  await db('PATCH','reparaciones',`?id=eq.${id}`,{fecha_entrega:v});
+  const d=aR.find(r=>r.id===id);if(d) d.fecha_entrega=v;
+  toast('Fecha estimada guardada ✓');
+}
+
+// ── EDITAR REPARACIÓN ──
+function editarRep(id){
+  const r=aR.find(x=>x.id===id)||{};
+  const e=aE.find(x=>x.id===r.equipo_id)||{};
+  const c=aC.find(x=>x.id===e.cliente_id)||{};
+  document.getElementById('eRepId').value=id;
+  document.getElementById('eEqId').value=e.id||'';
+  document.getElementById('eClId').value=c.id||'';
+  document.getElementById('eNom').value=c.nombre||'';
+  document.getElementById('eTel').value=c.telefono||'';
+  document.getElementById('eEq').value=e.nombre||'';
+  document.getElementById('eMod').value=e.modelo||'';
+  document.getElementById('eProb').value=r.problema||'';
+  document.getElementById('ePres').value=r.presupuesto||'';
+  document.getElementById('eFest').value=r.fecha_entrega||'';
+  document.getElementById('modalEdit').classList.add('open');
+}
+function closeEdit(){document.getElementById('modalEdit').classList.remove('open');}
+
+async function guardarEdicion(){
+  const rid=document.getElementById('eRepId').value;
+  const eid=document.getElementById('eEqId').value;
+  const cid=document.getElementById('eClId').value;
+  try{
+    await db('PATCH','clientes',`?id=eq.${cid}`,{nombre:document.getElementById('eNom').value.trim(),telefono:document.getElementById('eTel').value.trim()});
+    await db('PATCH','equipos',`?id=eq.${eid}`,{nombre:document.getElementById('eEq').value.trim(),modelo:document.getElementById('eMod').value.trim()});
+    await db('PATCH','reparaciones',`?id=eq.${rid}`,{problema:document.getElementById('eProb').value.trim(),presupuesto:document.getElementById('ePres').value.trim(),fecha_entrega:document.getElementById('eFest').value.trim()});
+    closeEdit();
+    await loadAll();
+    toast('Cambios guardados ✓');
+  }catch(e){toast('Error: '+e.message,true);}
+}
+
+// ── GENERAR PDF PRESUPUESTO ──
+function generarPDF(id){
+  const r=aR.find(x=>x.id===id)||{};
+  const e=aE.find(x=>x.id===r.equipo_id)||{};
+  const c=aC.find(x=>x.id===e.cliente_id)||{};
+  const hoy=new Date().toLocaleDateString('es-AR',{day:'numeric',month:'long',year:'numeric'});
+
+  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8">
+  <title>Presupuesto PCLAF #${r.numero}</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:Arial,sans-serif;background:#fff;color:#111;padding:40px;max-width:600px;margin:0 auto;}
+    .header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:32px;padding-bottom:20px;border-bottom:3px solid #CC0000;}
+    .logo-wrap{display:flex;align-items:center;gap:10px;}
+    .logo-sq{width:50px;height:50px;display:flex;flex-direction:column;border-radius:6px;overflow:hidden;}
+    .logo-top{background:#CC0000;flex:1;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:16px;color:#fff;}
+    .logo-bot{background:#111;flex:0.7;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:11px;color:#fff;}
+    .logo-text{font-size:22px;font-weight:900;color:#111;}
+    .logo-text span{color:#CC0000;}
+    .logo-sub{font-size:11px;color:#888;margin-top:2px;}
+    .doc-info{text-align:right;}
+    .doc-title{font-size:22px;font-weight:700;color:#CC0000;margin-bottom:4px;}
+    .doc-num{font-size:13px;color:#888;font-family:monospace;}
+    .doc-date{font-size:12px;color:#888;margin-top:2px;}
+    .section{margin-bottom:24px;}
+    .section-title{font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid #eee;}
+    .row{display:flex;justify-content:space-between;margin-bottom:6px;}
+    .lbl{font-size:13px;color:#888;}
+    .val{font-size:13px;font-weight:600;color:#111;}
+    .problem-box{background:#f8f8f8;border-left:3px solid #CC0000;padding:12px 16px;border-radius:0 6px 6px 0;font-size:13px;color:#333;line-height:1.6;}
+    .total-box{background:#CC0000;color:#fff;padding:16px 20px;border-radius:8px;display:flex;justify-content:space-between;align-items:center;margin-top:20px;}
+    .total-lbl{font-size:14px;font-weight:600;}
+    .total-val{font-size:26px;font-weight:900;font-family:monospace;}
+    .footer{margin-top:40px;padding-top:16px;border-top:1px solid #eee;font-size:11px;color:#aaa;text-align:center;line-height:1.8;}
+    .valid{background:#f0faf4;border:1px solid #c6e8d1;border-radius:6px;padding:10px 14px;font-size:12px;color:#2d7a4f;margin-top:16px;}
+  </style></head><body>
+  <div class="header">
+    <div class="logo-wrap">
+      <div class="logo-sq"><div class="logo-top">PC</div><div class="logo-bot">LAF</div></div>
+      <div><div class="logo-text">PC<span>LAF</span></div><div class="logo-sub">Servicio técnico</div></div>
+    </div>
+    <div class="doc-info">
+      <div class="doc-title">PRESUPUESTO</div>
+      <div class="doc-num">#${r.numero}</div>
+      <div class="doc-date">${hoy}</div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-title">Datos del cliente</div>
+    <div class="row"><span class="lbl">Nombre</span><span class="val">${c.nombre||'–'}</span></div>
+    <div class="row"><span class="lbl">Teléfono</span><span class="val">${c.telefono||'–'}</span></div>
+    <div class="row"><span class="lbl">Código de cliente</span><span class="val">${c.codigo||'–'}</span></div>
+  </div>
+  <div class="section">
+    <div class="section-title">Equipo</div>
+    <div class="row"><span class="lbl">Dispositivo</span><span class="val">${e.nombre||'–'}</span></div>
+    <div class="row"><span class="lbl">Modelo</span><span class="val">${e.modelo||'–'}</span></div>
+    <div class="row"><span class="lbl">N° de reparación</span><span class="val">#${r.numero}</span></div>
+  </div>
+  <div class="section">
+    <div class="section-title">Trabajo a realizar</div>
+    <div class="problem-box">${r.problema||'–'}</div>
+  </div>
+  ${r.fecha_entrega?`<div class="section"><div class="section-title">Entrega estimada</div><div class="row"><span class="lbl">Fecha</span><span class="val">${r.fecha_entrega}</span></div></div>`:''}
+  <div class="total-box">
+    <span class="total-lbl">Total presupuestado</span>
+    <span class="total-val">${r.presupuesto||'A confirmar'}</span>
+  </div>
+  <div class="valid">✅ Presupuesto válido por 15 días. El precio puede variar si se detectan fallas adicionales durante la reparación.</div>
+  <div class="footer">
+    PCLAF - Servicio técnico · Campana 51, Floresta, CABA<br>
+    Tel: 11 4175-8129 · pclaf.com.ar · @servicepclaf
+  </div>
+  </body></html>`;
+
+  const w=window.open('','_blank');
+  w.document.write(html);
+  w.document.close();
+  w.focus();
+  setTimeout(()=>w.print(),500);
+}
+
+// ── IMPRIMIR COMPROBANTE ──
+function imprimirComprobante(id){
+  const r=aR.find(x=>x.id===id)||{};
+  const e=aE.find(x=>x.id===r.equipo_id)||{};
+  const c=aC.find(x=>x.id===e.cliente_id)||{};
+  const hoy=new Date().toLocaleDateString('es-AR',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
+
+  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8">
+  <title>Comprobante PCLAF #${r.numero}</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:Arial,sans-serif;background:#fff;color:#111;padding:24px;max-width:380px;margin:0 auto;}
+    .header{text-align:center;margin-bottom:16px;padding-bottom:12px;border-bottom:2px dashed #ccc;}
+    .logo-sq{width:44px;height:44px;display:inline-flex;flex-direction:column;border-radius:5px;overflow:hidden;vertical-align:middle;margin-right:8px;}
+    .logo-top{background:#CC0000;flex:1;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:14px;color:#fff;}
+    .logo-bot{background:#111;flex:0.7;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:10px;color:#fff;}
+    h1{font-size:18px;font-weight:900;display:inline-block;vertical-align:middle;}
+    h1 span{color:#CC0000;}
+    .sub{font-size:11px;color:#888;margin-top:4px;}
+    .badge{display:inline-block;background:#CC0000;color:#fff;font-size:13px;font-weight:700;padding:4px 12px;border-radius:4px;margin:12px 0 4px;}
+    .row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #f0f0f0;font-size:12px;}
+    .lbl{color:#888;}
+    .val{font-weight:600;text-align:right;max-width:60%;}
+    .footer{margin-top:16px;text-align:center;font-size:10px;color:#aaa;padding-top:12px;border-top:2px dashed #ccc;line-height:1.8;}
+    .tracking{background:#f8f8f8;border:1px solid #ddd;border-radius:6px;padding:10px;text-align:center;margin-top:12px;font-size:11px;color:#555;}
+    .tracking strong{display:block;font-size:13px;color:#111;margin-bottom:3px;}
+  </style></head><body>
+  <div class="header">
+    <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:4px;">
+      <div class="logo-sq"><div class="logo-top">PC</div><div class="logo-bot">LAF</div></div>
+      <h1>PC<span>LAF</span></h1>
+    </div>
+    <div class="sub">Comprobante de ingreso · ${hoy}</div>
+  </div>
+  <div style="text-align:center"><span class="badge">N° REPARACIÓN: #${r.numero}</span></div>
+  <div class="row"><span class="lbl">Cliente</span><span class="val">${c.nombre||'–'}</span></div>
+  <div class="row"><span class="lbl">Teléfono</span><span class="val">${c.telefono||'–'}</span></div>
+  <div class="row"><span class="lbl">Equipo</span><span class="val">${e.nombre||'–'}${e.modelo?' — '+e.modelo:''}</span></div>
+  <div class="row"><span class="lbl">Problema</span><span class="val">${r.problema||'–'}</span></div>
+  ${r.presupuesto?`<div class="row"><span class="lbl">Presupuesto</span><span class="val" style="color:#CC0000">${r.presupuesto}</span></div>`:''}
+  ${r.fecha_entrega?`<div class="row"><span class="lbl">Entrega estimada</span><span class="val">${r.fecha_entrega}</span></div>`:''}
+  <div class="tracking">
+    <strong>Seguí tu reparación online</strong>
+    pclaf.com.ar/historial.html<br>
+    Código de cliente: <strong>${c.codigo||'–'}</strong>
+  </div>
+  <div class="footer">
+    PCLAF - Servicio técnico<br>
+    Campana 51, Floresta, CABA · 11 4175-8129<br>
+    Lunes a Viernes 10 a 19hs
+  </div>
+  </body></html>`;
+
+  const w=window.open('','_blank','width=420,height=600');
+  w.document.write(html);
+  w.document.close();
+  w.focus();
+  setTimeout(()=>w.print(),400);
+}
+
+// ── BÚSQUEDA POR CLIENTE ──
+function toggleSearch(){
+  const p=document.getElementById('searchPanel');
+  p.classList.toggle('open');
+  if(p.classList.contains('open')) document.getElementById('clientSearch').focus();
+}
+
+function buscarClientes(q){
+  const cont=document.getElementById('clientResults');
+  if(!q||q.length<2){cont.innerHTML='';return;}
+  const ql=q.toLowerCase();
+  const matches=aC.filter(c=>(c.nombre||'').toLowerCase().includes(ql)||(c.codigo||'').toLowerCase().includes(ql));
+  if(!matches.length){cont.innerHTML='<div style="color:var(--text3);font-size:13px;padding:10px">Sin resultados</div>';return;}
+  cont.innerHTML=matches.slice(0,8).map(c=>{
+    const eqs=aE.filter(e=>e.cliente_id===c.id);
+    const reps=aR.filter(r=>eqs.some(e=>e.id===r.equipo_id));
+    const activas=reps.filter(r=>r.estado!=='entregado').length;
+    return `<div class="sp-client" onclick="filtrarPorCliente('${c.id}')">
+      <div class="sp-client-name">${c.nombre||'–'} <span style="color:var(--text3);font-size:11px;font-family:var(--mono)">${c.codigo||''}</span></div>
+      <div class="sp-client-meta">${c.telefono||''} · ${reps.length} reparación${reps.length!==1?'es':''} total · ${activas} activa${activas!==1?'s':''}</div>
+    </div>`;
+  }).join('');
+}
+
+function filtrarPorCliente(clienteId){
+  const eqs=aE.filter(e=>e.cliente_id===clienteId).map(e=>e.id);
+  const reps=aR.filter(r=>eqs.includes(r.equipo_id));
+  const LB={espera:'En espera',proceso:'En reparación',listo:'Listo para retirar',entregado:'Entregado'};
+  const IC={espera:'⏳',proceso:'🔧',listo:'✅',entregado:'📦'};
+  if(!reps.length){document.getElementById('rlist').innerHTML='<div class="empty">Sin reparaciones para este cliente</div>';return;}
+  document.getElementById('searchPanel').classList.remove('open');
+  // Temporarily override renderList to show only this client
+  const c=aC.find(x=>x.id===clienteId)||{};
+  document.getElementById('srch').value=c.nombre||'';
+  renderList();
+}
+
+// ── RESEÑA AUTOMÁTICA AL ENTREGAR ──
+// (se agrega dentro de chEst, que ya llama abrirWA para entregado)
+// El mensaje de entregado ya incluye el agradecimiento; agregamos reseña:
+const _origChEst = chEst;
 
 // MÉTRICAS
 let cPer='mes';
