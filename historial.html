@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PCLAF - Historial de cliente</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --red:#CC0000;--red-dark:#a80000;--red-dim:rgba(204,0,0,0.12);
+  --black:#0a0a0a;--black2:#111111;--black3:#1a1a1a;
+  --border:#2e2e2e;--border2:#3a3a3a;
+  --text:#f0f0f0;--text2:#999999;--text3:#555555;
+  --green:#22c55e;--green-dim:rgba(34,197,94,0.12);
+  --amber:#f59e0b;--amber-dim:rgba(245,158,11,0.12);
+  --mono:'JetBrains Mono',monospace;--sans:'Inter',sans-serif;
+}
+body{background:var(--black);color:var(--text);font-family:var(--sans);min-height:100vh;display:flex;flex-direction:column;align-items:center;}
+.topbar{width:100%;background:var(--black2);border-bottom:2px solid var(--red);display:flex;justify-content:center;position:sticky;top:0;z-index:100;}
+.topbar-inner{width:100%;max-width:720px;padding:0 20px;display:flex;align-items:center;height:64px;gap:14px;}
+.nav-logo{display:flex;align-items:center;gap:10px;text-decoration:none;}
+.logo-wordmark{font-size:20px;font-weight:800;color:#fff;letter-spacing:-.3px;}
+.logo-wordmark em{color:var(--red);font-style:normal;}
+.logo-subtitle{font-size:10px;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.06em;margin-top:2px;}
+.nav-back{margin-left:auto;display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--text2);background:var(--black3);border:1px solid var(--border);border-radius:6px;padding:8px 14px;text-decoration:none;transition:all .15s;}
+.nav-back:hover{border-color:var(--red);color:var(--red);}
+main{width:100%;max-width:720px;padding:28px 20px 80px;}
+.search-block{background:var(--black2);border:1px solid var(--border);border-radius:14px;padding:26px;margin-bottom:22px;}
+.search-heading{font-size:19px;font-weight:700;color:#fff;margin-bottom:4px;}
+.search-sub{font-size:13px;color:var(--text2);margin-bottom:18px;line-height:1.55;}
+.search-row{display:flex;border:2px solid var(--border2);border-radius:10px;overflow:hidden;transition:border-color .2s,box-shadow .2s;}
+.search-row:focus-within{border-color:var(--red);box-shadow:0 0 0 3px rgba(204,0,0,0.15);}
+.search-input{flex:1;background:transparent;border:none;outline:none;padding:13px 16px;font-family:var(--mono);font-size:15px;font-weight:500;color:var(--text);letter-spacing:.04em;}
+.search-input::placeholder{color:var(--text3);font-size:13px;letter-spacing:0;font-family:var(--sans);}
+.search-btn{background:var(--red);border:none;padding:0 22px;cursor:pointer;font-size:13px;font-weight:700;color:#fff;transition:background .15s;display:flex;align-items:center;gap:7px;white-space:nowrap;}
+.search-btn:hover{background:var(--red-dark);}
+.demos-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:13px;align-items:center;}
+.demos-label{font-size:11px;color:var(--text3);}
+.demo-chip{font-size:12px;color:var(--text2);background:var(--black3);border:1px solid var(--border);border-radius:6px;padding:4px 10px;cursor:pointer;font-family:var(--mono);transition:all .15s;}
+.demo-chip:hover{color:#fff;border-color:var(--red);background:var(--red-dim);}
+.panel{display:none;animation:fadeUp .28s ease forwards;}
+.panel.visible{display:block;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.loading{display:none;text-align:center;padding:48px 24px;}
+.loading.visible{display:block;}
+.spinner{width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--red);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 14px;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading p{font-size:14px;color:var(--text2);}
+.client-card{background:var(--black2);border:1px solid var(--border);border-top:3px solid var(--red);border-radius:14px;padding:20px 22px;margin-bottom:18px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+.client-avatar{width:50px;height:50px;border-radius:12px;background:var(--red);display:flex;align-items:center;justify-content:center;font-size:19px;font-weight:800;color:#fff;flex-shrink:0;}
+.client-name{font-size:19px;font-weight:700;color:#fff;}
+.client-meta{font-size:11px;color:var(--text3);margin-top:3px;font-family:var(--mono);}
+.client-code-badge{margin-left:auto;background:var(--black3);border:1px solid var(--border2);border-radius:8px;padding:7px 13px;font-family:var(--mono);font-size:12px;color:var(--text2);}
+.section-label{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:11px;}
+.machine-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(185px,1fr));gap:11px;margin-bottom:26px;}
+.machine-card{background:var(--black2);border:2px solid var(--border);border-radius:14px;padding:17px;cursor:pointer;transition:all .18s;}
+.machine-card:hover{border-color:var(--red);transform:translateY(-1px);}
+.machine-card.selected{border-color:var(--red);background:var(--black3);}
+.machine-icon{font-size:24px;margin-bottom:9px;}
+.machine-name{font-size:14px;font-weight:700;color:#fff;margin-bottom:3px;}
+.machine-model{font-family:var(--mono);font-size:10px;color:var(--text3);margin-bottom:11px;}
+.machine-stat{font-size:11px;color:var(--text3);margin-top:7px;}
+.status-badge{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:600;padding:3px 8px;border-radius:20px;font-family:var(--mono);}
+.status-badge .dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+.sb-proceso{background:var(--amber-dim);color:var(--amber);border:1px solid rgba(245,158,11,.2);}
+.sb-proceso .dot{background:var(--amber);animation:py 1.5s infinite;}
+.sb-listo{background:var(--green-dim);color:var(--green);border:1px solid rgba(34,197,94,.2);}
+.sb-listo .dot{background:var(--green);animation:pg 1.5s infinite;}
+.sb-espera,.sb-entregado{background:var(--black3);color:var(--text3);border:1px solid var(--border);}
+.sb-espera .dot,.sb-entregado .dot{background:var(--text3);}
+@keyframes pg{0%,100%{box-shadow:0 0 0 0 rgba(34,197,94,.45)}50%{box-shadow:0 0 0 5px rgba(34,197,94,0)}}
+@keyframes py{0%,100%{box-shadow:0 0 0 0 rgba(245,158,11,.45)}50%{box-shadow:0 0 0 5px rgba(245,158,11,0)}}
+.history-toprow{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;gap:12px;flex-wrap:wrap;}
+.history-device{font-size:18px;font-weight:700;color:#fff;}
+.history-model{font-family:var(--mono);font-size:11px;color:var(--text3);margin-top:3px;}
+.back-btn{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--text2);background:var(--black2);border:1px solid var(--border);border-radius:8px;padding:8px 13px;cursor:pointer;transition:all .15s;}
+.back-btn:hover{border-color:var(--red);color:var(--red);}
+.repair-item{background:var(--black2);border:1.5px solid var(--border);border-radius:12px;margin-bottom:9px;overflow:hidden;transition:border-color .2s;}
+.repair-item.open{border-color:var(--red);}
+.repair-head{display:flex;align-items:center;gap:13px;padding:14px 17px;cursor:pointer;user-select:none;transition:background .15s;}
+.repair-head:hover{background:var(--black3);}
+.repair-num{font-family:var(--mono);font-size:11px;font-weight:500;color:var(--text3);min-width:46px;flex-shrink:0;}
+.repair-summary{flex:1;min-width:0;}
+.repair-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:3px;display:flex;align-items:center;gap:7px;flex-wrap:wrap;line-height:1.3;}
+.repair-date{font-family:var(--mono);font-size:10px;color:var(--text3);}
+.repair-chevron{color:var(--text3);transition:transform .25s;flex-shrink:0;}
+.repair-chevron svg{width:15px;height:15px;display:block;}
+.repair-item.open .repair-chevron{transform:rotate(180deg);}
+.repair-body{display:none;padding:4px 17px 17px;border-top:1px solid var(--border);}
+.repair-item.open .repair-body{display:block;}
+.repair-meta{display:flex;gap:8px;flex-wrap:wrap;margin:13px 0 15px;}
+.meta-pill{font-family:var(--mono);font-size:11px;background:var(--black3);border:1px solid var(--border);border-radius:6px;padding:4px 9px;color:var(--text2);}
+.meta-pill strong{color:#fff;font-weight:600;}
+.mini-tl{display:flex;flex-direction:column;}
+.mt-step{display:flex;gap:13px;}
+.mt-left{display:flex;flex-direction:column;align-items:center;width:22px;flex-shrink:0;}
+.mt-dot{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.mt-dot.done{background:var(--green-dim);border:1.5px solid var(--green);}
+.mt-dot.active{background:var(--amber-dim);border:1.5px solid var(--amber);}
+.mt-dot.pending{background:var(--black3);border:1.5px solid var(--border);}
+.mt-dot svg{width:11px;height:11px;}
+.mt-dot.done svg{color:var(--green);}
+.mt-dot.active svg{color:var(--amber);}
+.mt-dot.pending svg{color:var(--text3);}
+.mt-line{width:2px;flex:1;min-height:16px;margin:3px 0;border-radius:2px;}
+.mt-line.done{background:var(--green);opacity:.22;}
+.mt-line.pending{background:var(--border);}
+.mt-content{padding-bottom:16px;flex:1;}
+.mt-step:last-child .mt-content{padding-bottom:0;}
+.mt-title{font-size:13px;font-weight:600;margin-bottom:2px;}
+.mt-title.done{color:var(--text);}
+.mt-title.active{color:var(--amber);}
+.mt-title.pending{color:var(--text3);}
+.mt-date{font-family:var(--mono);font-size:10px;color:var(--text3);margin-bottom:5px;}
+.mt-note{font-size:12px;color:var(--text2);line-height:1.6;background:var(--black3);border:1px solid var(--border);border-radius:7px;padding:8px 11px;}
+.not-found{display:none;animation:fadeUp .28s ease forwards;text-align:center;padding:46px 24px;background:var(--black2);border:1.5px solid var(--border);border-radius:14px;}
+.not-found.visible{display:block;}
+.not-found h3{font-size:17px;font-weight:700;color:#fff;margin:14px 0 8px;}
+.not-found p{font-size:13px;color:var(--text2);line-height:1.6;}
+.wa-btn{display:inline-flex;align-items:center;gap:8px;margin-top:18px;background:#25d366;color:#fff;text-decoration:none;padding:11px 22px;border-radius:10px;font-size:13px;font-weight:700;}
+footer{width:100%;background:var(--black2);border-top:2px solid var(--red);display:flex;justify-content:center;margin-top:auto;}
+.footer-inner{width:100%;max-width:720px;padding:16px 20px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+footer span{font-size:11px;color:var(--text3);font-family:var(--mono);}
+footer a{color:var(--text2);text-decoration:none;}
+footer a:hover{color:var(--red);}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <a class="nav-logo" href="index.html">
+      <svg width="42" height="42" viewBox="0 0 42 42" style="border-radius:6px;overflow:hidden;flex-shrink:0">
+        <rect x="0" y="0" width="42" height="22" fill="#CC0000"/>
+        <rect x="0" y="22" width="42" height="20" fill="#111"/>
+        <text x="21" y="19" text-anchor="middle" font-family="Arial Black,sans-serif" font-weight="900" font-size="18" fill="white">PC</text>
+        <text x="21" y="38" text-anchor="middle" font-family="Arial Black,sans-serif" font-weight="900" font-size="14" fill="white">LAF</text>
+      </svg>
+      <div>
+        <div class="logo-wordmark">PC<em>LAF</em></div>
+        <div class="logo-subtitle">Historial de cliente</div>
+      </div>
+    </a>
+    <a class="nav-back" href="index.html">
+      <svg width="12" height="12" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 2L3 6.5 8 11"/></svg>
+      Volver al inicio
+    </a>
+  </div>
+</div>
+
+<main>
+  <div class="search-block">
+    <div class="search-heading">Consultá el historial de tus reparaciones</div>
+    <div class="search-sub">Ingresá el código de cliente que te dimos cuando dejaste tu equipo por primera vez.</div>
+    <div class="search-row">
+      <input class="search-input" id="searchInput" type="text" placeholder="Ej: LUCAS01" autocomplete="off"/>
+      <button class="search-btn" onclick="buscar()">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="6.5" cy="6.5" r="4"/><path d="M11 11l3 3"/></svg>
+        Ver historial
+      </button>
+    </div>
+    <div class="demos-row">
+      <span class="demos-label">Demo →</span>
+      <span class="demo-chip" onclick="cargar('LUCAS01')">LUCAS01</span>
+      <span class="demo-chip" onclick="cargar('SOFIA22')">SOFIA22</span>
+    </div>
+  </div>
+
+  <div class="loading" id="loading">
+    <div class="spinner"></div>
+    <p>Buscando tu historial...</p>
+  </div>
+
+  <div class="panel" id="panelMachines"></div>
+  <div class="panel" id="panelHistory"></div>
+
+  <div class="not-found" id="notFound">
+    <svg width="44" height="44" viewBox="0 0 44 44" fill="none" style="margin:0 auto;display:block;opacity:.25">
+      <circle cx="20" cy="20" r="14" stroke="#CC0000" stroke-width="3"/>
+      <path d="M30 30l10 10" stroke="#CC0000" stroke-width="3" stroke-linecap="round"/>
+    </svg>
+    <h3>Código no encontrado</h3>
+    <p>Verificá el código en el comprobante.<br>Si no lo tenés, escribinos por WhatsApp.</p>
+    <a class="wa-btn" href="https://wa.me/541141758129" target="_blank">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+      Escribir a WhatsApp
+    </a>
+  </div>
+</main>
+
+<footer>
+  <div class="footer-inner">
+    <span>© 2026 PCLAF · Campana 51, Floresta, CABA</span>
+    <span><a href="tel:+541141758129">11 4175-8129</a></span>
+  </div>
+</footer>
+
+<script>
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//  PASO 1 — Pegá acá tus credenciales de Supabase
+//  (las conseguís en supabase.com > Settings > API)
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+const SUPABASE_URL     = 'https://bcmfzgjpqfjnudhgraan.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_I1oJLpCSeneeIw2SghABAw_GXrdLLWs';
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//  Cliente Supabase (sin dependencias externas)
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+async function db(table, qs = '') {
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}${qs}`, {
+    headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` }
+  });
+  if (!r.ok) throw new Error(r.status);
+  return r.json();
+}
+
+const ICONS = {
+  check:`<svg viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><polyline points="2,6.5 5,9.5 11,3.5"/></svg>`,
+  wrench:`<svg viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M9.5 2a2.5 2.5 0 00-3.46 3.46L2 9.5A1.5 1.5 0 104 11l4.04-4.04A2.5 2.5 0 009.5 2z"/></svg>`,
+  bell:`<svg viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M10 5.5A3.5 3.5 0 003 5.5c0 3.5-1.5 4.5-1.5 4.5h9S9 9 9 5.5"/><path d="M7.2 11a.75.75 0 01-1.4 0"/></svg>`,
+  pkg:`<svg viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="1.5" y="4" width="10" height="7.5" rx="1.5"/><path d="M4.5 4V3a2 2 0 014 0v1"/><path d="M1.5 7h10"/></svg>`,
+  clock:`<svg viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="6.5" cy="6.5" r="4.5"/><path d="M6.5 4v3l2 1"/></svg>`,
+};
+
+const LABELS = { listo:'Listo para retirar', proceso:'En reparación', espera:'En espera', entregado:'Entregado' };
+const BADGE  = {
+  proceso:`<span class="status-badge sb-proceso"><span class="dot"></span>En reparación</span>`,
+  listo:  `<span class="status-badge sb-listo"><span class="dot"></span>Listo para retirar</span>`,
+  espera: `<span class="status-badge sb-espera"><span class="dot"></span>En espera</span>`,
+  entregado:`<span class="status-badge sb-entregado"><span class="dot"></span>Entregado</span>`,
+};
+
+let currentClient = null;
+
+const show = id => document.getElementById(id).classList.add('visible');
+const hide = id => document.getElementById(id).classList.remove('visible');
+
+function buscar() {
+  const code = document.getElementById('searchInput').value.trim().toUpperCase();
+  if (code) cargar(code);
+}
+
+async function cargar(code) {
+  document.getElementById('searchInput').value = code;
+  hide('panelMachines'); hide('panelHistory'); hide('notFound');
+  show('loading');
+
+  try {
+    const [cliente] = await db('clientes', `?codigo=eq.${code}&limit=1`);
+    if (!cliente) { hide('loading'); show('notFound'); return; }
+
+    const equipos = await db('equipos', `?cliente_id=eq.${cliente.id}&order=created_at.asc`);
+
+    for (const eq of equipos) {
+      eq.repairs = await db('reparaciones', `?equipo_id=eq.${eq.id}&order=created_at.desc`);
+      const activa = eq.repairs.find(r => ['listo','proceso','espera'].includes(r.estado));
+      eq.lastStatus = activa?.estado || 'ok';
+    }
+
+    currentClient = { ...cliente, machines: equipos };
+    hide('loading');
+    renderMachines(currentClient, code);
+
+  } catch(e) {
+    console.error(e);
+    hide('loading');
+    show('notFound');
+  }
+}
+
+function renderMachines(client, code) {
+  const initials = client.nombre.split(' ').map(w=>w[0]).join('').slice(0,2);
+  const total = client.machines.reduce((a,m)=>a+m.repairs.length, 0);
+  const badgeMap = { proceso:BADGE.proceso, listo:BADGE.listo, espera:BADGE.espera, ok:`<span class="status-badge sb-entregado">Sin activas</span>` };
+
+  document.getElementById('panelMachines').innerHTML = `
+    <div class="client-card">
+      <div class="client-avatar">${initials}</div>
+      <div>
+        <div class="client-name">${client.nombre}</div>
+        <div class="client-meta">${client.telefono||''} · ${total} reparación${total!==1?'es':''}</div>
+      </div>
+      <div class="client-code-badge">${code}</div>
+    </div>
+    <div class="section-label">Equipos — elegí uno para ver su historial</div>
+    <div class="machine-grid">
+      ${client.machines.map(m=>`
+        <div class="machine-card" onclick="showMachine('${m.id}',event)">
+          <div class="machine-icon">${m.icono||'💻'}</div>
+          <div class="machine-name">${m.nombre}</div>
+          <div class="machine-model">${m.modelo||''}</div>
+          ${badgeMap[m.lastStatus]||badgeMap.ok}
+          <div class="machine-stat">${m.repairs.length} reparación${m.repairs.length!==1?'es':''}</div>
+        </div>`).join('')}
+    </div>`;
+  show('panelMachines');
+}
+
+async function showMachine(equipoId, evt) {
+  const m = currentClient?.machines.find(x=>x.id===equipoId);
+  if (!m) return;
+
+  document.querySelectorAll('.machine-card').forEach(c=>c.classList.remove('selected'));
+  evt?.currentTarget?.classList.add('selected');
+
+  const repHtml = await Promise.all(m.repairs.map(async (r,i) => {
+    const pasos = await db('pasos', `?reparacion_id=eq.${r.id}&order=orden.asc`);
+    const fecha = r.created_at ? new Date(r.created_at).toLocaleDateString('es-AR',{month:'long',year:'numeric'}) : '';
+
+    const stepsHtml = pasos.map((s,si) => `
+      <div class="mt-step">
+        <div class="mt-left">
+          <div class="mt-dot ${s.estado}">${ICONS[s.icono]||ICONS.check}</div>
+          ${si<pasos.length-1?`<div class="mt-line ${s.estado==='done'?'done':'pending'}"></div>`:''}
+        </div>
+        <div class="mt-content">
+          <div class="mt-title ${s.estado}">${s.titulo}</div>
+          <div class="mt-date">${s.fecha||''}</div>
+          ${s.nota?`<div class="mt-note">${s.nota}</div>`:''}
+        </div>
+      </div>`).join('');
+
+    return `<div class="repair-item" id="rep-${i}">
+      <div class="repair-head" onclick="toggleRepair(${i})">
+        <div class="repair-num">#${r.numero}</div>
+        <div class="repair-summary">
+          <div class="repair-title">${r.problema}${BADGE[r.estado]||''}</div>
+          <div class="repair-date">${fecha}</div>
+        </div>
+        <div class="repair-chevron"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6l4 4 4-4"/></svg></div>
+      </div>
+      <div class="repair-body">
+        <div class="repair-meta">
+          ${r.presupuesto?`<span class="meta-pill">Presupuesto: <strong>${r.presupuesto}</strong></span>`:''}
+          ${r.fecha_entrega?`<span class="meta-pill">Entrega: <strong>${r.fecha_entrega}</strong></span>`:''}
+        </div>
+        <div class="mini-tl">${stepsHtml}</div>
+      </div>
+    </div>`;
+  }));
+
+  document.getElementById('panelHistory').innerHTML = `
+    <div class="history-toprow">
+      <div>
+        <div class="history-device">${m.icono||'💻'} ${m.nombre}</div>
+        <div class="history-model">${m.modelo||''}</div>
+      </div>
+      <button class="back-btn" onclick="volverMaquinas()">
+        <svg viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 2L3 6.5 8 11"/></svg>
+        Volver
+      </button>
+    </div>
+    <div class="section-label">${m.repairs.length} reparación${m.repairs.length!==1?'es':''}</div>
+    ${repHtml.join('')}`;
+
+  setTimeout(()=>{ if(document.getElementById('rep-0')) toggleRepair(0); }, 60);
+  show('panelHistory');
+  document.getElementById('panelHistory').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function toggleRepair(i) { document.getElementById('rep-'+i).classList.toggle('open'); }
+function volverMaquinas() { hide('panelHistory'); document.getElementById('panelMachines').scrollIntoView({behavior:'smooth',block:'start'}); }
+document.getElementById('searchInput').addEventListener('keydown', e => { if(e.key==='Enter') buscar(); });
+</script>
+</body>
+</html>
