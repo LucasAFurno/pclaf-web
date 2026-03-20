@@ -3,12 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PCLAF — Admin</title>
+<title>PCLAF — Panel de gestión</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 :root{
-  --red:#CC0000;--red-dark:#a80000;--red-dim:rgba(204,0,0,0.12);
+  --red:#CC0000;--red-dark:#a80000;--red-dim:rgba(204,0,0,0.1);
   --black:#0a0a0a;--black2:#111111;--black3:#1a1a1a;--black4:#222222;
   --border:#2e2e2e;--border2:#3a3a3a;
   --text:#f0f0f0;--text2:#999;--text3:#555;
@@ -18,633 +19,583 @@
   --mono:'JetBrains Mono',monospace;--sans:'Inter',sans-serif;
 }
 body{background:var(--black);color:var(--text);font-family:var(--sans);min-height:100vh;}
-
-/* LOGIN */
-#loginScreen{
-  min-height:100vh;display:flex;align-items:center;justify-content:center;
-  background:var(--black);
-}
-.login-box{
-  background:var(--black2);border:1px solid var(--border);border-top:3px solid var(--red);
-  border-radius:14px;padding:40px;width:100%;max-width:360px;
-}
-.login-logo{display:flex;align-items:center;gap:10px;margin-bottom:28px;}
-.login-title{font-size:17px;font-weight:700;color:#fff;margin-bottom:4px;}
-.login-sub{font-size:13px;color:var(--text3);}
-.login-label{font-size:12px;font-weight:600;color:var(--text2);margin-bottom:6px;display:block;text-transform:uppercase;letter-spacing:.06em;}
-.login-input{width:100%;background:var(--black3);border:1.5px solid var(--border2);border-radius:8px;padding:12px 16px;font-size:15px;color:var(--text);outline:none;font-family:var(--mono);transition:border-color .2s;margin-bottom:16px;}
-.login-input:focus{border-color:var(--red);}
-.login-btn{width:100%;background:var(--red);border:none;border-radius:8px;padding:13px;font-size:14px;font-weight:700;color:#fff;cursor:pointer;transition:background .15s;}
+#loginScreen{min-height:100vh;display:flex;align-items:center;justify-content:center;}
+.login-box{background:var(--black2);border:1px solid var(--border);border-top:3px solid var(--red);border-radius:14px;padding:40px;width:100%;max-width:340px;}
+.f-lbl{font-size:12px;font-weight:600;color:var(--text3);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em;}
+.f-in{width:100%;background:var(--black3);border:1.5px solid var(--border2);border-radius:8px;padding:12px 16px;font-size:14px;color:var(--text);outline:none;transition:border-color .2s;margin-bottom:12px;}
+.f-in:focus{border-color:var(--red);}
+.f-in[readonly]{opacity:.6;cursor:default;}
+.f-sel{width:100%;background:var(--black3);border:1.5px solid var(--border2);border-radius:8px;padding:11px 14px;font-size:14px;color:var(--text);outline:none;cursor:pointer;margin-bottom:12px;}
+.login-btn{width:100%;background:var(--red);border:none;border-radius:8px;padding:13px;font-size:14px;font-weight:700;color:#fff;cursor:pointer;}
 .login-btn:hover{background:var(--red-dark);}
-.login-error{font-size:13px;color:var(--red);margin-top:10px;display:none;text-align:center;}
-
-/* LAYOUT */
+.login-err{font-size:13px;color:var(--red);margin-top:8px;text-align:center;display:none;}
 #app{display:none;}
-.topbar{background:var(--black2);border-bottom:2px solid var(--red);padding:0 24px;height:60px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:100;}
-.logo-wordmark{font-size:18px;font-weight:800;color:#fff;}
-.logo-wordmark em{color:var(--red);font-style:normal;}
-.admin-badge{font-family:var(--mono);font-size:10px;background:var(--red-dim);color:var(--red);border:1px solid rgba(204,0,0,.3);border-radius:4px;padding:3px 8px;letter-spacing:.06em;}
-.logout-btn{margin-left:auto;font-size:12px;color:var(--text3);background:none;border:1px solid var(--border);border-radius:6px;padding:6px 12px;cursor:pointer;transition:all .15s;}
-.logout-btn:hover{color:var(--red);border-color:var(--red);}
-
-main{max-width:1200px;margin:0 auto;padding:28px 24px 80px;}
-
-/* STATS BAR */
-.stats-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px;}
-.stat-card{background:var(--black2);border:1px solid var(--border);border-radius:12px;padding:18px 20px;}
-.stat-card-num{font-family:var(--mono);font-size:28px;font-weight:700;color:#fff;margin-bottom:3px;}
-.stat-card-label{font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;}
-.stat-card.red .stat-card-num{color:var(--red);}
-.stat-card.amber .stat-card-num{color:var(--amber);}
-.stat-card.green .stat-card-num{color:var(--green);}
-
-/* FILTERS */
-.filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;align-items:center;}
-.filter-btn{font-family:var(--mono);font-size:11px;font-weight:500;padding:6px 14px;border-radius:20px;cursor:pointer;transition:all .15s;border:1px solid var(--border);background:var(--black2);color:var(--text2);}
-.filter-btn.active{background:var(--red);border-color:var(--red);color:#fff;}
-.search-admin{flex:1;min-width:200px;background:var(--black2);border:1px solid var(--border2);border-radius:8px;padding:8px 14px;font-size:13px;color:var(--text);outline:none;font-family:var(--sans);}
-.search-admin:focus{border-color:var(--red);}
-.search-admin::placeholder{color:var(--text3);}
-.add-btn{display:flex;align-items:center;gap:6px;background:var(--red);border:none;border-radius:8px;padding:9px 16px;font-size:13px;font-weight:700;color:#fff;cursor:pointer;transition:background .15s;white-space:nowrap;}
-.add-btn:hover{background:var(--red-dark);}
-
-/* REPAIR CARDS */
-.repairs-list{display:flex;flex-direction:column;gap:10px;}
-.repair-card{background:var(--black2);border:1.5px solid var(--border);border-radius:12px;overflow:hidden;transition:border-color .2s;}
-.repair-card:hover{border-color:var(--border2);}
-.repair-card.open{border-color:var(--red);}
-
-.repair-card-head{display:flex;align-items:center;gap:14px;padding:16px 18px;cursor:pointer;}
-.rep-num{font-family:var(--mono);font-size:12px;color:var(--text3);min-width:50px;flex-shrink:0;}
-.rep-device{flex:1;min-width:0;}
-.rep-device-name{font-size:14px;font-weight:600;color:#fff;margin-bottom:2px;}
-.rep-device-client{font-size:12px;color:var(--text2);}
-.rep-problem{font-size:13px;color:var(--text2);flex:2;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.rep-chevron{color:var(--text3);transition:transform .25s;flex-shrink:0;}
-.rep-chevron svg{width:15px;height:15px;display:block;}
-.repair-card.open .rep-chevron{transform:rotate(180deg);}
-
-/* Status badge */
-.sbadge{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:600;padding:3px 9px;border-radius:20px;font-family:var(--mono);white-space:nowrap;}
-.sbadge .dot{width:5px;height:5px;border-radius:50%;flex-shrink:0;}
+.topbar{background:var(--black2);border-bottom:1px solid var(--border);padding:0 24px;height:58px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:100;}
+.logo-wm{font-size:17px;font-weight:800;color:#fff;flex-shrink:0;}
+.logo-wm em{color:var(--red);font-style:normal;}
+.abadge{font-family:var(--mono);font-size:10px;background:var(--red-dim);color:var(--red);border:1px solid rgba(204,0,0,.3);border-radius:4px;padding:3px 8px;flex-shrink:0;}
+.tabs{display:flex;gap:2px;margin-left:16px;}
+.tab{font-size:13px;font-weight:600;color:var(--text3);padding:6px 16px;border-radius:7px;cursor:pointer;transition:all .15s;border:1px solid transparent;user-select:none;}
+.tab:hover{color:var(--text2);}
+.tab.active{background:var(--black3);color:var(--text);border-color:var(--border);}
+.tr{margin-left:auto;display:flex;align-items:center;gap:8px;}
+.ibtn{font-size:12px;color:var(--text3);background:none;border:1px solid var(--border);border-radius:6px;padding:6px 12px;cursor:pointer;transition:all .15s;text-decoration:none;}
+.ibtn:hover{color:var(--red);border-color:var(--red);}
+.view{display:none;}
+.view.active{display:block;}
+main{max-width:1200px;margin:0 auto;padding:22px 24px 80px;}
+.sbar{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px;}
+.sc{background:var(--black2);border:1px solid var(--border);border-radius:10px;padding:15px 17px;}
+.sn{font-family:var(--mono);font-size:26px;font-weight:700;color:#fff;margin-bottom:2px;}
+.sl{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;}
+.sc.a .sn{color:var(--amber);}
+.sc.g .sn{color:var(--green);}
+.sc.r .sn{color:var(--red);}
+.frow{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;align-items:center;}
+.fbtn{font-family:var(--mono);font-size:11px;font-weight:500;padding:6px 13px;border-radius:20px;cursor:pointer;border:1px solid var(--border);background:var(--black2);color:var(--text2);transition:all .15s;}
+.fbtn:hover{border-color:var(--border2);color:var(--text);}
+.fbtn.active{background:var(--red);border-color:var(--red);color:#fff;}
+.srch{flex:1;min-width:160px;background:var(--black2);border:1px solid var(--border2);border-radius:8px;padding:7px 12px;font-size:13px;color:var(--text);outline:none;}
+.srch:focus{border-color:var(--red);}
+.srch::placeholder{color:var(--text3);}
+.abtn{display:flex;align-items:center;gap:6px;background:var(--red);border:none;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:700;color:#fff;cursor:pointer;white-space:nowrap;transition:background .15s;}
+.abtn:hover{background:var(--red-dark);}
+.rlist{display:flex;flex-direction:column;gap:8px;}
+.rc{background:var(--black2);border:1.5px solid var(--border);border-radius:12px;overflow:hidden;transition:border-color .2s;}
+.rc:hover{border-color:var(--border2);}
+.rc.open{border-color:var(--red);}
+.rch{display:flex;align-items:center;gap:12px;padding:13px 16px;cursor:pointer;}
+.rcn{font-family:var(--mono);font-size:11px;color:var(--text3);min-width:46px;flex-shrink:0;}
+.rcd{flex:1;min-width:0;}
+.rcdn{font-size:14px;font-weight:600;color:#fff;margin-bottom:1px;}
+.rcdc{font-size:12px;color:var(--text2);}
+.rcp{font-size:13px;color:var(--text3);flex:2;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.rcch{color:var(--text3);transition:transform .25s;flex-shrink:0;}
+.rcch svg{width:14px;height:14px;display:block;}
+.rc.open .rcch{transform:rotate(180deg);}
+.sb{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:600;padding:3px 9px;border-radius:20px;font-family:var(--mono);white-space:nowrap;flex-shrink:0;}
+.sb .dot{width:5px;height:5px;border-radius:50%;}
 .sb-espera{background:var(--black3);color:var(--text3);border:1px solid var(--border);}
 .sb-espera .dot{background:var(--text3);}
 .sb-proceso{background:var(--amber-dim);color:var(--amber);border:1px solid rgba(245,158,11,.2);}
 .sb-proceso .dot{background:var(--amber);animation:py 1.5s infinite;}
 .sb-listo{background:var(--green-dim);color:var(--green);border:1px solid rgba(34,197,94,.2);}
 .sb-listo .dot{background:var(--green);animation:pg 1.5s infinite;}
-.sb-entregado{background:var(--black3);color:var(--text3);border:1px solid var(--border);}
-.sb-entregado .dot{background:var(--text3);}
+.sb-entregado{background:var(--blue-dim);color:var(--blue);border:1px solid rgba(59,130,246,.2);}
+.sb-entregado .dot{background:var(--blue);}
 @keyframes pg{0%,100%{box-shadow:0 0 0 0 rgba(34,197,94,.45)}50%{box-shadow:0 0 0 4px rgba(34,197,94,0)}}
 @keyframes py{0%,100%{box-shadow:0 0 0 0 rgba(245,158,11,.45)}50%{box-shadow:0 0 0 4px rgba(245,158,11,0)}}
-
-/* REPAIR BODY */
-.repair-card-body{display:none;padding:0 18px 20px;border-top:1px solid var(--border);}
-.repair-card.open .repair-card-body{display:block;}
-
-.body-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;}
-.body-section{background:var(--black3);border:1px solid var(--border);border-radius:10px;padding:16px;}
-.body-section h4{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:12px;}
-
-/* Client info */
-.client-info-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
-.ci-label{font-size:12px;color:var(--text3);}
-.ci-val{font-size:13px;font-weight:600;color:#fff;font-family:var(--mono);}
-.wa-direct{display:inline-flex;align-items:center;gap:6px;background:#25d366;color:#fff;text-decoration:none;padding:8px 16px;border-radius:8px;font-size:13px;font-weight:700;margin-top:8px;transition:opacity .15s;width:100%;justify-content:center;}
-.wa-direct:hover{opacity:.88;}
-
-/* Status changer */
-.status-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
-.status-opt{padding:9px;border-radius:8px;border:1.5px solid var(--border);background:var(--black4);font-size:12px;font-weight:600;color:var(--text2);cursor:pointer;transition:all .15s;text-align:center;font-family:var(--mono);}
-.status-opt:hover{border-color:var(--border2);color:#fff;}
-.status-opt.active-espera{border-color:var(--text3);color:var(--text3);background:rgba(255,255,255,.05);}
-.status-opt.active-proceso{border-color:var(--amber);color:var(--amber);background:var(--amber-dim);}
-.status-opt.active-listo{border-color:var(--green);color:var(--green);background:var(--green-dim);}
-.status-opt.active-entregado{border-color:var(--blue);color:var(--blue);background:var(--blue-dim);}
-
-/* Timeline steps */
-.steps-list{display:flex;flex-direction:column;gap:6px;max-height:200px;overflow-y:auto;margin-bottom:10px;}
-.step-row{display:flex;align-items:center;gap:8px;background:var(--black4);border-radius:6px;padding:8px 10px;}
-.step-estado{font-size:10px;}
-.step-titulo{font-size:12px;color:var(--text);flex:1;}
-.step-fecha{font-family:var(--mono);font-size:10px;color:var(--text3);}
-.step-del{background:none;border:none;color:var(--text3);cursor:pointer;font-size:14px;transition:color .15s;padding:0 4px;}
-.step-del:hover{color:var(--red);}
-
-/* Add step form */
-.add-step-form{display:flex;flex-direction:column;gap:8px;}
-.form-row{display:flex;gap:8px;}
-.form-input{flex:1;background:var(--black4);border:1px solid var(--border2);border-radius:6px;padding:8px 10px;font-size:12px;color:var(--text);outline:none;font-family:var(--sans);}
-.form-input:focus{border-color:var(--red);}
-.form-select{background:var(--black4);border:1px solid var(--border2);border-radius:6px;padding:8px 10px;font-size:12px;color:var(--text);outline:none;cursor:pointer;}
-.form-select:focus{border-color:var(--red);}
-.form-btn{background:var(--red);border:none;border-radius:6px;padding:8px 14px;font-size:12px;font-weight:700;color:#fff;cursor:pointer;white-space:nowrap;transition:background .15s;}
-.form-btn:hover{background:var(--red-dark);}
-.form-btn.secondary{background:var(--black4);border:1px solid var(--border2);color:var(--text2);}
-.form-btn.secondary:hover{border-color:var(--border);color:var(--text);}
-
-/* Presupuesto */
-.presup-row{display:flex;gap:8px;align-items:center;}
-.presup-input{flex:1;background:var(--black4);border:1px solid var(--border2);border-radius:6px;padding:8px 10px;font-size:13px;color:var(--text);outline:none;font-family:var(--mono);}
-.presup-input:focus{border-color:var(--red);}
-
-/* Loading/empty states */
-.loading-state{text-align:center;padding:60px;color:var(--text3);}
-.spinner{width:28px;height:28px;border:2.5px solid var(--border);border-top-color:var(--red);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 12px;}
-@keyframes spin{to{transform:rotate(360deg)}}
-.empty-state{text-align:center;padding:60px;color:var(--text3);font-size:14px;}
-
+.rcb{display:none;padding:0 16px 16px;border-top:1px solid var(--border);}
+.rc.open .rcb{display:block;}
+.bgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px;}
+.bsec{background:var(--black3);border:1px solid var(--border);border-radius:10px;padding:13px;}
+.bsec h4{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:9px;}
+.cir{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
+.cil{font-size:12px;color:var(--text3);}
+.civ{font-size:13px;font-weight:600;color:#fff;font-family:var(--mono);}
+.wab{display:flex;align-items:center;justify-content:center;gap:7px;background:#25d366;color:#fff;text-decoration:none;padding:9px;border-radius:8px;font-size:13px;font-weight:700;margin-top:9px;width:100%;}
+.wab:hover{opacity:.88;}
+.sgrid{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.so{padding:8px;border-radius:7px;border:1.5px solid var(--border);background:var(--black4);font-size:12px;font-weight:600;color:var(--text2);cursor:pointer;transition:all .15s;text-align:center;font-family:var(--mono);}
+.so:hover{border-color:var(--border2);color:#fff;}
+.so.ae{border-color:var(--text3);color:var(--text);background:rgba(255,255,255,.05);}
+.so.ap{border-color:var(--amber);color:var(--amber);background:var(--amber-dim);}
+.so.al{border-color:var(--green);color:var(--green);background:var(--green-dim);}
+.so.ad{border-color:var(--blue);color:var(--blue);background:var(--blue-dim);}
+.prin{flex:1;background:var(--black4);border:1px solid var(--border2);border-radius:6px;padding:7px 10px;font-size:13px;color:var(--text);outline:none;font-family:var(--mono);}
+.prin:focus{border-color:var(--red);}
+.smbtn{background:var(--red);border:none;border-radius:6px;padding:7px 12px;font-size:12px;font-weight:700;color:#fff;cursor:pointer;white-space:nowrap;transition:background .15s;}
+.smbtn:hover{background:var(--red-dark);}
+.smbtn.s{background:var(--black4);border:1px solid var(--border2);color:var(--text2);}
+.smbtn.s:hover{border-color:var(--border);color:var(--text);}
+.stl{display:flex;flex-direction:column;gap:5px;max-height:170px;overflow-y:auto;margin-bottom:9px;}
+.str{display:flex;align-items:center;gap:7px;background:var(--black4);border-radius:6px;padding:7px 10px;}
+.stt{font-size:12px;color:var(--text);flex:1;}
+.std{font-family:var(--mono);font-size:10px;color:var(--text3);}
+.sdel{background:none;border:none;color:var(--text3);cursor:pointer;font-size:13px;transition:color .15s;padding:0 3px;}
+.sdel:hover{color:var(--red);}
+.sf{display:flex;flex-direction:column;gap:6px;}
+.sr2{display:flex;gap:6px;}
+.sin{flex:1;background:var(--black4);border:1px solid var(--border2);border-radius:6px;padding:7px 10px;font-size:12px;color:var(--text);outline:none;}
+.sin:focus{border-color:var(--red);}
+.sse{background:var(--black4);border:1px solid var(--border2);border-radius:6px;padding:7px 10px;font-size:12px;color:var(--text);outline:none;cursor:pointer;}
+/* METRICS */
+.pbar{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;align-items:center;}
+.pbtn{font-family:var(--mono);font-size:11px;font-weight:500;padding:7px 14px;border-radius:8px;cursor:pointer;border:1.5px solid var(--border);background:var(--black2);color:var(--text2);transition:all .15s;}
+.pbtn:hover{border-color:var(--border2);color:var(--text);}
+.pbtn.active{background:var(--red);border-color:var(--red);color:#fff;}
+.plbl{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--text3);}
+.kgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px;}
+.kc{background:var(--black2);border:1px solid var(--border);border-radius:12px;padding:17px;position:relative;overflow:hidden;}
+.kc::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.kc.r::before{background:var(--red);}
+.kc.g::before{background:var(--green);}
+.kc.a::before{background:var(--amber);}
+.kc.b::before{background:var(--blue);}
+.kl{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;}
+.kv{font-family:var(--mono);font-size:25px;font-weight:700;line-height:1;margin-bottom:3px;}
+.kv.r{color:var(--red);}
+.kv.g{color:var(--green);}
+.kv.a{color:var(--amber);}
+.kv.b{color:var(--blue);}
+.ks{font-size:11px;color:var(--text3);}
+.cg2{display:grid;grid-template-columns:2fr 1fr;gap:12px;margin-bottom:12px;}
+.cgeq{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+.cc{background:var(--black2);border:1px solid var(--border);border-radius:12px;padding:17px;}
+.ct{font-size:13px;font-weight:600;color:var(--text);margin-bottom:2px;}
+.cs{font-size:11px;color:var(--text3);margin-bottom:13px;}
+.tblc{background:var(--black2);border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+.tblh{padding:13px 17px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.tblt{font-size:13px;font-weight:600;color:var(--text);}
+table{width:100%;border-collapse:collapse;}
+th{font-family:var(--mono);font-size:10px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;padding:9px 17px;text-align:left;border-bottom:1px solid var(--border);}
+td{font-size:13px;color:var(--text2);padding:10px 17px;border-bottom:1px solid rgba(46,46,46,.4);}
+td:first-child{color:var(--text);font-weight:500;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:var(--black3);}
+.tdm{font-family:var(--mono);}
+.tdg{color:var(--green);}
 /* MODAL */
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;display:none;align-items:center;justify-content:center;padding:20px;}
-.modal-overlay.open{display:flex;}
-.modal{background:var(--black2);border:1px solid var(--border2);border-radius:14px;padding:28px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;}
-.modal h3{font-size:17px;font-weight:700;color:#fff;margin-bottom:20px;}
-.modal-grid{display:flex;flex-direction:column;gap:12px;}
-.modal-label{font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px;display:block;}
-.modal-input{width:100%;background:var(--black3);border:1.5px solid var(--border2);border-radius:8px;padding:11px 14px;font-size:14px;color:var(--text);outline:none;font-family:var(--sans);}
-.modal-input:focus{border-color:var(--red);}
-.modal-select{width:100%;background:var(--black3);border:1.5px solid var(--border2);border-radius:8px;padding:11px 14px;font-size:14px;color:var(--text);outline:none;cursor:pointer;}
-.modal-footer{display:flex;gap:8px;justify-content:flex-end;margin-top:20px;}
-
-/* Toast */
-.toast{position:fixed;bottom:24px;right:24px;background:var(--black2);border:1px solid var(--border2);border-left:3px solid var(--green);border-radius:10px;padding:12px 18px;font-size:13px;font-weight:600;color:#fff;z-index:300;transform:translateY(80px);opacity:0;transition:all .3s;pointer-events:none;}
+.mov{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;display:none;align-items:center;justify-content:center;padding:20px;}
+.mov.open{display:flex;}
+.modal{background:var(--black2);border:1px solid var(--border2);border-radius:14px;padding:24px;width:100%;max-width:440px;max-height:90vh;overflow-y:auto;}
+.modal h3{font-size:16px;font-weight:700;color:#fff;margin-bottom:16px;}
+.mgrid{display:flex;flex-direction:column;gap:10px;}
+.mfoot{display:flex;gap:8px;justify-content:flex-end;margin-top:16px;}
+.num-badge{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:11px;background:var(--green-dim);color:var(--green);border:1px solid rgba(34,197,94,.2);border-radius:6px;padding:3px 9px;margin-bottom:5px;}
+/* MISC */
+.empty{text-align:center;padding:44px;color:var(--text3);font-size:13px;}
+.spinner{width:24px;height:24px;border:2.5px solid var(--border);border-top-color:var(--red);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 10px;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.toast{position:fixed;bottom:20px;right:20px;background:var(--black2);border:1px solid var(--border2);border-left:3px solid var(--green);border-radius:10px;padding:11px 16px;font-size:13px;font-weight:600;color:#fff;z-index:300;transform:translateY(70px);opacity:0;transition:all .3s;pointer-events:none;}
 .toast.show{transform:translateY(0);opacity:1;}
-.toast.error{border-left-color:var(--red);}
-
-@media(max-width:768px){
-  .stats-bar{grid-template-columns:1fr 1fr;}
-  .body-grid{grid-template-columns:1fr;}
-  .rep-problem{display:none;}
-}
+.toast.err{border-left-color:var(--red);}
+@media(max-width:900px){.kgrid,.sbar{grid-template-columns:1fr 1fr;}.cg2,.cgeq,.bgrid{grid-template-columns:1fr;}.rcp{display:none;}}
+@media(max-width:500px){.kgrid,.sbar{grid-template-columns:1fr;}.tabs{display:none;}}
 </style>
 </head>
 <body>
 
-<!-- LOGIN -->
 <div id="loginScreen">
   <div class="login-box">
-    <div class="login-logo">
-      <svg width="40" height="40" viewBox="0 0 42 42" style="border-radius:6px;overflow:hidden;flex-shrink:0">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:24px;">
+      <svg width="38" height="38" viewBox="0 0 42 42" style="border-radius:5px;overflow:hidden;flex-shrink:0">
         <rect x="0" y="0" width="42" height="22" fill="#CC0000"/>
         <rect x="0" y="22" width="42" height="20" fill="#111"/>
         <text x="21" y="19" text-anchor="middle" font-family="Arial Black,sans-serif" font-weight="900" font-size="18" fill="white">PC</text>
         <text x="21" y="38" text-anchor="middle" font-family="Arial Black,sans-serif" font-weight="900" font-size="14" fill="white">LAF</text>
       </svg>
       <div>
-        <div style="font-size:18px;font-weight:800;color:#fff;">PC<span style="color:#CC0000">LAF</span></div>
-        <div style="font-size:11px;color:#555;font-family:var(--mono);text-transform:uppercase;letter-spacing:.06em;">Panel admin</div>
+        <div style="font-size:17px;font-weight:800;color:#fff;">PC<span style="color:#CC0000">LAF</span></div>
+        <div style="font-size:11px;color:#555;font-family:var(--mono);text-transform:uppercase;letter-spacing:.06em;">Panel de gestión</div>
       </div>
     </div>
-    <label class="login-label">Contraseña</label>
-    <input class="login-input" type="password" id="loginPass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"/>
+    <label class="f-lbl">Contraseña</label>
+    <input class="f-in" type="password" id="loginPass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"/>
     <button class="login-btn" onclick="doLogin()">Entrar</button>
-    <div class="login-error" id="loginError">Contraseña incorrecta</div>
+    <div class="login-err" id="loginErr">Contraseña incorrecta</div>
   </div>
 </div>
 
-<!-- APP -->
 <div id="app">
   <div class="topbar">
-    <svg width="36" height="36" viewBox="0 0 42 42" style="border-radius:5px;overflow:hidden;flex-shrink:0">
+    <svg width="32" height="32" viewBox="0 0 42 42" style="border-radius:4px;overflow:hidden;flex-shrink:0">
       <rect x="0" y="0" width="42" height="22" fill="#CC0000"/>
       <rect x="0" y="22" width="42" height="20" fill="#111"/>
       <text x="21" y="19" text-anchor="middle" font-family="Arial Black,sans-serif" font-weight="900" font-size="18" fill="white">PC</text>
       <text x="21" y="38" text-anchor="middle" font-family="Arial Black,sans-serif" font-weight="900" font-size="14" fill="white">LAF</text>
     </svg>
-    <div class="logo-wordmark">PC<em>LAF</em></div>
-    <div class="admin-badge">ADMIN</div>
-    <a href="index.html" style="font-size:12px;color:var(--text3);text-decoration:none;margin-left:8px;">← Web principal</a>
-    <button class="logout-btn" onclick="logout()">Cerrar sesión</button>
+    <div class="logo-wm">PC<em>LAF</em></div>
+    <div class="abadge">ADMIN</div>
+    <div class="tabs">
+      <div class="tab active" onclick="switchTab('rep',this)">Reparaciones</div>
+      <div class="tab" onclick="switchTab('met',this)">Métricas</div>
+    </div>
+    <div class="tr">
+      <a class="ibtn" href="index.html" target="_blank">Web ↗</a>
+      <button class="ibtn" onclick="logout()">Salir</button>
+    </div>
   </div>
 
   <main>
-    <!-- Stats -->
-    <div class="stats-bar" id="statsBar">
-      <div class="stat-card"><div class="stat-card-num" id="statTotal">–</div><div class="stat-card-label">Total reparaciones</div></div>
-      <div class="stat-card amber"><div class="stat-card-num" id="statProceso">–</div><div class="stat-card-label">En proceso</div></div>
-      <div class="stat-card green"><div class="stat-card-num" id="statListo">–</div><div class="stat-card-label">Listos para retirar</div></div>
-      <div class="stat-card red"><div class="stat-card-num" id="statEspera">–</div><div class="stat-card-label">En espera</div></div>
+    <!-- REPARACIONES -->
+    <div class="view active" id="view-rep">
+      <div class="sbar">
+        <div class="sc"><div class="sn" id="sT">–</div><div class="sl">Total</div></div>
+        <div class="sc a"><div class="sn" id="sP">–</div><div class="sl">En proceso</div></div>
+        <div class="sc g"><div class="sn" id="sL">–</div><div class="sl">Listos</div></div>
+        <div class="sc r"><div class="sn" id="sE">–</div><div class="sl">En espera</div></div>
+      </div>
+      <div class="frow">
+        <button class="fbtn active" onclick="setF('todos',this)">Todos</button>
+        <button class="fbtn" onclick="setF('espera',this)">Espera</button>
+        <button class="fbtn" onclick="setF('proceso',this)">Proceso</button>
+        <button class="fbtn" onclick="setF('listo',this)">Listos</button>
+        <button class="fbtn" onclick="setF('entregado',this)">Entregados</button>
+        <input class="srch" id="srch" placeholder="Buscar cliente, equipo, #número..." oninput="renderList()"/>
+        <button class="abtn" onclick="openModal()">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M8 2v12M2 8h12"/></svg>
+          Nueva reparación
+        </button>
+      </div>
+      <div id="rlist" class="rlist"><div class="empty"><div class="spinner"></div>Cargando...</div></div>
     </div>
 
-    <!-- Filters -->
-    <div class="filters">
-      <button class="filter-btn active" onclick="setFilter('todos',this)">Todos</button>
-      <button class="filter-btn" onclick="setFilter('espera',this)">En espera</button>
-      <button class="filter-btn" onclick="setFilter('proceso',this)">En proceso</button>
-      <button class="filter-btn" onclick="setFilter('listo',this)">Listos</button>
-      <button class="filter-btn" onclick="setFilter('entregado',this)">Entregados</button>
-      <input class="search-admin" id="searchAdmin" placeholder="Buscar por cliente, equipo o #número..." oninput="renderList()"/>
-      <button class="add-btn" onclick="openModal()">
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M8 2v12M2 8h12"/></svg>
-        Nueva reparación
-      </button>
-    </div>
-
-    <!-- List -->
-    <div id="repairsList" class="repairs-list">
-      <div class="loading-state"><div class="spinner"></div><p>Cargando...</p></div>
+    <!-- MÉTRICAS -->
+    <div class="view" id="view-met">
+      <div class="pbar">
+        <button class="pbtn" onclick="setP('semana',this)">Esta semana</button>
+        <button class="pbtn active" onclick="setP('mes',this)">Este mes</button>
+        <button class="pbtn" onclick="setP('trimestre',this)">Trimestre</button>
+        <button class="pbtn" onclick="setP('anio',this)">Este año</button>
+        <button class="pbtn" onclick="setP('todo',this)">Todo</button>
+        <span class="plbl" id="plbl"></span>
+      </div>
+      <div class="kgrid">
+        <div class="kc r"><div class="kl">Facturación</div><div class="kv r" id="kF">–</div><div class="ks">del período</div></div>
+        <div class="kc a"><div class="kl">Tickets</div><div class="kv a" id="kT">–</div><div class="ks">reparaciones</div></div>
+        <div class="kc g"><div class="kl">Entregados</div><div class="kv g" id="kE">–</div><div class="ks">completados</div></div>
+        <div class="kc b"><div class="kl">Ticket promedio</div><div class="kv b" id="kPr">–</div><div class="ks">por reparación</div></div>
+      </div>
+      <div class="cg2">
+        <div class="cc"><div class="ct">Ingresos por mes</div><div class="cs">Facturación acumulada</div><canvas id="cI" height="200"></canvas></div>
+        <div class="cc"><div class="ct">Estado actual</div><div class="cs">Todas las reparaciones</div><canvas id="cE" height="200"></canvas></div>
+      </div>
+      <div class="cgeq">
+        <div class="cc"><div class="ct">Tickets por semana</div><div class="cs">Ingresados cada semana</div><canvas id="cT" height="160"></canvas></div>
+        <div class="cc"><div class="ct">Servicios más pedidos</div><div class="cs">Top por tipo de problema</div><canvas id="cS" height="160"></canvas></div>
+      </div>
+      <div class="tblc">
+        <div class="tblh"><div class="tblt">Reparaciones del período</div><span style="font-family:var(--mono);font-size:11px;color:var(--text3)" id="tblCnt"></span></div>
+        <div id="metTbl"><div class="empty"><div class="spinner"></div></div></div>
+      </div>
     </div>
   </main>
 </div>
 
-<!-- MODAL nueva reparación -->
-<div class="modal-overlay" id="modal">
+<!-- MODAL -->
+<div class="mov" id="modal">
   <div class="modal">
     <h3>Nueva reparación</h3>
-    <div class="modal-grid">
+    <div class="mgrid">
       <div>
-        <label class="modal-label">Código de cliente</label>
-        <input class="modal-input" id="mCodigo" placeholder="Ej: LUCAS01" oninput="this.value=this.value.toUpperCase()"/>
+        <label class="f-lbl">Código de cliente</label>
+        <input class="f-in" id="mCod" placeholder="Ej: LUCAS01" style="margin-bottom:4px" oninput="this.value=this.value.toUpperCase();autoCliente(this.value)"/>
+        <div style="font-size:11px;color:var(--text3);margin-bottom:8px;">Si ya existe, se autocompleta el nombre y teléfono</div>
       </div>
+      <div><label class="f-lbl">Nombre del cliente</label><input class="f-in" id="mNom" placeholder="Ej: Lucas Méndez"/></div>
+      <div><label class="f-lbl">Teléfono</label><input class="f-in" id="mTel" placeholder="Ej: 11 5823-9201"/></div>
+      <div><label class="f-lbl">Equipo</label><input class="f-in" id="mEq" placeholder="Ej: Notebook HP"/></div>
+      <div><label class="f-lbl">Modelo</label><input class="f-in" id="mMod" placeholder="Ej: Pavilion 15-eh1"/></div>
       <div>
-        <label class="modal-label">Nombre del cliente</label>
-        <input class="modal-input" id="mNombre" placeholder="Ej: Lucas Méndez"/>
+        <label class="f-lbl">Número de reparación</label>
+        <div class="num-badge">
+          <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M13 2L6 9l-3-3"/></svg>
+          Asignado automáticamente
+        </div>
+        <input class="f-in" id="mNum" readonly placeholder="Calculando..." style="font-family:var(--mono);margin-bottom:0"/>
       </div>
+      <div><label class="f-lbl">Problema</label><input class="f-in" id="mProb" placeholder="Ej: No enciende, pantalla rota..."/></div>
+      <div><label class="f-lbl">Presupuesto</label><input class="f-in" id="mPres" placeholder="Ej: $85.000" style="font-family:var(--mono)"/></div>
       <div>
-        <label class="modal-label">Teléfono</label>
-        <input class="modal-input" id="mTelefono" placeholder="Ej: 11 5823-9201"/>
-      </div>
-      <div>
-        <label class="modal-label">Equipo</label>
-        <input class="modal-input" id="mEquipo" placeholder="Ej: Notebook HP"/>
-      </div>
-      <div>
-        <label class="modal-label">Modelo</label>
-        <input class="modal-input" id="mModelo" placeholder="Ej: Pavilion 15-eh1"/>
-      </div>
-      <div>
-        <label class="modal-label">Número de reparación</label>
-        <input class="modal-input" id="mNumero" placeholder="Ej: 0043" style="font-family:var(--mono)"/>
-      </div>
-      <div>
-        <label class="modal-label">Problema</label>
-        <input class="modal-input" id="mProblema" placeholder="Ej: No enciende, falla en pantalla..."/>
-      </div>
-      <div>
-        <label class="modal-label">Presupuesto</label>
-        <input class="modal-input" id="mPresupuesto" placeholder="Ej: $85.000" style="font-family:var(--mono)"/>
-      </div>
-      <div>
-        <label class="modal-label">Ícono del equipo</label>
-        <select class="modal-select" id="mIcono">
+        <label class="f-lbl">Ícono del equipo</label>
+        <select class="f-sel" id="mIco" style="margin-bottom:0">
           <option value="💻">💻 Notebook</option>
           <option value="🖥️">🖥️ PC escritorio</option>
           <option value="🖨️">🖨️ Impresora</option>
-          <option value="📱">📱 Celular</option>
+          <option value="📱">📱 Celular / Tablet</option>
           <option value="🎮">🎮 Consola</option>
+          <option value="🖱️">🖱️ Periférico</option>
         </select>
       </div>
     </div>
-    <div class="modal-footer">
-      <button class="form-btn secondary" onclick="closeModal()">Cancelar</button>
-      <button class="form-btn" onclick="crearReparacion()">Crear reparación</button>
+    <div class="mfoot">
+      <button class="smbtn s" onclick="closeModal()">Cancelar</button>
+      <button class="smbtn" onclick="crearRep()">Crear reparación</button>
     </div>
   </div>
 </div>
 
-<!-- TOAST -->
 <div class="toast" id="toast"></div>
 
 <script>
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-//  CONFIG
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-const SUPABASE_URL      = 'https://bcmfzgjpqfjnudhgraan.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_I1oJLpCSeneeIw2SghABAw_GXrdLLWs';
-const ADMIN_PASSWORD    = 'pclaf2026';  // ← cambiá esto por tu contraseña
+const SUPA = 'https://bcmfzgjpqfjnudhgraan.supabase.co';
+const KEY  = 'sb_publishable_I1oJLpCSeneeIw2SghABAw_GXrdLLWs';
+const PASS = 'pclaf2026';
+const H = {apikey:KEY,Authorization:`Bearer ${KEY}`,'Content-Type':'application/json',Prefer:'return=representation'};
 
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-//  DB helper
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-const H = { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}`, 'Content-Type': 'application/json', Prefer: 'return=representation' };
-
-async function db(method, table, qs='', body=null) {
-  const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}${qs}`, {
-    method, headers: H, body: body ? JSON.stringify(body) : null
-  });
-  if (!r.ok) { const e = await r.text(); throw new Error(e); }
-  const t = await r.text();
-  return t ? JSON.parse(t) : null;
+async function db(m,t,q='',b=null){
+  const r=await fetch(`${SUPA}/rest/v1/${t}${q}`,{method:m,headers:H,body:b?JSON.stringify(b):null});
+  const txt=await r.text(); if(!r.ok) throw new Error(txt); return txt?JSON.parse(txt):null;
 }
 
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-//  LOGIN
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-function doLogin() {
-  const pass = document.getElementById('loginPass').value;
-  if (pass === ADMIN_PASSWORD) {
-    sessionStorage.setItem('pclaf_admin', '1');
-    document.getElementById('loginScreen').style.display = 'none';
-    document.getElementById('app').style.display = 'block';
+// LOGIN
+function doLogin(){
+  if(document.getElementById('loginPass').value===PASS){
+    sessionStorage.setItem('pclaf_a','1');
+    document.getElementById('loginScreen').style.display='none';
+    document.getElementById('app').style.display='block';
     loadAll();
-  } else {
-    document.getElementById('loginError').style.display = 'block';
-    document.getElementById('loginPass').value = '';
-  }
+  } else { document.getElementById('loginErr').style.display='block'; document.getElementById('loginPass').value=''; }
 }
-function logout() { sessionStorage.removeItem('pclaf_admin'); location.reload(); }
-if (sessionStorage.getItem('pclaf_admin')) {
-  document.getElementById('loginScreen').style.display = 'none';
-  document.getElementById('app').style.display = 'block';
-}
+function logout(){sessionStorage.removeItem('pclaf_a');location.reload();}
+if(sessionStorage.getItem('pclaf_a')){document.getElementById('loginScreen').style.display='none';document.getElementById('app').style.display='block';}
+document.getElementById('loginPass').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
 
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-//  DATA
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-let allData = [];   // [{rep, equipo, cliente}]
-let filter = 'todos';
-
-async function loadAll() {
-  try {
-    const [reps, equipos, clientes] = await Promise.all([
-      db('GET','reparaciones','?order=created_at.desc'),
-      db('GET','equipos',''),
-      db('GET','clientes',''),
-    ]);
-    allData = reps.map(r => ({
-      rep: r,
-      equipo: equipos.find(e => e.id === r.equipo_id) || {},
-      cliente: clientes.find(c => {
-        const eq = equipos.find(e => e.id === r.equipo_id);
-        return eq && c.id === eq.cliente_id;
-      }) || {}
-    }));
-    updateStats();
-    renderList();
-  } catch(e) {
-    document.getElementById('repairsList').innerHTML = `<div class="empty-state">Error cargando datos. Revisá la conexión.</div>`;
-  }
-}
-
-function updateStats() {
-  document.getElementById('statTotal').textContent   = allData.length;
-  document.getElementById('statProceso').textContent = allData.filter(d=>d.rep.estado==='proceso').length;
-  document.getElementById('statListo').textContent   = allData.filter(d=>d.rep.estado==='listo').length;
-  document.getElementById('statEspera').textContent  = allData.filter(d=>d.rep.estado==='espera').length;
-}
-
-function setFilter(f, btn) {
-  filter = f;
-  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+// TABS
+function switchTab(name,btn){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   btn.classList.add('active');
-  renderList();
+  document.getElementById('view-'+name).classList.add('active');
+  if(name==='met') renderMetrics();
 }
 
-function renderList() {
-  const q = document.getElementById('searchAdmin').value.toLowerCase();
-  let data = allData;
-  if (filter !== 'todos') data = data.filter(d => d.rep.estado === filter);
-  if (q) data = data.filter(d =>
-    d.cliente.nombre?.toLowerCase().includes(q) ||
-    d.equipo.nombre?.toLowerCase().includes(q) ||
-    d.rep.numero?.includes(q) ||
-    d.rep.problema?.toLowerCase().includes(q)
-  );
+// DATA
+let aR=[],aE=[],aC=[];
+let fSt='todos';
+let mCh={};
 
-  if (!data.length) {
-    document.getElementById('repairsList').innerHTML = `<div class="empty-state">No hay reparaciones${filter!=='todos'?' en este estado':''}.</div>`;
-    return;
-  }
-
-  document.getElementById('repairsList').innerHTML = data.map(d => repCard(d)).join('');
+async function loadAll(){
+  try{
+    [aR,aE,aC]=await Promise.all([db('GET','reparaciones','?order=created_at.desc'),db('GET','equipos',''),db('GET','clientes','')]);
+    updStats(); renderList();
+  }catch(e){document.getElementById('rlist').innerHTML='<div class="empty">Error cargando datos</div>';}
 }
 
-const ESTADO_LABELS = { espera:'En espera', proceso:'En reparación', listo:'Listo para retirar', entregado:'Entregado' };
-const ESTADO_ICONS  = { espera:'⏳', proceso:'🔧', listo:'✅', entregado:'📦' };
-
-function repCard(d) {
-  const { rep, equipo, cliente } = d;
-  const tel = (cliente.telefono||'').replace(/\D/g,'');
-  const waMsg = encodeURIComponent(`Hola ${cliente.nombre?.split(' ')[0]||''}, te escribimos de PCLAF. Tu ${equipo.nombre||'equipo'} (reparación #${rep.numero}) está ${ESTADO_LABELS[rep.estado]||rep.estado}.`);
-
-  return `<div class="repair-card" id="card-${rep.id}">
-    <div class="repair-card-head" onclick="toggleCard('${rep.id}')">
-      <div class="rep-num">#${rep.numero}</div>
-      <div class="rep-device">
-        <div class="rep-device-name">${equipo.icono||'💻'} ${equipo.nombre||'–'}</div>
-        <div class="rep-device-client">${cliente.nombre||'–'} · ${cliente.codigo||''}</div>
-      </div>
-      <div class="rep-problem">${rep.problema||''}</div>
-      <span class="sbadge sb-${rep.estado}" style="flex-shrink:0;margin:0 12px">
-        <span class="dot"></span>${ESTADO_LABELS[rep.estado]||rep.estado}
-      </span>
-      <div class="rep-chevron"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6l4 4 4-4"/></svg></div>
-    </div>
-    <div class="repair-card-body" id="body-${rep.id}">
-      <div class="body-grid">
-
-        <!-- Cliente -->
-        <div class="body-section">
-          <h4>Cliente</h4>
-          <div class="client-info-row"><span class="ci-label">Nombre</span><span class="ci-val">${cliente.nombre||'–'}</span></div>
-          <div class="client-info-row"><span class="ci-label">Teléfono</span><span class="ci-val">${cliente.telefono||'–'}</span></div>
-          <div class="client-info-row"><span class="ci-label">Código</span><span class="ci-val">${cliente.codigo||'–'}</span></div>
-          <div class="client-info-row"><span class="ci-label">Equipo</span><span class="ci-val">${equipo.nombre||'–'} ${equipo.modelo?'· '+equipo.modelo:''}</span></div>
-          <div class="client-info-row"><span class="ci-label">Presupuesto</span>
-            <div style="display:flex;gap:6px;align-items:center">
-              <input class="presup-input" id="presup-${rep.id}" value="${rep.presupuesto||''}" placeholder="$0.000" style="width:110px"/>
-              <button class="form-btn" style="padding:6px 10px;font-size:11px" onclick="savePresup('${rep.id}')">Guardar</button>
-            </div>
-          </div>
-          ${tel ? `<a class="wa-direct" href="https://wa.me/54${tel}?text=${waMsg}" target="_blank">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-            WhatsApp a ${cliente.nombre?.split(' ')[0]||'cliente'}
-          </a>` : ''}
-        </div>
-
-        <!-- Estado -->
-        <div class="body-section">
-          <h4>Cambiar estado</h4>
-          <div class="status-btns">
-            ${['espera','proceso','listo','entregado'].map(s=>`
-              <div class="status-opt ${rep.estado===s?'active-'+s:''}" onclick="cambiarEstado('${rep.id}','${s}',this)">
-                ${ESTADO_ICONS[s]} ${ESTADO_LABELS[s]}
-              </div>`).join('')}
-          </div>
-        </div>
-
-        <!-- Timeline -->
-        <div class="body-section" style="grid-column:1/-1">
-          <h4>Timeline de pasos</h4>
-          <div class="steps-list" id="steps-${rep.id}">
-            <div style="color:var(--text3);font-size:12px;text-align:center;padding:12px">Cargando...</div>
-          </div>
-          <div class="add-step-form">
-            <div class="form-row">
-              <input class="form-input" id="stepTitulo-${rep.id}" placeholder="Título del paso (ej: Diagnóstico completado)"/>
-              <select class="form-select" id="stepEstado-${rep.id}">
-                <option value="done">✅ Hecho</option>
-                <option value="active">🔧 En curso</option>
-                <option value="pending">⏳ Pendiente</option>
-              </select>
-            </div>
-            <div class="form-row">
-              <input class="form-input" id="stepNota-${rep.id}" placeholder="Nota / comentario (opcional)"/>
-              <input class="form-input" id="stepFecha-${rep.id}" placeholder="Fecha (ej: 20 mar)" style="max-width:140px"/>
-              <button class="form-btn" onclick="agregarPaso('${rep.id}')">+ Agregar</button>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </div>
-  </div>`;
+function updStats(){
+  document.getElementById('sT').textContent=aR.length;
+  document.getElementById('sP').textContent=aR.filter(r=>r.estado==='proceso').length;
+  document.getElementById('sL').textContent=aR.filter(r=>r.estado==='listo').length;
+  document.getElementById('sE').textContent=aR.filter(r=>r.estado==='espera').length;
 }
 
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-//  ACCIONES
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-async function toggleCard(repId) {
-  const card = document.getElementById(`card-${repId}`);
-  const body = document.getElementById(`body-${repId}`);
-  const isOpen = card.classList.contains('open');
-  // close all
-  document.querySelectorAll('.repair-card.open').forEach(c=>c.classList.remove('open'));
-  if (!isOpen) {
-    card.classList.add('open');
-    await loadPasos(repId);
-  }
-}
+function setF(f,btn){fSt=f;document.querySelectorAll('.fbtn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderList();}
 
-async function loadPasos(repId) {
-  const container = document.getElementById(`steps-${repId}`);
-  try {
-    const pasos = await db('GET','pasos',`?reparacion_id=eq.${repId}&order=orden.asc`);
-    if (!pasos.length) {
-      container.innerHTML = `<div style="color:var(--text3);font-size:12px;text-align:center;padding:12px">Sin pasos todavía</div>`;
-      return;
-    }
-    const estados = { done:'✅', active:'🔧', pending:'⏳' };
-    container.innerHTML = pasos.map(p=>`
-      <div class="step-row">
-        <span class="step-estado">${estados[p.estado]||'•'}</span>
-        <span class="step-titulo">${p.titulo}${p.nota?` — <span style="color:var(--text3)">${p.nota}</span>`:''}</span>
-        <span class="step-fecha">${p.fecha||''}</span>
-        <button class="step-del" onclick="borrarPaso('${p.id}','${repId}')" title="Borrar paso">✕</button>
-      </div>`).join('');
-  } catch(e) {
-    container.innerHTML = `<div style="color:var(--red);font-size:12px">Error cargando pasos</div>`;
-  }
-}
-
-async function agregarPaso(repId) {
-  const titulo = document.getElementById(`stepTitulo-${repId}`).value.trim();
-  if (!titulo) { toast('Escribí un título para el paso', true); return; }
-  const estado = document.getElementById(`stepEstado-${repId}`).value;
-  const nota   = document.getElementById(`stepNota-${repId}`).value.trim();
-  const fecha  = document.getElementById(`stepFecha-${repId}`).value.trim();
-
-  // Get max orden
-  const existentes = await db('GET','pasos',`?reparacion_id=eq.${repId}&select=orden&order=orden.desc&limit=1`);
-  const orden = existentes?.length ? existentes[0].orden + 1 : 1;
-
-  await db('POST','pasos','',{ reparacion_id:repId, orden, titulo, estado, nota:nota||null, fecha:fecha||null, icono: estado==='done'?'check':estado==='active'?'wrench':'bell' });
-
-  document.getElementById(`stepTitulo-${repId}`).value = '';
-  document.getElementById(`stepNota-${repId}`).value   = '';
-  document.getElementById(`stepFecha-${repId}`).value  = '';
-  await loadPasos(repId);
-  toast('Paso agregado ✓');
-}
-
-async function borrarPaso(pasoId, repId) {
-  if (!confirm('¿Borrar este paso?')) return;
-  await db('DELETE','pasos',`?id=eq.${pasoId}`);
-  await loadPasos(repId);
-  toast('Paso borrado');
-}
-
-async function cambiarEstado(repId, nuevoEstado, btn) {
-  await db('PATCH','reparaciones',`?id=eq.${repId}`,{ estado: nuevoEstado });
-  // Update local data
-  const d = allData.find(x=>x.rep.id===repId);
-  if (d) d.rep.estado = nuevoEstado;
-  updateStats();
-  // Update UI badges
-  btn.closest('.status-btns').querySelectorAll('.status-opt').forEach(b=>{
-    b.className = 'status-opt';
+function renderList(){
+  const q=(document.getElementById('srch').value||'').toLowerCase();
+  let data=aR;
+  if(fSt!=='todos') data=data.filter(r=>r.estado===fSt);
+  if(q) data=data.filter(r=>{
+    const e=aE.find(x=>x.id===r.equipo_id)||{};
+    const c=aC.find(x=>x.id===e.cliente_id)||{};
+    return (c.nombre||'').toLowerCase().includes(q)||(e.nombre||'').toLowerCase().includes(q)||(r.numero||'').includes(q)||(r.problema||'').toLowerCase().includes(q);
   });
-  btn.classList.add('active-'+nuevoEstado);
-  const badge = document.querySelector(`#card-${repId} .sbadge`);
-  if (badge) {
-    badge.className = `sbadge sb-${nuevoEstado}`;
-    badge.innerHTML = `<span class="dot"></span>${ESTADO_LABELS[nuevoEstado]}`;
-  }
-  toast(`Estado cambiado a "${ESTADO_LABELS[nuevoEstado]}" ✓`);
+  if(!data.length){document.getElementById('rlist').innerHTML='<div class="empty">Sin reparaciones</div>';return;}
+  const LB={espera:'En espera',proceso:'En reparación',listo:'Listo para retirar',entregado:'Entregado'};
+  const IC={espera:'⏳',proceso:'🔧',listo:'✅',entregado:'📦'};
+  document.getElementById('rlist').innerHTML=data.map(r=>{
+    const e=aE.find(x=>x.id===r.equipo_id)||{};
+    const c=aC.find(x=>x.id===e.cliente_id)||{};
+    const tel=(c.telefono||'').replace(/\D/g,'');
+    const wm=encodeURIComponent(`Hola ${(c.nombre||'').split(' ')[0]}, te escribimos de PCLAF. Tu ${e.nombre||'equipo'} (#${r.numero}) está ${LB[r.estado]||r.estado}.`);
+    return `<div class="rc" id="c-${r.id}">
+      <div class="rch" onclick="togC('${r.id}')">
+        <div class="rcn">#${r.numero}</div>
+        <div class="rcd"><div class="rcdn">${e.icono||'💻'} ${e.nombre||'–'}</div><div class="rcdc">${c.nombre||'–'} · ${c.codigo||''}</div></div>
+        <div class="rcp">${r.problema||''}</div>
+        <span class="sb sb-${r.estado}" style="margin:0 9px"><span class="dot"></span>${LB[r.estado]||r.estado}</span>
+        <div class="rcch"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6l4 4 4-4"/></svg></div>
+      </div>
+      <div class="rcb" id="b-${r.id}">
+        <div class="bgrid">
+          <div class="bsec">
+            <h4>Cliente y equipo</h4>
+            <div class="cir"><span class="cil">Nombre</span><span class="civ">${c.nombre||'–'}</span></div>
+            <div class="cir"><span class="cil">Teléfono</span><span class="civ">${c.telefono||'–'}</span></div>
+            <div class="cir"><span class="cil">Código</span><span class="civ">${c.codigo||'–'}</span></div>
+            <div class="cir"><span class="cil">Equipo</span><span class="civ">${e.nombre||'–'}${e.modelo?' · '+e.modelo:''}</span></div>
+            <div class="cir"><span class="cil">Presupuesto</span>
+              <div style="display:flex;gap:5px">
+                <input class="prin" id="pr-${r.id}" value="${r.presupuesto||''}" placeholder="$0.000" style="width:95px"/>
+                <button class="smbtn" style="padding:5px 9px;font-size:11px" onclick="savePr('${r.id}')">✓</button>
+              </div>
+            </div>
+            ${tel?`<a class="wab" href="https://wa.me/54${tel}?text=${wm}" target="_blank">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+              WhatsApp a ${(c.nombre||'').split(' ')[0]||'cliente'}
+            </a>`:''}
+          </div>
+          <div class="bsec">
+            <h4>Cambiar estado</h4>
+            <div class="sgrid">
+              ${['espera','proceso','listo','entregado'].map(s=>`<div class="so ${r.estado===s?'a'+s[0]:''}" onclick="chEst('${r.id}','${s}',this)">${IC[s]} ${s.charAt(0).toUpperCase()+s.slice(1)}</div>`).join('')}
+            </div>
+          </div>
+          <div class="bsec" style="grid-column:1/-1">
+            <h4>Timeline de pasos</h4>
+            <div class="stl" id="st-${r.id}"><div style="color:var(--text3);font-size:12px;text-align:center;padding:8px">Cargando...</div></div>
+            <div class="sf">
+              <div class="sr2"><input class="sin" id="sti-${r.id}" placeholder="Título del paso"/><select class="sse" id="ses-${r.id}"><option value="done">✅ Hecho</option><option value="active">🔧 En curso</option><option value="pending">⏳ Pendiente</option></select></div>
+              <div class="sr2"><input class="sin" id="sno-${r.id}" placeholder="Nota (opcional)"/><input class="sin" id="sfe-${r.id}" placeholder="Fecha" style="max-width:110px"/><button class="smbtn" onclick="addPaso('${r.id}')">+ Paso</button></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
 }
 
-async function savePresup(repId) {
-  const val = document.getElementById(`presup-${repId}`).value.trim();
-  await db('PATCH','reparaciones',`?id=eq.${repId}`,{ presupuesto: val });
-  const d = allData.find(x=>x.rep.id===repId);
-  if (d) d.rep.presupuesto = val;
+async function togC(id){
+  const c=document.getElementById(`c-${id}`);
+  const was=c.classList.contains('open');
+  document.querySelectorAll('.rc.open').forEach(x=>x.classList.remove('open'));
+  if(!was){c.classList.add('open');await loadPasos(id);}
+}
+
+async function loadPasos(id){
+  const co=document.getElementById(`st-${id}`);
+  try{
+    const p=await db('GET','pasos',`?reparacion_id=eq.${id}&order=orden.asc`);
+    if(!p.length){co.innerHTML='<div style="color:var(--text3);font-size:12px;text-align:center;padding:8px">Sin pasos todavía</div>';return;}
+    const ei={done:'✅',active:'🔧',pending:'⏳'};
+    co.innerHTML=p.map(x=>`<div class="str"><span>${ei[x.estado]||'•'}</span><span class="stt">${x.titulo}${x.nota?` — <span style="color:var(--text3)">${x.nota}</span>`:''}</span><span class="std">${x.fecha||''}</span><button class="sdel" onclick="delPaso('${x.id}','${id}')">✕</button></div>`).join('');
+  }catch(e){co.innerHTML='<div style="color:var(--red);font-size:12px">Error</div>';}
+}
+
+async function addPaso(id){
+  const t=document.getElementById(`sti-${id}`).value.trim();
+  if(!t){toast('Escribí un título',true);return;}
+  const es=document.getElementById(`ses-${id}`).value;
+  const no=document.getElementById(`sno-${id}`).value.trim();
+  const fe=document.getElementById(`sfe-${id}`).value.trim();
+  const ex=await db('GET','pasos',`?reparacion_id=eq.${id}&select=orden&order=orden.desc&limit=1`);
+  const ord=ex?.length?ex[0].orden+1:1;
+  const ico=es==='done'?'check':es==='active'?'wrench':'bell';
+  await db('POST','pasos','',{reparacion_id:id,orden:ord,titulo:t,estado:es,nota:no||null,fecha:fe||null,icono:ico});
+  document.getElementById(`sti-${id}`).value='';document.getElementById(`sno-${id}`).value='';document.getElementById(`sfe-${id}`).value='';
+  await loadPasos(id);toast('Paso agregado ✓');
+}
+
+async function delPaso(pid,id){if(!confirm('¿Borrar?'))return;await db('DELETE','pasos',`?id=eq.${pid}`);await loadPasos(id);toast('Paso borrado');}
+
+async function chEst(id,st,btn){
+  await db('PATCH','reparaciones',`?id=eq.${id}`,{estado:st});
+  const d=aR.find(r=>r.id===id); if(d) d.estado=st;
+  updStats();
+  btn.closest('.sgrid').querySelectorAll('.so').forEach(b=>b.className='so');
+  btn.classList.add('a'+st[0]);
+  const b=document.querySelector(`#c-${id} .sb`);
+  const LB={espera:'En espera',proceso:'En reparación',listo:'Listo para retirar',entregado:'Entregado'};
+  if(b){b.className=`sb sb-${st}`;b.innerHTML=`<span class="dot"></span>${LB[st]}`;}
+  toast(`Estado → "${LB[st]}" ✓`);
+}
+
+async function savePr(id){
+  const v=document.getElementById(`pr-${id}`).value.trim();
+  await db('PATCH','reparaciones',`?id=eq.${id}`,{presupuesto:v});
+  const d=aR.find(r=>r.id===id);if(d) d.presupuesto=v;
   toast('Presupuesto guardado ✓');
 }
 
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-//  MODAL — Nueva reparación
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-function openModal()  { document.getElementById('modal').classList.add('open'); }
-function closeModal() { document.getElementById('modal').classList.remove('open'); }
+// MODAL — número automático
+async function openModal(){
+  document.getElementById('modal').classList.add('open');
+  document.getElementById('mNum').value='Calculando...';
+  try{
+    const reps=await db('GET','reparaciones','?select=numero&order=created_at.desc');
+    let max=0;
+    (reps||[]).forEach(r=>{const n=parseInt((r.numero||'').replace(/\D/g,''),10);if(!isNaN(n)&&n>max)max=n;});
+    document.getElementById('mNum').value=String(max+1).padStart(4,'0');
+  }catch(e){document.getElementById('mNum').value='';}
+}
+function closeModal(){document.getElementById('modal').classList.remove('open');}
 
-async function crearReparacion() {
-  const codigo     = document.getElementById('mCodigo').value.trim().toUpperCase();
-  const nombre     = document.getElementById('mNombre').value.trim();
-  const telefono   = document.getElementById('mTelefono').value.trim();
-  const equipo     = document.getElementById('mEquipo').value.trim();
-  const modelo     = document.getElementById('mModelo').value.trim();
-  const numero     = document.getElementById('mNumero').value.trim();
-  const problema   = document.getElementById('mProblema').value.trim();
-  const presupuesto= document.getElementById('mPresupuesto').value.trim();
-  const icono      = document.getElementById('mIcono').value;
+async function autoCliente(cod){
+  if(cod.length<3)return;
+  const res=await db('GET','clientes',`?codigo=eq.${cod}&limit=1`);
+  if(res?.length){document.getElementById('mNom').value=res[0].nombre||'';document.getElementById('mTel').value=res[0].telefono||'';}
+}
 
-  if (!codigo||!nombre||!equipo||!numero||!problema) { toast('Completá los campos obligatorios', true); return; }
-
-  try {
-    // 1. Crear o encontrar cliente
-    let clientes = await db('GET','clientes',`?codigo=eq.${codigo}`);
-    let clienteId;
-    if (clientes?.length) {
-      clienteId = clientes[0].id;
-    } else {
-      const nuevo = await db('POST','clientes','',{ codigo, nombre, telefono });
-      clienteId = nuevo[0].id;
-    }
-
-    // 2. Crear equipo
-    const equipoRes = await db('POST','equipos','',{ cliente_id: clienteId, nombre: equipo, modelo, icono });
-    const equipoId = equipoRes[0].id;
-
-    // 3. Crear reparación
-    await db('POST','reparaciones','',{ equipo_id: equipoId, numero, problema, presupuesto, estado: 'espera' });
-
-    toast('Reparación creada ✓');
+async function crearRep(){
+  const cod=document.getElementById('mCod').value.trim().toUpperCase();
+  const nom=document.getElementById('mNom').value.trim();
+  const tel=document.getElementById('mTel').value.trim();
+  const eq=document.getElementById('mEq').value.trim();
+  const mod=document.getElementById('mMod').value.trim();
+  const num=document.getElementById('mNum').value.trim();
+  const prob=document.getElementById('mProb').value.trim();
+  const pres=document.getElementById('mPres').value.trim();
+  const ico=document.getElementById('mIco').value;
+  if(!cod||!nom||!eq||!num||!prob){toast('Completá los campos obligatorios',true);return;}
+  try{
+    let clArr=await db('GET','clientes',`?codigo=eq.${cod}`);
+    let cid;
+    if(clArr?.length){cid=clArr[0].id;}
+    else{const nv=await db('POST','clientes','',{codigo:cod,nombre:nom,telefono:tel});cid=nv[0].id;}
+    const er=await db('POST','equipos','',{cliente_id:cid,nombre:eq,modelo:mod,icono:ico});
+    const rr=await db('POST','reparaciones','',{equipo_id:er[0].id,numero:num,problema:prob,presupuesto:pres,estado:'espera'});
+    const hoy=new Date().toLocaleDateString('es-AR',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+    await db('POST','pasos','',{reparacion_id:rr[0].id,orden:1,titulo:'Equipo ingresado',nota:`Comprobante #${num}. ${prob}`,estado:'done',fecha:hoy,icono:'check'});
+    toast(`Reparación #${num} creada ✓`);
     closeModal();
-    // Clear form
-    ['mCodigo','mNombre','mTelefono','mEquipo','mModelo','mNumero','mProblema','mPresupuesto'].forEach(id=>{
-      document.getElementById(id).value='';
-    });
+    ['mCod','mNom','mTel','mEq','mMod','mProb','mPres'].forEach(id=>document.getElementById(id).value='');
     await loadAll();
-  } catch(e) {
-    toast('Error: ' + (e.message||'revisá los datos'), true);
-  }
+  }catch(e){toast('Error: '+e.message,true);}
 }
 
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-//  TOAST
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-let toastTimer;
-function toast(msg, error=false) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.className = 'toast show' + (error?' error':'');
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(()=>t.className='toast', 3000);
+// MÉTRICAS
+let cPer='mes';
+const pm=v=>!v?0:parseFloat(v.replace(/[^0-9.,]/g,'').replace(',','.'))||0;
+
+function setP(p,btn){cPer=p;document.querySelectorAll('.pbtn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderMetrics();}
+
+function getFrom(p){
+  const now=new Date(),from=new Date();
+  const lb={semana:'Últimos 7 días',trimestre:'Últimos 3 meses',todo:'Todo el historial',mes:now.toLocaleDateString('es-AR',{month:'long',year:'numeric'}),anio:'Año '+now.getFullYear()};
+  document.getElementById('plbl').textContent=lb[p]||'';
+  switch(p){case'semana':from.setDate(now.getDate()-7);break;case'mes':from.setMonth(now.getMonth(),1);from.setHours(0,0,0,0);break;case'trimestre':from.setMonth(now.getMonth()-3);break;case'anio':from.setMonth(0,1);from.setHours(0,0,0,0);break;case'todo':from.setFullYear(2020);break;}
+  return from;
 }
 
-// Init
-if (sessionStorage.getItem('pclaf_admin')) loadAll();
-document.getElementById('loginPass').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+function renderMetrics(){
+  const from=getFrom(cPer);
+  const reps=aR.filter(r=>new Date(r.created_at)>=from);
+  const fact=reps.reduce((a,r)=>a+pm(r.presupuesto),0);
+  const entr=reps.filter(r=>r.estado==='entregado').length;
+  const prom=reps.length?fact/reps.length:0;
+  document.getElementById('kF').textContent=fact?'$'+fact.toLocaleString('es-AR'):'$0';
+  document.getElementById('kT').textContent=reps.length;
+  document.getElementById('kE').textContent=entr;
+  document.getElementById('kPr').textContent=prom?'$'+Math.round(prom).toLocaleString('es-AR'):'$0';
+  cI(reps);cE();cT(reps);cSv(reps);mTbl(reps);
+}
+
+function dC(id){if(mCh[id]){mCh[id].destroy();delete mCh[id];}}
+const co=(money=false)=>({responsive:true,plugins:{legend:{display:false},tooltip:{backgroundColor:'#1a1a1a',borderColor:'#333',borderWidth:1,titleColor:'#f0f0f0',bodyColor:'#999',callbacks:{label:c=>money?` $${Math.round(c.raw).toLocaleString('es-AR')}`:` ${c.raw}`}}},scales:{x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#555',font:{size:11}}},y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#555',font:{size:11},callback:v=>money?'$'+Math.round(v).toLocaleString('es-AR'):v}}}});
+
+function cI(reps){
+  const m={};reps.forEach(r=>{const d=new Date(r.created_at);const k=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;const l=d.toLocaleDateString('es-AR',{month:'short',year:'2-digit'});if(!m[k])m[k]={l,t:0};m[k].t+=pm(r.presupuesto);});
+  const s=Object.entries(m).sort(([a],[b])=>a.localeCompare(b));
+  dC('i');mCh.i=new Chart(document.getElementById('cI').getContext('2d'),{type:'bar',data:{labels:s.map(([,v])=>v.l),datasets:[{data:s.map(([,v])=>v.t),backgroundColor:'rgba(204,0,0,0.75)',borderColor:'#CC0000',borderWidth:1.5,borderRadius:5}]},options:co(true)});
+}
+function cE(){
+  const c={espera:0,proceso:0,listo:0,entregado:0};aR.forEach(r=>{if(c[r.estado]!==undefined)c[r.estado]++;});
+  dC('e');mCh.e=new Chart(document.getElementById('cE').getContext('2d'),{type:'doughnut',data:{labels:['En espera','En proceso','Listo','Entregado'],datasets:[{data:[c.espera,c.proceso,c.listo,c.entregado],backgroundColor:['#333','#f59e0b','#22c55e','#3b82f6'],borderColor:'#111',borderWidth:3}]},options:{responsive:true,cutout:'65%',plugins:{legend:{position:'bottom',labels:{color:'#888',font:{size:11},padding:10,boxWidth:11}}}}});
+}
+function cT(reps){
+  const w={};reps.forEach(r=>{const d=new Date(r.created_at);const mn=new Date(d);mn.setDate(d.getDate()-d.getDay()+1);const k=mn.toISOString().slice(0,10);const l=mn.toLocaleDateString('es-AR',{day:'numeric',month:'short'});if(!w[k])w[k]={l,n:0};w[k].n++;});
+  const s=Object.entries(w).sort(([a],[b])=>a.localeCompare(b)).slice(-12);
+  dC('t');mCh.t=new Chart(document.getElementById('cT').getContext('2d'),{type:'line',data:{labels:s.map(([,v])=>v.l),datasets:[{data:s.map(([,v])=>v.n),borderColor:'#f59e0b',backgroundColor:'rgba(245,158,11,0.07)',borderWidth:2,pointBackgroundColor:'#f59e0b',pointRadius:4,tension:0.3,fill:true}]},options:co(false)});
+}
+function cSv(reps){
+  const kw={'Formateo':/formato|formateo|windows|sistema/i,'Pasta térmica':/pasta|term[ié]rmica|temperatura|calor/i,'Limpieza':/limpieza|polvo|cooler/i,'Pantalla':/pantalla|display|screen/i,'GPU\/Placa':/gpu|placa|video|gr[aá]fico/i,'Teclado':/teclado|tecla/i,'Motherboard':/mother|placa madre|bios/i};
+  const c={};reps.forEach(r=>{let ok=false;for(const [n,re] of Object.entries(kw)){if(re.test(r.problema||'')){c[n]=(c[n]||0)+1;ok=true;break;}}if(!ok)c['Otros']=(c['Otros']||0)+1;});
+  const s=Object.entries(c).sort(([,a],[,b])=>b-a).slice(0,6);
+  dC('s');mCh.s=new Chart(document.getElementById('cS').getContext('2d'),{type:'bar',data:{labels:s.map(([k])=>k),datasets:[{data:s.map(([,v])=>v),backgroundColor:['#CC0000','#d43','#e55','#f66','#f88','#faa'].map(x=>x+'cc'),borderRadius:5,borderWidth:0}]},options:{...co(false),indexAxis:'y'}});
+}
+function mTbl(reps){
+  document.getElementById('tblCnt').textContent=reps.length+' registros';
+  if(!reps.length){document.getElementById('metTbl').innerHTML='<div class="empty">Sin datos</div>';return;}
+  const LB={espera:'En espera',proceso:'En reparación',listo:'Listo',entregado:'Entregado'};
+  const rows=reps.slice(0,25).map(r=>{const e=aE.find(x=>x.id===r.equipo_id)||{};const c=aC.find(x=>x.id===e.cliente_id)||{};const f=r.created_at?new Date(r.created_at).toLocaleDateString('es-AR',{day:'numeric',month:'short',year:'2-digit'}):'–';return`<tr><td class="tdm">#${r.numero}</td><td>${c.nombre||'–'}</td><td>${(e.icono||'💻')+' '+(e.nombre||'–')}</td><td>${r.problema||'–'}</td><td class="tdm tdg">${r.presupuesto||'–'}</td><td><span class="sb sb-${r.estado}">${LB[r.estado]||r.estado}</span></td><td style="color:var(--text3)">${f}</td></tr>`;}).join('');
+  document.getElementById('metTbl').innerHTML=`<table><thead><tr><th>#</th><th>Cliente</th><th>Equipo</th><th>Problema</th><th>Presupuesto</th><th>Estado</th><th>Fecha</th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+
+let tt;
+function toast(msg,err=false){const t=document.getElementById('toast');t.textContent=msg;t.className='toast show'+(err?' err':'');clearTimeout(tt);tt=setTimeout(()=>t.className='toast',3000);}
+
+if(sessionStorage.getItem('pclaf_a')) loadAll();
 </script>
 </body>
 </html>
