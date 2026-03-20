@@ -160,11 +160,7 @@ footer a:hover{color:var(--red);}
         Ver historial
       </button>
     </div>
-    <div class="demos-row">
-      <span class="demos-label">Demo →</span>
-      <span class="demo-chip" onclick="cargar('LUCAS01')">LUCAS01</span>
-      <span class="demo-chip" onclick="cargar('SOFIA22')">SOFIA22</span>
-    </div>
+    <div class="demos-row" style="display:none">
   </div>
 
   <div class="loading" id="loading">
@@ -278,12 +274,11 @@ function renderMachines(client, code) {
     <div class="client-card">
       <div class="client-avatar">${initials}</div>
       <div>
-        <div class="client-name">${client.nombre}</div>
-        <div class="client-meta">${client.telefono||''} · ${total} reparación${total!==1?'es':''}</div>
+        <div class="client-name">¡Bienvenido, ${client.nombre.split(' ')[0]}!</div>
+        <div class="client-meta">${total} equipo${total!==1?'s':''} registrado${total!==1?'s':''}</div>
       </div>
-      <div class="client-code-badge">${code}</div>
     </div>
-    <div class="section-label">Equipos — elegí uno para ver su historial</div>
+    <div class="section-label">Tus equipos — elegí uno para ver su historial</div>
     <div class="machine-grid">
       ${client.machines.map(m=>`
         <div class="machine-card" onclick="showMachine('${m.id}',event)">
@@ -331,10 +326,6 @@ async function showMachine(equipoId, evt) {
         <div class="repair-chevron"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6l4 4 4-4"/></svg></div>
       </div>
       <div class="repair-body">
-        <div class="repair-meta">
-          ${r.presupuesto?`<span class="meta-pill">Presupuesto: <strong>${r.presupuesto}</strong></span>`:''}
-          ${r.fecha_entrega?`<span class="meta-pill">Entrega: <strong>${r.fecha_entrega}</strong></span>`:''}
-        </div>
         <div class="mini-tl">${stepsHtml}</div>
       </div>
     </div>`;
