@@ -466,7 +466,18 @@ async function addPaso(id){
   const ico=es==='done'?'check':es==='active'?'wrench':'bell';
   await db('POST','pasos','',{reparacion_id:id,orden:ord,titulo:t,estado:es,nota:no||null,fecha:fe||null,icono:ico});
   document.getElementById(`sti-${id}`).value='';document.getElementById(`sno-${id}`).value='';document.getElementById(`sfe-${id}`).value='';
-  await loadPasos(id);toast('Paso agregado ✓');
+  await loadPasos(id);
+
+  // Ofrecer WA si hay nota
+  const rep=aR.find(r=>r.id===id);
+  const eq=aE.find(e=>e.id===rep?.equipo_id)||{};
+  const cl=aC.find(c=>c.id===eq.cliente_id)||{};
+  if(cl.telefono && no){
+    const msg=encodeURIComponent(`Hola ${cl.nombre?.split(' ')[0]||''}! Actualización de tu ${eq.nombre||'equipo'} (#${rep?.numero}): *${t}*${no?' — '+no:''}.`);
+    mostrarWA(cl.telefono, msg, 'Paso agregado ✓');
+  } else {
+    toast('Paso agregado ✓');
+  }
 }
 
 async function delPaso(pid,id){if(!confirm('¿Borrar?'))return;await db('DELETE','pasos',`?id=eq.${pid}`);await loadPasos(id);toast('Paso borrado');}
@@ -480,7 +491,26 @@ async function chEst(id,st,btn){
   const b=document.querySelector(`#c-${id} .sb`);
   const LB={espera:'En espera',proceso:'En reparación',listo:'Listo para retirar',entregado:'Entregado'};
   if(b){b.className=`sb sb-${st}`;b.innerHTML=`<span class="dot"></span>${LB[st]}`;}
-  toast(`Estado → "${LB[st]}" ✓`);
+
+  // WhatsApp automático según estado
+  const rep=aR.find(r=>r.id===id)||{};
+  const eq=aE.find(e=>e.id===rep.equipo_id)||{};
+  const cl=aC.find(c=>c.id===eq.cliente_id)||{};
+  if(cl.telefono){
+    const nombre=cl.nombre?.split(' ')[0]||'';
+    const equipo=eq.nombre||'tu equipo';
+    const num=rep.numero||'';
+    const msgs={
+      proceso:`Hola ${nombre}! 🔧 Tu ${equipo} (#${num}) ya está en reparación. Te avisamos en cuanto esté listo.`,
+      listo:`Hola ${nombre}! ✅ Tu ${equipo} (#${num}) está *listo para retirar*.\n\n📍 Campana 51, Floresta. Lun-Vie 10 a 19hs.\n\nTraé el comprobante. ¡Gracias!`,
+      entregado:`Hola ${nombre}! 📦 Confirmamos la entrega de tu ${equipo} (#${num}). ¡Gracias por elegirnos! Si tuviste algún problema no dudes en escribirnos.`,
+      espera:`Hola ${nombre}! ⏳ Tu ${equipo} (#${num}) está en espera. Te avisamos cuando arranquemos con la reparación.`,
+    };
+    if(msgs[st]) mostrarWA(cl.telefono, encodeURIComponent(msgs[st]), `Estado → "${LB[st]}" ✓`);
+    else toast(`Estado → "${LB[st]}" ✓`);
+  } else {
+    toast(`Estado → "${LB[st]}" ✓`);
+  }
 }
 
 async function savePr(id){
@@ -488,6 +518,17 @@ async function savePr(id){
   await db('PATCH','reparaciones',`?id=eq.${id}`,{presupuesto:v});
   const d=aR.find(r=>r.id===id);if(d) d.presupuesto=v;
   toast('Presupuesto guardado ✓');
+}
+
+// ── WhatsApp helper ──
+// Muestra un toast con botón para abrir WA directo
+function mostrarWA(telefono, msgEncoded, toastMsg){
+  const tel=telefono.replace(/\D/g,'');
+  const t=document.getElementById('toast');
+  t.innerHTML=`${toastMsg} &nbsp;<a href="https://wa.me/54${tel}?text=${msgEncoded}" target="_blank" style="color:#25d366;font-weight:700;text-decoration:none;border:1px solid #25d366;border-radius:5px;padding:2px 8px;margin-left:4px;">📱 Enviar WA</a>`;
+  t.className='toast show';
+  clearTimeout(tt);
+  tt=setTimeout(()=>{t.className='toast';t.innerHTML='';},8000);
 }
 
 // MODAL — número automático
@@ -529,10 +570,33 @@ async function crearRep(){
     const rr=await db('POST','reparaciones','',{equipo_id:er[0].id,numero:num,problema:prob,presupuesto:pres,estado:'espera'});
     const hoy=new Date().toLocaleDateString('es-AR',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
     await db('POST','pasos','',{reparacion_id:rr[0].id,orden:1,titulo:'Equipo ingresado',nota:`Comprobante #${num}. ${prob}`,estado:'done',fecha:hoy,icono:'check'});
-    toast(`Reparación #${num} creada ✓`);
+
     closeModal();
     ['mCod','mNom','mTel','mEq','mMod','mProb','mPres'].forEach(id=>document.getElementById(id).value='');
     await loadAll();
+
+    // WA de bienvenida con resumen completo
+    if(tel){
+      const telLimpio=tel.replace(/\D/g,'');
+      const nombre=nom.split(' ')[0];
+      const msg=encodeURIComponent(
+        `Hola ${nombre}! 👋 Te escribimos de *PCLAF - Servicio técnico*.\n\n` +
+        `✅ Recibimos tu equipo correctamente.\n\n` +
+        `📋 *Resumen de tu ingreso:*\n` +
+        `• Equipo: ${eq}${mod?' ('+mod+')':''}\n` +
+        `• Problema: ${prob}\n` +
+        `• N° de reparación: *#${num}*\n` +
+        `${pres?'• Presupuesto: '+pres+'\n':''}` +
+        `\n📍 Campana 51, Floresta. Lun-Vie 10 a 19hs.\n` +
+        `\nPodés seguir el estado de tu reparación en:\n` +
+        `🔗 https://www.pclaf.com.ar/historial.html\n` +
+        `(usá tu código: *${cod}*)\n\n` +
+        `Te avisamos cada novedad. ¡Gracias! 🙏`
+      );
+      mostrarWA(tel, msg, `Reparación #${num} creada ✓`);
+    } else {
+      toast(`Reparación #${num} creada ✓`);
+    }
   }catch(e){toast('Error: '+e.message,true);}
 }
 
