@@ -248,10 +248,11 @@ tr:hover td{background:var(--black3);}
     <div class="logo-wm">PC<em>LAF</em></div>
     <div class="abadge">ADMIN</div>
     <div class="tabs">
-      <div class="tab active" onclick="switchTab('rep',this)">Reparaciónes</div>
+      <div class="tab active" onclick="switchTab('rep',this)">Reparaciones</div>
       <div class="tab" onclick="switchTab('turnos',this)">Turnos</div>
       <div class="tab" onclick="switchTab('agenda',this)">Agenda</div>
       <div class="tab" onclick="switchTab('met',this)">Métricas</div>
+      <div class="tab" onclick="switchTab('tools',this)">Herramientas</div>
     </div>
     <div class="tr">
       <a class="ibtn" href="index.html" target="_blank">Web ↗</a>
@@ -308,7 +309,7 @@ tr:hover td{background:var(--black3);}
         <div class="cc"><div class="ct">Servicios más pedidos</div><div class="cs">Top por tipo de problema</div><canvas id="cS" height="160"></canvas></div>
       </div>
       <div class="tblc">
-        <div class="tblh"><div class="tblt">Reparaciónes del período</div><span style="font-family:var(--mono);font-size:11px;color:var(--text3)" id="tblCnt"></span></div>
+        <div class="tblh"><div class="tblt">Reparaciones del período</div><span style="font-family:var(--mono);font-size:11px;color:var(--text3)" id="tblCnt"></span></div>
         <div id="metTbl"><div class="empty"><div class="spinner"></div></div></div>
       </div>
     </div>
@@ -343,6 +344,126 @@ tr:hover td{background:var(--black3);}
       </div>
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;" id="agendaGrid">
         <div class="empty" style="grid-column:1/-1"><div class="spinner"></div>Cargando...</div>
+      </div>
+    <!-- ── HERRAMIENTAS ── -->
+    <div class="view" id="view-tools">
+      <div style="max-width:780px;">
+        <div style="font-size:20px;font-weight:700;color:#fff;margin-bottom:4px;">Herramientas del taller</div>
+        <div style="font-size:12px;color:var(--text3);margin-bottom:24px;">Scripts de diagnóstico — descargalos o ejecutalos directo en la PC del cliente</div>
+
+        <!-- Reporte TÉCNICO -->
+        <div style="background:var(--black2);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:12px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+            <div style="flex:1;min-width:200px;">
+              <div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:4px;">🔧 Reporte técnico</div>
+              <div style="font-size:12px;color:var(--text2);margin-bottom:10px;line-height:1.6;">Hardware completo, SMART, procesos, eventos críticos, seriales, registro. Solo para vos.</div>
+              <div style="background:var(--black3);border:1px solid var(--border);border-radius:7px;padding:10px;display:flex;align-items:center;gap:8px;">
+                <code id="cmdTec" style="flex:1;font-family:var(--mono);font-size:11px;color:var(--red);background:none;border:none;word-break:break-all;">https://raw.githubusercontent.com/LucasAFurno/pclaf-reporte/main/DiagnosticoPC_Tecnico.cmd</code>
+                <button onclick="copiarCmd('cmdTec')" style="flex-shrink:0;background:var(--black4);border:1px solid var(--border2);color:var(--text2);padding:5px 10px;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;">📋 Copiar</button>
+              </div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:8px;flex-shrink:0;">
+              <a href="https://raw.githubusercontent.com/LucasAFurno/pclaf-reporte/main/DiagnosticoPC_Tecnico.cmd" download="DiagnosticoPC_Tecnico.cmd" style="display:inline-flex;align-items:center;gap:6px;background:var(--red);color:#fff;padding:9px 16px;border-radius:8px;font-size:13px;font-weight:700;text-decoration:none;white-space:nowrap;">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                Descargar
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Reporte CLIENTE -->
+        <div style="background:var(--black2);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:12px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+            <div style="flex:1;min-width:200px;">
+              <div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:4px;">👤 Reporte cliente</div>
+              <div style="font-size:12px;color:var(--text2);margin-bottom:10px;line-height:1.6;">Versión simplificada sin datos sensibles. El cliente lo ve desde su historial en la web.</div>
+              <div style="background:var(--black3);border:1px solid var(--border);border-radius:7px;padding:10px;display:flex;align-items:center;gap:8px;">
+                <code id="cmdCli" style="flex:1;font-family:var(--mono);font-size:11px;color:var(--green);background:none;border:none;word-break:break-all;">https://raw.githubusercontent.com/LucasAFurno/pclaf-reporte/main/DiagnosticoPC_Cliente.cmd</code>
+                <button onclick="copiarCmd('cmdCli')" style="flex-shrink:0;background:var(--black4);border:1px solid var(--border2);color:var(--text2);padding:5px 10px;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;">📋 Copiar</button>
+              </div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:8px;flex-shrink:0;">
+              <a href="https://raw.githubusercontent.com/LucasAFurno/pclaf-reporte/main/DiagnosticoPC_Cliente.cmd" download="DiagnosticoPC_Cliente.cmd" style="display:inline-flex;align-items:center;gap:6px;background:var(--green);color:#111;padding:9px 16px;border-radius:8px;font-size:13px;font-weight:700;text-decoration:none;white-space:nowrap;">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                Descargar
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Script PS1 directo -->
+        <div style="background:var(--black2);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:12px;">
+          <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:8px;">⚡ Script PowerShell directo</div>
+          <div style="font-size:12px;color:var(--text2);margin-bottom:10px;">Abrí PowerShell como admin en la PC del cliente y pegá:</div>
+          <div style="background:var(--black3);border:1px solid var(--border);border-radius:7px;padding:10px;display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+            <code id="cmdPS" style="flex:1;font-family:var(--mono);font-size:11px;color:var(--amber);background:none;border:none;word-break:break-all;">irm https://raw.githubusercontent.com/LucasAFurno/pclaf-reporte/main/DiagnosticoPC.ps1 | iex</code>
+            <button onclick="copiarCmd('cmdPS')" style="flex-shrink:0;background:var(--black4);border:1px solid var(--border2);color:var(--text2);padding:5px 10px;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;">📋 Copiar</button>
+          </div>
+          <div style="font-size:11px;color:var(--text3);">El script se descarga y ejecuta en el momento — sin pendrive, sin instalar nada.</div>
+        </div>
+
+        <!-- Marcar equipo -->
+        <div style="background:var(--black2);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:12px;">
+          <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:6px;">🔖 Verificar historial PCLAF en la PC</div>
+          <div style="font-size:12px;color:var(--text2);margin-bottom:10px;">Para ver si el equipo ya pasó por el taller:</div>
+          <div style="background:var(--black3);border:1px solid var(--border);border-radius:7px;padding:10px;display:flex;align-items:center;gap:8px;">
+            <code id="cmdVerif" style="flex:1;font-family:var(--mono);font-size:11px;color:var(--blue);background:none;border:none;">reg query HKLM\SOFTWARE\PCLAF\Historial</code>
+            <button onclick="copiarCmd('cmdVerif')" style="flex-shrink:0;background:var(--black4);border:1px solid var(--border2);color:var(--text2);padding:5px 10px;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;">📋 Copiar</button>
+          </div>
+        </div>
+
+        <!-- Instrucciones -->
+        <div style="background:rgba(59,130,246,0.06);border:1px solid rgba(59,130,246,0.2);border-radius:10px;padding:16px;">
+          <div style="font-size:13px;font-weight:600;color:var(--blue);margin-bottom:8px;">💡 Flujo de trabajo recomendado</div>
+          <ol style="font-size:12px;color:var(--text2);line-height:2.2;padding-left:18px;">
+            <li>Corrés <strong style="color:#fff">DiagnosticoPC_Tecnico.cmd</strong> al recibir el equipo</li>
+            <li>Corrés <strong style="color:#fff">DiagnosticoPC_Cliente.cmd</strong> al entregar el equipo</li>
+            <li>Subís ambos HTML desde el admin → reparación → botón azul</li>
+            <li>El cliente ve su reporte desde el historial en <strong style="color:#fff">pclaf.com.ar</strong></li>
+          </ol>
+        </div>
+      </div>
+    </div>
+
+        <!-- Script marcado de equipo -->
+        <div style="background:var(--black2);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:14px;">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap;">
+            <div style="flex:1;min-width:200px;">
+              <div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:4px;">🔖 Marcar equipo reparado</div>
+              <div style="font-size:13px;color:var(--text2);margin-bottom:12px;line-height:1.6;">Deja una marca en el registro de Windows con el número de reparación, fecha y técnico. Sirve como evidencia de que el equipo pasó por PCLAF.</div>
+              <div style="background:var(--black3);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:12px;">
+                <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;">Comando — reemplazá 0000 con el número de reparación:</div>
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <code id="cmdMarca" style="flex:1;font-family:var(--mono);font-size:12px;color:var(--amber);background:none;border:none;word-break:break-all;">irm https://raw.githubusercontent.com/LucasAFurno/pclaf-reporte/main/marcar.ps1 | iex</code>
+                  <button onclick="copiarCmd('cmdMarca')" style="flex-shrink:0;background:var(--black4);border:1px solid var(--border2);color:var(--text2);padding:6px 12px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap;" onmouseover="this.style.borderColor='var(--amber)';this.style.color='var(--amber)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--text2)'">📋 Copiar</button>
+                </div>
+              </div>
+              <div style="background:var(--black3);border:1px solid var(--border);border-radius:8px;padding:12px;">
+                <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;">Para verificar en cualquier momento:</div>
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <code id="cmdVerif" style="flex:1;font-family:var(--mono);font-size:12px;color:var(--blue);background:none;border:none;">reg query HKLM\SOFTWARE\PCLAF\Historial</code>
+                  <button onclick="copiarCmd('cmdVerif')" style="flex-shrink:0;background:var(--black4);border:1px solid var(--border2);color:var(--text2);padding:6px 12px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap;" onmouseover="this.style.borderColor='var(--blue)';this.style.color='var(--blue)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--text2)'">📋 Copiar</button>
+                </div>
+              </div>
+            </div>
+            <a href="https://raw.githubusercontent.com/LucasAFurno/pclaf-reporte/main/marcar.ps1" download="PCLAF_Marcar_Equipo.ps1" style="flex-shrink:0;display:inline-flex;align-items:center;gap:7px;background:var(--black3);border:1.5px solid var(--border2);color:var(--text2);padding:10px 18px;border-radius:8px;font-size:13px;font-weight:700;text-decoration:none;white-space:nowrap;transition:all .15s;" onmouseover="this.style.borderColor='var(--amber)';this.style.color='var(--amber)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--text2)'">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              Descargar script
+            </a>
+          </div>
+        </div>
+
+        <!-- Instrucciones -->
+        <div style="background:rgba(59,130,246,0.06);border:1px solid rgba(59,130,246,0.2);border-radius:10px;padding:16px;">
+          <div style="font-size:13px;font-weight:600;color:var(--blue);margin-bottom:8px;">💡 Cómo usar desde cualquier PC</div>
+          <ol style="font-size:12px;color:var(--text2);line-height:2;padding-left:18px;">
+            <li>Abrí <strong style="color:#fff">PowerShell como Administrador</strong> en la PC del cliente</li>
+            <li>Copiás el comando con el botón 📋 y lo pegás en PowerShell</li>
+            <li>El script se descarga y ejecuta solo — sin pendrive, sin instalar nada</li>
+            <li>Al terminar genera el HTML del reporte en el escritorio</li>
+            <li>Volvés al admin → abrís la reparación → <strong style="color:#fff">Subir reporte de diagnóstico</strong></li>
+          </ol>
+        </div>
       </div>
     </div>
 
@@ -463,6 +584,7 @@ function switchTab(name,btn){
   if(name==='met') renderMetrics();
   if(name==='turnos') loadTurnos();
   if(name==='agenda') renderAgenda();
+  if(name==='tools') renderTools();
 }
 
 // DATA
@@ -1265,45 +1387,92 @@ function subirReporte(repId) {
   document.getElementById(`reporteInput-${repId}`).click();
 }
 
+// ── GENERAR VERSIÓN CLIENTE DEL REPORTE (sin datos sensibles) ──
+function generarReporteCliente(fullHtml) {
+  // Parse and remove sensitive sections
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(fullHtml, 'text/html');
+  
+  // Remove sensitive sections by heading text
+  const sensitiveSections = [
+    'Programas de Inicio',
+    'Eventos Críticos',
+    'Eventos Criticos',
+    'Top Procesos',
+    'Seguridad Basica',
+    'Seguridad Básica',
+    'Windows Update',
+    'TRIM SSD',
+  ];
+  
+  doc.querySelectorAll('section').forEach(sec => {
+    const h2 = sec.querySelector('h2');
+    if (h2 && sensitiveSections.some(s => h2.textContent.includes(s))) {
+      sec.remove();
+    }
+  });
+  
+  // Remove serial numbers from tables (replace with masked version)
+  doc.querySelectorAll('td').forEach(td => {
+    const text = td.textContent;
+    // Mask MAC addresses
+    if (/^([0-9A-Fa-f]{2}[-:]){5}[0-9A-Fa-f]{2}$/.test(text.trim())) {
+      td.textContent = '**:**:**:**:**:**';
+    }
+    // Mask Windows serial
+    if (/^\d{5}-\d{5}-\d{5}-[A-Z0-9]{5}$/.test(text.trim())) {
+      td.textContent = '•••••-•••••-•••••-•••••';
+    }
+  });
+  
+  // Add "Reporte para el cliente" header
+  const body = doc.querySelector('body');
+  if (body) {
+    const notice = doc.createElement('div');
+    notice.style.cssText = 'background:#1a1a2e;border:1px solid #333;border-radius:8px;padding:12px 16px;margin:16px;font-size:12px;color:#888;text-align:center;';
+    notice.textContent = 'Reporte de diagnóstico generado por PCLAF · Algunos datos técnicos han sido omitidos en esta versión';
+    body.insertBefore(notice, body.firstChild);
+  }
+  
+  return '<!DOCTYPE html>' + doc.documentElement.outerHTML;
+}
+
 async function procesarReporte(repId, input) {
   const file = input.files[0];
   if (!file) return;
   const status = document.getElementById(`reporteStatus-${repId}`);
   status.style.display = 'block';
-  status.textContent = 'Subiendo reporte...';
+  status.textContent = 'Procesando reporte...';
   status.style.color = 'var(--amber)';
   
   const reader = new FileReader();
   reader.onload = async (e) => {
-    // Clean null bytes, BOM and problematic unicode sequences
     let htmlContent = e.target.result;
-    htmlContent = htmlContent.replace(/\u0000/g, '')  // null bytes
-                             .replace(/\uFEFF/g, '')  // BOM
-                             .replace(/\x00/g, '')    // more null bytes
-                             .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, ''); // control chars
+    // Clean null bytes, BOM and control characters
+    htmlContent = htmlContent.replace(/\u0000/g,'').replace(/\uFEFF/g,'')
+                             .replace(/\x00/g,'').replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g,'');
+    
+    // Generate simplified CLIENT version — remove sensitive sections
+    const clientHtml = generarReporteCliente(htmlContent);
+    
     try {
-      // Check if report already exists for this repair
-      const existing = await db('GET', 'reportes', `?reparacion_id=eq.${repId}&limit=1`);
+      const existing = await db('GET','reportes',`?reparacion_id=eq.${repId}&limit=1`);
+      const payload = {
+        reparacion_id: repId,
+        html_content: htmlContent,        // full technical report (admin only)
+        html_cliente: clientHtml,          // simplified client report
+        filename: file.name
+      };
       if (existing?.length) {
-        // Update existing
-        await db('PATCH', 'reportes', `?id=eq.${existing[0].id}`, {
-          html_content: htmlContent,
-          filename: file.name,
-          created_at: new Date().toISOString()
-        });
+        await db('PATCH','reportes',`?id=eq.${existing[0].id}`,payload);
       } else {
-        // Insert new
-        await db('POST', 'reportes', '', {
-          reparacion_id: repId,
-          html_content: htmlContent,
-          filename: file.name
-        });
+        await db('POST','reportes','',payload);
       }
-      status.textContent = '✓ Reporte subido — el cliente puede verlo en su historial';
+      status.textContent = '✓ Reporte subido (técnico + versión cliente)';
       status.style.color = 'var(--green)';
       toast('Reporte subido ✓');
     } catch(e) {
-      status.textContent = 'Error al subir el reporte';
+      status.textContent = 'Error: ' + e.message;
       status.style.color = 'var(--red)';
       toast('Error: ' + e.message, true);
     }
@@ -1311,6 +1480,74 @@ async function procesarReporte(repId, input) {
   reader.readAsText(file, 'UTF-8');
   input.value = '';
 }
+
+function generarReporteCliente(fullHtml) {
+  // Parse the full HTML and remove sensitive sections
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(fullHtml, 'text/html');
+  
+  // Sections to HIDE from client (sensitive technical data)
+  const sensitiveTitles = [
+    'Top Procesos por Consumo',
+    'Programas de Inicio', 
+    'Eventos Criticos',
+    'Seguridad Basica',
+    'Windows Update',
+    'Red',           // has MAC addresses
+    'TRIM SSD',
+    'Tiempo de Arranque',
+  ];
+  
+  // Remove sensitive sections
+  doc.querySelectorAll('section').forEach(sec => {
+    const h2 = sec.querySelector('h2');
+    if (h2 && sensitiveTitles.some(t => h2.textContent.includes(t))) {
+      sec.remove();
+    }
+  });
+  
+  // Remove serial numbers from tables (replace with ---)
+  doc.querySelectorAll('td').forEach(td => {
+    const text = td.textContent.trim();
+    // Serial number patterns: long hex strings, UUID-like, etc
+    if (/^[A-F0-9]{8,}$/i.test(text) || 
+        /^[0-9A-F]{2}[-:][0-9A-F]{2}/i.test(text) || // MAC
+        /\\\\/.test(text) ||  // Windows paths
+        /BANK [0-9]/.test(text) === false && text.length > 20 && /^[A-Z0-9_\-\.]+$/.test(text)) {
+      // Keep but mask: show first 4 chars + ***
+      if (text.length > 8) td.textContent = text.substring(0,4) + '•••';
+    }
+  });
+  
+  // Add PCLAF client header note
+  const hero = doc.querySelector('.hero');
+  if (hero) {
+    const note = doc.createElement('div');
+    note.style.cssText = 'background:rgba(204,0,0,0.1);border:1px solid rgba(204,0,0,0.3);border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:13px;color:#ff6b6b;';
+    note.innerHTML = '📋 <strong>Reporte para el cliente</strong> — Resumen técnico de tu equipo generado por PCLAF. Algunos datos técnicos sensibles han sido omitidos.';
+    hero.prepend(note);
+  }
+  
+  return '<!DOCTYPE html>' + doc.documentElement.outerHTML;
+}
+
+function copiarCmd(elementId) {
+  const text = document.getElementById(elementId).textContent.trim();
+  navigator.clipboard.writeText(text).then(() => {
+    toast('Comando copiado ✓');
+  }).catch(() => {
+    // Fallback
+    const el = document.getElementById(elementId);
+    const range = document.createRange();
+    range.selectNode(el);
+    window.getSelection().removeAllRanges();
+    window.getSelection().addRange(range);
+    document.execCommand('copy');
+    toast('Comando copiado ✓');
+  });
+}
+
+function renderTools() {} // nothing to load async
 
 let tt;
 function toast(msg,err=false){const t=document.getElementById('toast');t.textContent=msg;t.className='toast show'+(err?' err':'');clearTimeout(tt);tt=setTimeout(()=>t.className='toast',3000);}
