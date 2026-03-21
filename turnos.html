@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pedir turno — PCLAF Servicio técnico Floresta</title>
+<meta name="description" content="Pedí tu turno online para service técnico de PC y notebook en PCLAF, Floresta CABA. Elegí día y horario, sin llamadas.">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800;900&family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --red:#CC0000;--red-dark:#a80000;
+  --black:#080808;--black2:#0f0f0f;--black3:#161616;--black4:#1e1e1e;
+  --border:#252525;--border2:#333;
+  --text:#f0f0f0;--text2:#888;--text3:#444;
+  --green:#22c55e;--green-dim:rgba(34,197,94,0.1);
+  --amber:#f59e0b;
+  --display:'Barlow Condensed',sans-serif;
+  --body:'Barlow',sans-serif;
+  --mono:'JetBrains Mono',monospace;
+}
+body{background:var(--black);color:var(--text);font-family:var(--body);min-height:100vh;}
+
+nav{background:var(--black2);border-bottom:2px solid var(--red);padding:0 24px;height:60px;display:flex;align-items:center;gap:12px;}
+.nav-logo{display:flex;align-items:center;gap:10px;text-decoration:none;}
+.logo-wm{font-family:var(--display);font-size:18px;font-weight:800;color:#fff;}
+.logo-wm em{color:var(--red);font-style:normal;}
+.nav-back{font-size:12px;color:var(--text3);text-decoration:none;margin-left:auto;transition:color .15s;}
+.nav-back:hover{color:var(--text2);}
+
+.hero{max-width:700px;margin:0 auto;padding:48px 24px 32px;text-align:center;}
+.hero-eyebrow{font-family:var(--mono);font-size:11px;color:var(--red);letter-spacing:.14em;text-transform:uppercase;margin-bottom:12px;}
+.hero h1{font-family:var(--display);font-size:clamp(32px,6vw,56px);font-weight:900;color:#fff;line-height:1;margin-bottom:14px;}
+.hero h1 span{color:var(--red);}
+.hero p{font-size:15px;color:var(--text2);line-height:1.65;max-width:480px;margin:0 auto;}
+
+.main{max-width:700px;margin:0 auto;padding:0 24px 80px;}
+
+/* STEPS */
+.steps-row{display:flex;gap:8px;margin-bottom:32px;flex-wrap:wrap;}
+.step-pill{display:flex;align-items:center;gap:8px;background:var(--black2);border:1px solid var(--border);border-radius:30px;padding:8px 14px;font-size:13px;color:var(--text2);}
+.step-pill.active{border-color:var(--red);color:#fff;background:var(--red-dim, rgba(204,0,0,0.08));}
+.step-pill.done{border-color:var(--green);color:var(--green);}
+.step-num{font-family:var(--mono);font-size:11px;font-weight:600;width:18px;height:18px;border-radius:50%;background:var(--border2);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.step-pill.active .step-num{background:var(--red);color:#fff;}
+.step-pill.done .step-num{background:var(--green);color:#111;}
+
+/* PANELS */
+.panel{display:none;}
+.panel.active{display:block;}
+
+/* SERVICIO SELECTOR */
+.service-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:24px;}
+.srv-card{background:var(--black2);border:2px solid var(--border);border-radius:12px;padding:16px;cursor:pointer;transition:all .15s;}
+.srv-card:hover{border-color:var(--border2);}
+.srv-card.selected{border-color:var(--red);background:rgba(204,0,0,0.06);}
+.srv-icon{font-size:24px;margin-bottom:8px;}
+.srv-name{font-size:14px;font-weight:600;color:#fff;margin-bottom:3px;}
+.srv-price{font-family:var(--mono);font-size:12px;color:var(--red);}
+
+/* CALENDAR */
+.cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.cal-month{font-family:var(--display);font-size:18px;font-weight:700;color:#fff;text-transform:capitalize;}
+.cal-nav{background:var(--black3);border:1px solid var(--border2);border-radius:6px;padding:6px 12px;font-size:13px;color:var(--text2);cursor:pointer;transition:all .15s;}
+.cal-nav:hover{border-color:var(--red);color:var(--red);}
+.cal-days-header{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:4px;}
+.cal-day-name{text-align:center;font-family:var(--mono);font-size:10px;color:var(--text3);padding:4px;}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:20px;}
+.cal-cell{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:8px;font-size:13px;color:var(--text3);cursor:default;}
+.cal-cell.this-month{color:var(--text2);}
+.cal-cell.available{color:#fff;cursor:pointer;background:var(--black2);border:1px solid var(--border);transition:all .15s;}
+.cal-cell.available:hover{border-color:var(--red);color:var(--red);}
+.cal-cell.selected-day{background:var(--red);color:#fff;border-color:var(--red);}
+.cal-cell.past{opacity:.3;cursor:default;}
+.cal-cell.today{border:1px solid var(--amber);}
+
+/* HORARIOS */
+.horarios-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:24px;}
+.hora-btn{background:var(--black2);border:1.5px solid var(--border);border-radius:8px;padding:11px;font-family:var(--mono);font-size:13px;color:var(--text2);cursor:pointer;text-align:center;transition:all .15s;}
+.hora-btn:hover{border-color:var(--border2);color:#fff;}
+.hora-btn.selected{border-color:var(--red);color:#fff;background:rgba(204,0,0,0.08);}
+.hora-btn.ocupado{opacity:.35;cursor:not-allowed;text-decoration:line-through;}
+
+/* FORM */
+.form-group{margin-bottom:14px;}
+.f-lbl{font-size:12px;font-weight:600;color:var(--text3);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em;}
+.f-in{width:100%;background:var(--black3);border:1.5px solid var(--border2);border-radius:8px;padding:12px 16px;font-size:14px;color:var(--text);outline:none;transition:border-color .2s;font-family:var(--body);}
+.f-in:focus{border-color:var(--red);}
+.f-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+textarea.f-in{resize:none;height:80px;}
+
+/* BUTTONS */
+.btn-primary{width:100%;background:var(--red);border:none;border-radius:8px;padding:14px;font-family:var(--display);font-size:18px;font-weight:800;color:#fff;cursor:pointer;letter-spacing:.04em;text-transform:uppercase;transition:background .15s;margin-top:8px;}
+.btn-primary:hover{background:var(--red-dark);}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed;}
+.btn-sec{background:var(--black3);border:1px solid var(--border2);border-radius:8px;padding:11px 20px;font-size:13px;font-weight:600;color:var(--text2);cursor:pointer;transition:all .15s;}
+.btn-sec:hover{border-color:var(--border);color:var(--text);}
+
+/* RESUMEN */
+.resumen-box{background:var(--black2);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:20px;}
+.res-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(37,37,37,.5);}
+.res-row:last-child{border-bottom:none;}
+.res-lbl{font-size:13px;color:var(--text3);}
+.res-val{font-size:14px;font-weight:600;color:#fff;}
+
+/* CONFIRM */
+.confirm-screen{text-align:center;padding:40px 20px;}
+.confirm-icon{font-size:64px;margin-bottom:20px;}
+.confirm-title{font-family:var(--display);font-size:32px;font-weight:900;color:#fff;margin-bottom:10px;}
+.confirm-sub{font-size:15px;color:var(--text2);line-height:1.65;margin-bottom:28px;}
+.confirm-code{font-family:var(--mono);font-size:22px;color:var(--green);background:var(--green-dim);border:1px solid rgba(34,197,94,.2);border-radius:8px;padding:12px 24px;display:inline-block;margin-bottom:24px;}
+
+/* MISC */
+.section-title-sm{font-family:var(--display);font-size:22px;font-weight:800;color:#fff;margin-bottom:4px;}
+.section-sub{font-size:13px;color:var(--text3);margin-bottom:18px;}
+.nav-btns{display:flex;gap:8px;margin-top:16px;}
+.notice{background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);border-radius:8px;padding:12px 16px;font-size:13px;color:var(--amber);margin-bottom:20px;}
+
+@media(max-width:480px){
+  .service-grid{grid-template-columns:1fr;}
+  .horarios-grid{grid-template-columns:repeat(3,1fr);}
+  .f-row{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="index.html">
+    <svg width="36" height="36" viewBox="0 0 42 42" style="border-radius:4px;overflow:hidden;flex-shrink:0">
+      <rect x="0" y="0" width="42" height="22" fill="#CC0000"/>
+      <rect x="0" y="22" width="42" height="20" fill="#111"/>
+      <text x="21" y="19" text-anchor="middle" font-family="Arial Black,sans-serif" font-weight="900" font-size="18" fill="white">PC</text>
+      <text x="21" y="38" text-anchor="middle" font-family="Arial Black,sans-serif" font-weight="900" font-size="14" fill="white">LAF</text>
+    </svg>
+    <div class="logo-wm">PC<em>LAF</em></div>
+  </a>
+  <a class="nav-back" href="index.html">← Volver</a>
+</nav>
+
+<div class="hero">
+  <div class="hero-eyebrow">Floresta, CABA · Lunes a Viernes</div>
+  <h1>Pedí tu <span>turno</span></h1>
+  <p>Elegí el día y horario que mejor te quede. Te confirmamos por WhatsApp.</p>
+</div>
+
+<div class="main">
+
+  <!-- STEPS INDICATOR -->
+  <div class="steps-row" id="stepsRow">
+    <div class="step-pill active" id="sp1"><div class="step-num">1</div>Servicio</div>
+    <div class="step-pill" id="sp2"><div class="step-num">2</div>Día y horario</div>
+    <div class="step-pill" id="sp3"><div class="step-num">3</div>Tus datos</div>
+    <div class="step-pill" id="sp4"><div class="step-num">4</div>Confirmar</div>
+  </div>
+
+  <!-- PASO 1 — SERVICIO -->
+  <div class="panel active" id="panel1">
+    <div class="section-title-sm">¿Qué necesitás?</div>
+    <div class="section-sub">Seleccioná el tipo de servicio</div>
+    <div class="service-grid" id="serviceGrid">
+      <div class="srv-card" onclick="selServicio(this,'Limpieza + pasta térmica','desde $70.000')">
+        <div class="srv-icon">🧹</div>
+        <div class="srv-name">Limpieza + pasta térmica</div>
+        <div class="srv-price">desde $70.000</div>
+      </div>
+      <div class="srv-card" onclick="selServicio(this,'Formateo PC / Notebook','desde $70.000')">
+        <div class="srv-icon">💾</div>
+        <div class="srv-name">Formateo PC / Notebook</div>
+        <div class="srv-price">desde $70.000</div>
+      </div>
+      <div class="srv-card" onclick="selServicio(this,'Service general','desde $70.000')">
+        <div class="srv-icon">🖥️</div>
+        <div class="srv-name">Service general</div>
+        <div class="srv-price">desde $70.000</div>
+      </div>
+      <div class="srv-card" onclick="selServicio(this,'Instalación de Windows / Software','desde $22.000')">
+        <div class="srv-icon">🪟</div>
+        <div class="srv-name">Windows / Software</div>
+        <div class="srv-price">desde $22.000</div>
+      </div>
+      <div class="srv-card" onclick="selServicio(this,'Service GPU / Placa de video','desde $70.000')">
+        <div class="srv-icon">🎮</div>
+        <div class="srv-name">Service GPU / PC Gamer</div>
+        <div class="srv-price">consultar</div>
+      </div>
+      <div class="srv-card" onclick="selServicio(this,'Diagnóstico','Gratis con service')">
+        <div class="srv-icon">🔍</div>
+        <div class="srv-name">Diagnóstico</div>
+        <div class="srv-price">Gratis con service</div>
+      </div>
+    </div>
+    <button class="btn-primary" id="btnNext1" disabled onclick="goTo(2)">Elegir día y horario →</button>
+  </div>
+
+  <!-- PASO 2 — FECHA Y HORA -->
+  <div class="panel" id="panel2">
+    <div class="section-title-sm">Elegí el día</div>
+    <div class="section-sub">Lunes a Viernes de 10 a 19hs</div>
+    <div class="notice">📍 Campana 51, Floresta. Trabajamos por turnos — llegá en el horario que elijas.</div>
+
+    <div class="cal-header">
+      <button class="cal-nav" onclick="calNav(-1)">←</button>
+      <div class="cal-month" id="calMonth"></div>
+      <button class="cal-nav" onclick="calNav(1)">→</button>
+    </div>
+    <div class="cal-days-header">
+      <div class="cal-day-name">Dom</div><div class="cal-day-name">Lun</div><div class="cal-day-name">Mar</div>
+      <div class="cal-day-name">Mié</div><div class="cal-day-name">Jue</div><div class="cal-day-name">Vie</div>
+      <div class="cal-day-name">Sáb</div>
+    </div>
+    <div class="cal-grid" id="calGrid"></div>
+
+    <div id="horasSection" style="display:none">
+      <div class="section-title-sm" style="font-size:16px;margin-bottom:4px">Horario disponible</div>
+      <div class="section-sub" id="horasLabel"></div>
+      <div class="horarios-grid" id="horasGrid"></div>
+    </div>
+
+    <div class="nav-btns">
+      <button class="btn-sec" onclick="goTo(1)">← Volver</button>
+      <button class="btn-primary" id="btnNext2" disabled onclick="goTo(3)" style="flex:1">Mis datos →</button>
+    </div>
+  </div>
+
+  <!-- PASO 3 — DATOS -->
+  <div class="panel" id="panel3">
+    <div class="section-title-sm">Tus datos</div>
+    <div class="section-sub">Para confirmar el turno y avisarte por WhatsApp</div>
+    <div class="f-row">
+      <div class="form-group"><label class="f-lbl">Nombre</label><input class="f-in" id="tNom" placeholder="Ej: Lucas"/></div>
+      <div class="form-group"><label class="f-lbl">Apellido</label><input class="f-in" id="tApe" placeholder="Ej: Méndez"/></div>
+    </div>
+    <div class="form-group"><label class="f-lbl">WhatsApp</label><input class="f-in" id="tTel" placeholder="Ej: 11 5823-9201" type="tel"/></div>
+    <div class="form-group"><label class="f-lbl">Equipo</label><input class="f-in" id="tEq" placeholder="Ej: Notebook HP Pavilion 15"/></div>
+    <div class="form-group"><label class="f-lbl">Describí el problema (opcional)</label><textarea class="f-in" id="tNota" placeholder="Ej: Se calienta mucho y se apaga sola, hace ruido el cooler..."></textarea></div>
+    <div class="nav-btns">
+      <button class="btn-sec" onclick="goTo(2)">← Volver</button>
+      <button class="btn-primary" onclick="goTo(4)" style="flex:1">Revisar turno →</button>
+    </div>
+  </div>
+
+  <!-- PASO 4 — CONFIRMAR -->
+  <div class="panel" id="panel4">
+    <div class="section-title-sm">Confirmá tu turno</div>
+    <div class="section-sub">Revisá los datos antes de enviar</div>
+    <div class="resumen-box" id="resumenBox"></div>
+    <div class="nav-btns">
+      <button class="btn-sec" onclick="goTo(3)">← Editar</button>
+      <button class="btn-primary" onclick="confirmarTurno()" style="flex:1" id="btnConfirm">Confirmar turno</button>
+    </div>
+  </div>
+
+  <!-- CONFIRMADO -->
+  <div class="panel" id="panelOK">
+    <div class="confirm-screen">
+      <div class="confirm-icon">✅</div>
+      <div class="confirm-title">¡Turno solicitado!</div>
+      <div class="confirm-sub">Te vamos a confirmar por WhatsApp a la brevedad.<br>Tu número de turno:</div>
+      <div class="confirm-code" id="confirmCode">#0000</div>
+      <div style="font-size:14px;color:var(--text2);margin-bottom:24px">📍 Campana 51, Floresta, CABA<br>Lunes a Viernes · 10 a 19hs</div>
+      <a href="index.html" style="display:inline-block;background:var(--red);color:#fff;padding:12px 28px;border-radius:8px;font-family:var(--display);font-size:17px;font-weight:800;text-decoration:none;text-transform:uppercase;letter-spacing:.04em;">Volver al inicio</a>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const SUPA='https://bcmfzgjpqfjnudhgraan.supabase.co';
+const KEY='sb_publishable_I1oJLpCSeneeIw2SghABAw_GXrdLLWs';
+const H={apikey:KEY,Authorization:`Bearer ${KEY}`,'Content-Type':'application/json',Prefer:'return=representation'};
+
+async function db(m,t,q='',b=null){
+  const r=await fetch(`${SUPA}/rest/v1/${t}${q}`,{method:m,headers:H,body:b?JSON.stringify(b):null});
+  const tx=await r.text(); if(!r.ok) throw new Error(tx); return tx?JSON.parse(tx):null;
+}
+
+// ── STATE ──
+let state={servicio:'',precio:'',fecha:null,hora:'',calOffset:0};
+
+// ── STEPS ──
+function goTo(n){
+  if(n===3){
+    // validate paso 2
+    if(!state.fecha||!state.hora) return;
+  }
+  if(n===4){
+    const nom=document.getElementById('tNom').value.trim();
+    const tel=document.getElementById('tTel').value.trim();
+    if(!nom||!tel){alert('Completá nombre y WhatsApp');return;}
+    buildResumen();
+  }
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel'+n).classList.add('active');
+  document.querySelectorAll('.step-pill').forEach((p,i)=>{
+    p.classList.remove('active','done');
+    if(i+1<n) p.classList.add('done');
+    if(i+1===n) p.classList.add('active');
+  });
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ── SERVICIO ──
+function selServicio(el,nombre,precio){
+  document.querySelectorAll('.srv-card').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');
+  state.servicio=nombre; state.precio=precio;
+  document.getElementById('btnNext1').disabled=false;
+}
+
+// ── CALENDARIO ──
+const HORAS=['10:00','10:30','11:00','11:30','12:00','12:30','14:00','14:30','15:00','15:30','16:00','16:30','17:00','17:30','18:00','18:30'];
+
+let occupiedSlots={}; // fecha -> [horas ocupadas]
+
+async function loadOccupied(year,month){
+  try{
+    const from=`${year}-${String(month+1).padStart(2,'0')}-01`;
+    const to=`${year}-${String(month+1).padStart(2,'0')}-31`;
+    const t=await db('GET','turnos',`?fecha=gte.${from}&fecha=lte.${to}&estado=neq.cancelado&select=fecha,hora`);
+    occupiedSlots={};
+    (t||[]).forEach(x=>{
+      if(!occupiedSlots[x.fecha]) occupiedSlots[x.fecha]=[];
+      occupiedSlots[x.fecha].push(x.hora);
+    });
+  }catch(e){occupiedSlots={};}
+}
+
+async function renderCal(){
+  const now=new Date(); now.setDate(1);
+  now.setMonth(now.getMonth()+state.calOffset);
+  const year=now.getFullYear(), month=now.getMonth();
+  document.getElementById('calMonth').textContent=now.toLocaleDateString('es-AR',{month:'long',year:'numeric'}).replace(/^\w/,c=>c.toUpperCase());
+
+  await loadOccupied(year,month);
+
+  const firstDay=new Date(year,month,1).getDay();
+  const daysInMonth=new Date(year,month+1,0).getDate();
+  const today=new Date(); today.setHours(0,0,0,0);
+  const grid=document.getElementById('calGrid');
+  let html='';
+  for(let i=0;i<firstDay;i++) html+=`<div class="cal-cell"></div>`;
+  for(let d=1;d<=daysInMonth;d++){
+    const date=new Date(year,month,d);
+    const dateStr=`${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const dow=date.getDay();
+    const isPast=date<today;
+    const isWeekend=dow===0||dow===6;
+    const isToday=date.getTime()===today.getTime();
+    const isSelected=state.fecha===dateStr;
+    let cls='cal-cell this-month';
+    if(isPast||isWeekend) cls+=' past';
+    else{
+      cls+=' available';
+      if(isSelected) cls+=' selected-day';
+      if(isToday&&!isSelected) cls+=' today';
+    }
+    const onclick=(!isPast&&!isWeekend)?`onclick="selFecha('${dateStr}',${d})"`:'' ;
+    html+=`<div class="${cls}" ${onclick}>${d}</div>`;
+  }
+  grid.innerHTML=html;
+}
+
+function calNav(d){state.calOffset+=d;if(state.calOffset<0)state.calOffset=0;renderCal();}
+
+async function selFecha(dateStr,d){
+  state.fecha=dateStr; state.hora='';
+  document.getElementById('btnNext2').disabled=true;
+  renderCal();
+  // Show hours
+  const sec=document.getElementById('horasSection');
+  const date=new Date(dateStr+'T12:00:00');
+  const lbl=date.toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long'});
+  document.getElementById('horasLabel').textContent=lbl.charAt(0).toUpperCase()+lbl.slice(1);
+  const occupied=occupiedSlots[dateStr]||[];
+  // Max 2 per slot for simplicity
+  document.getElementById('horasGrid').innerHTML=HORAS.map(h=>{
+    const occ=occupied.filter(x=>x===h).length;
+    const full=occ>=2;
+    return `<div class="hora-btn${full?' ocupado':''}" onclick="${full?'':'selHora(\''+h+'\',this)'}">${h}${full?'<br><span style="font-size:9px">Ocupado</span>':''}</div>`;
+  }).join('');
+  sec.style.display='block';
+}
+
+function selHora(h,el){
+  document.querySelectorAll('.hora-btn').forEach(b=>b.classList.remove('selected'));
+  el.classList.add('selected');
+  state.hora=h;
+  document.getElementById('btnNext2').disabled=false;
+}
+
+// ── RESUMEN ──
+function buildResumen(){
+  const nom=document.getElementById('tNom').value.trim();
+  const ape=document.getElementById('tApe').value.trim();
+  const tel=document.getElementById('tTel').value.trim();
+  const eq=document.getElementById('tEq').value.trim();
+  const nota=document.getElementById('tNota').value.trim();
+  const date=new Date(state.fecha+'T12:00:00');
+  const fechaLabel=date.toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  document.getElementById('resumenBox').innerHTML=`
+    <div class="res-row"><span class="res-lbl">Servicio</span><span class="res-val">${state.servicio}</span></div>
+    <div class="res-row"><span class="res-lbl">Precio estimado</span><span class="res-val" style="color:var(--red)">${state.precio}</span></div>
+    <div class="res-row"><span class="res-lbl">Día</span><span class="res-val">${fechaLabel.charAt(0).toUpperCase()+fechaLabel.slice(1)}</span></div>
+    <div class="res-row"><span class="res-lbl">Horario</span><span class="res-val">${state.hora}hs</span></div>
+    <div class="res-row"><span class="res-lbl">Nombre</span><span class="res-val">${nom} ${ape}</span></div>
+    <div class="res-row"><span class="res-lbl">WhatsApp</span><span class="res-val">${tel}</span></div>
+    ${eq?`<div class="res-row"><span class="res-lbl">Equipo</span><span class="res-val">${eq}</span></div>`:''}
+    ${nota?`<div class="res-row"><span class="res-lbl">Problema</span><span class="res-val" style="font-size:13px;max-width:60%;text-align:right">${nota}</span></div>`:''}
+    <div style="margin-top:12px;font-size:12px;color:var(--text3)">📍 Campana 51, Floresta, CABA · El turno queda pendiente hasta que PCLAF lo confirme por WhatsApp.</div>`;
+}
+
+async function confirmarTurno(){
+  const btn=document.getElementById('btnConfirm');
+  btn.disabled=true; btn.textContent='Enviando...';
+  const nom=document.getElementById('tNom').value.trim();
+  const ape=document.getElementById('tApe').value.trim();
+  const tel=document.getElementById('tTel').value.trim();
+  const eq=document.getElementById('tEq').value.trim();
+  const nota=document.getElementById('tNota').value.trim();
+  try{
+    const res=await db('POST','turnos','',{
+      nombre:nom, apellido:ape, telefono:tel,
+      servicio:state.servicio, fecha:state.fecha, hora:state.hora,
+      nota:(eq?'Equipo: '+eq+'. ':'')+nota,
+      estado:'pendiente'
+    });
+    const id=res?.[0]?.id||'';
+    const shortId='#T'+id.slice(0,6).toUpperCase();
+    document.getElementById('confirmCode').textContent=shortId;
+    // Show confirm
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    document.getElementById('panelOK').classList.add('active');
+    // Open WA to PCLAF (notify)
+    setTimeout(()=>{
+      const msg=encodeURIComponent(`🗓️ *Nuevo turno solicitado*\n\n*${nom} ${ape}*\n📱 ${tel}\n🔧 ${state.servicio}\n📅 ${state.fecha} a las ${state.hora}hs\n💻 ${eq||'Sin especificar'}\n${nota?'📝 '+nota:''}\n\nRef: ${shortId}`);
+      window.open(`https://wa.me/541141758129?text=${msg}`,'_blank');
+    }, 800);
+  }catch(e){
+    btn.disabled=false; btn.textContent='Confirmar turno';
+    alert('Error al guardar el turno. Intentá de nuevo o escribinos por WhatsApp.');
+  }
+}
+
+// Init
+renderCal();
+</script>
+</body>
+</html>

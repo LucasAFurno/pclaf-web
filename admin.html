@@ -241,6 +241,8 @@ tr:hover td{background:var(--black3);}
     <div class="abadge">ADMIN</div>
     <div class="tabs">
       <div class="tab active" onclick="switchTab('rep',this)">Reparaciones</div>
+      <div class="tab" onclick="switchTab('turnos',this)">Turnos</div>
+      <div class="tab" onclick="switchTab('agenda',this)">Agenda</div>
       <div class="tab" onclick="switchTab('met',this)">Métricas</div>
     </div>
     <div class="tr">
@@ -303,6 +305,40 @@ tr:hover td{background:var(--black3);}
         <div id="metTbl"><div class="empty"><div class="spinner"></div></div></div>
       </div>
     </div>
+
+    <!-- ── TURNOS ── -->
+    <div class="view" id="view-turnos">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px;">
+        <div>
+          <div style="font-size:20px;font-weight:700;color:#fff;margin-bottom:2px;">Turnos solicitados</div>
+          <div style="font-size:12px;color:var(--text3);">Los clientes piden turno desde la web</div>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button class="fbtn active" onclick="filtTurno('todos',this)" id="ft-todos">Todos</button>
+          <button class="fbtn" onclick="filtTurno('pendiente',this)">Pendientes</button>
+          <button class="fbtn" onclick="filtTurno('confirmado',this)">Confirmados</button>
+          <button class="fbtn" onclick="filtTurno('cancelado',this)">Cancelados</button>
+        </div>
+      </div>
+      <div id="turnosList"><div class="empty"><div class="spinner"></div>Cargando...</div></div>
+    </div>
+
+    <!-- ── AGENDA ── -->
+    <div class="view" id="view-agenda">
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:20px;flex-wrap:wrap;">
+        <div style="font-size:20px;font-weight:700;color:#fff;">Agenda del taller</div>
+        <div style="display:flex;gap:6px;align-items:center;margin-left:auto;">
+          <button class="smbtn s" onclick="agendaNav(-1)">←</button>
+          <span style="font-family:var(--mono);font-size:13px;color:var(--text)" id="agendaFechaLabel"></span>
+          <button class="smbtn s" onclick="agendaNav(1)">→</button>
+          <button class="smbtn" onclick="agendaHoy()">Hoy</button>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;" id="agendaGrid">
+        <div class="empty" style="grid-column:1/-1"><div class="spinner"></div>Cargando...</div>
+      </div>
+    </div>
+
   </main>
 </div>
 
@@ -316,8 +352,7 @@ tr:hover td{background:var(--black3);}
         <input class="f-in" id="mCod" placeholder="Ej: LUCAS01" style="margin-bottom:4px" oninput="this.value=this.value.toUpperCase();autoCliente(this.value)"/>
         <div style="font-size:11px;color:var(--text3);margin-bottom:8px;">Si ya existe, se autocompleta el nombre y teléfono</div>
       </div>
-      <div><label class="f-lbl">Nombre del cliente</label><input class="f-in" id="mNom" placeholder="Ej: Lucas"/></div>
-      <div><label class="f-lbl">Apellido</label><input class="f-in" id="mApe" placeholder="Ej: Méndez"/></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><div><label class="f-lbl">Nombre</label><input class="f-in" id="mNom" placeholder="Ej: Lucas"/></div><div><label class="f-lbl">Apellido</label><input class="f-in" id="mApe" placeholder="Ej: Méndez"/></div></div>
       <div><label class="f-lbl">Teléfono</label><input class="f-in" id="mTel" placeholder="Ej: 11 5823-9201"/></div>
       <div><label class="f-lbl">Equipo</label><input class="f-in" id="mEq" placeholder="Ej: Notebook HP"/></div>
       <div><label class="f-lbl">Modelo</label><input class="f-in" id="mMod" placeholder="Ej: Pavilion 15-eh1"/></div>
@@ -358,8 +393,7 @@ tr:hover td{background:var(--black3);}
     <input type="hidden" id="eEqId"/>
     <input type="hidden" id="eClId"/>
     <div class="mgrid">
-      <div><label class="f-lbl">Nombre del cliente</label><input class="f-in" id="eNom" placeholder="Nombre"/></div>
-      <div><label class="f-lbl">Apellido</label><input class="f-in" id="eApe" placeholder="Apellido"/></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><div><label class="f-lbl">Nombre</label><input class="f-in" id="eNom" placeholder="Nombre"/></div><div><label class="f-lbl">Apellido</label><input class="f-in" id="eApe" placeholder="Apellido"/></div></div>
       <div><label class="f-lbl">Teléfono</label><input class="f-in" id="eTel" placeholder="Teléfono"/></div>
       <div><label class="f-lbl">Equipo</label><input class="f-in" id="eEq" placeholder="Ej: Notebook HP"/></div>
       <div><label class="f-lbl">Modelo</label><input class="f-in" id="eMod" placeholder="Ej: Pavilion 15-eh1"/></div>
@@ -410,6 +444,8 @@ function switchTab(name,btn){
   btn.classList.add('active');
   document.getElementById('view-'+name).classList.add('active');
   if(name==='met') renderMetrics();
+  if(name==='turnos') loadTurnos();
+  if(name==='agenda') renderAgenda();
 }
 
 // DATA
@@ -453,7 +489,7 @@ function renderList(){
     return `<div class="rc" id="c-${r.id}">
       <div class="rch" onclick="togC('${r.id}')">
         <div class="rcn">#${r.numero}</div>
-        <div class="rcd"><div class="rcdn">${e.icono||'💻'} ${e.nombre||'–'}</div><div class="rcdc">${c.nombre||''}${c.apellido?' '+c.apellido:''} · ${c.codigo||''}</div></div>
+        <div class="rcd"><div class="rcdn">${e.icono||'💻'} ${e.nombre||'–'}</div><div class="rcdc">${c.nombre||'–'}${c.apellido?' '+c.apellido:''} · ${c.codigo||''}</div></div>
         <div class="rcp">${r.problema||''}</div>
         <span class="sb sb-${r.estado}" style="margin:0 9px"><span class="dot"></span>${LB[r.estado]||r.estado}</span>
         <div class="rcch"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6l4 4 4-4"/></svg></div>
@@ -462,7 +498,7 @@ function renderList(){
         <div class="bgrid">
           <div class="bsec">
             <h4>Cliente y equipo</h4>
-            <div class="cir"><span class="cil">Nombre</span><span class="civ">${c.nombre||''}${c.apellido?' '+c.apellido:''}</span></div>
+            <div class="cir"><span class="cil">Nombre</span><span class="civ">${c.nombre||'–'}${c.apellido?' '+c.apellido:''}</span></div>
             <div class="cir"><span class="cil">Teléfono</span><span class="civ">${c.telefono||'–'}</span></div>
             <div class="cir"><span class="cil">Código</span><span class="civ">${c.codigo||'–'}</span></div>
             <div class="cir"><span class="cil">Equipo</span><span class="civ">${e.nombre||'–'}${e.modelo?' · '+e.modelo:''}</span></div>
@@ -491,15 +527,6 @@ function renderList(){
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
               Editar reparación
             </button>
-            <label class="pdf-btn" style="margin-top:4px;border-color:#3b82f6;color:#3b82f6;cursor:pointer">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-              Subir diagnóstico HTML
-              <input type="file" accept=".html,.htm" style="display:none" onchange="subirDiagnostico('${r.id}',this)"/>
-            </label>
-            ${r.diagnostico_html?`<a class="pdf-btn" href="javascript:verDiagnostico('${r.id}')" style="margin-top:4px;border-color:var(--green);color:var(--green)">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-              Ver diagnóstico
-            </a>`:''}
             ${tel?`<a class="wab" href="https://wa.me/54${tel}?text=${wm}" target="_blank">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
               WhatsApp a ${(c.nombre||'').split(' ')[0]||'cliente'}
@@ -512,7 +539,27 @@ function renderList(){
             </div>
           </div>
           <div class="bsec" style="grid-column:1/-1">
-            <h4>Timeline de pasos</h4>
+            <h4>📷 Fotos del proceso</h4>
+            <div id="fotos-${r.id}" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;min-height:40px;">
+              <div style="color:var(--text3);font-size:12px;padding:8px 0">Cargando...</div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center">
+              <label style="display:flex;align-items:center;gap:6px;cursor:pointer;background:var(--black4);border:1px solid var(--border2);border-radius:6px;padding:7px 12px;font-size:12px;color:var(--text2);transition:all .15s;" onmouseover="this.style.borderColor='var(--border)'" onmouseout="this.style.borderColor='var(--border2)'">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                Subir foto
+                <input type="file" accept="image/*" style="display:none" onchange="subirFoto('${r.id}',this)"/>
+              </label>
+              <select class="sse" id="fotoTipo-${r.id}">
+                <option value="antes">📸 Antes</option>
+                <option value="durante">🔧 Durante</option>
+                <option value="despues">✅ Después</option>
+              </select>
+            </div>
+          </div>
+          <div class="bsec" style="grid-column:1/-1" id="califSec-${r.id}">
+            <h4>⭐ Calificación del cliente</h4>
+            <div id="calif-${r.id}" style="color:var(--text3);font-size:12px">Cargando...</div>
+          </div>
             <div class="stl" id="st-${r.id}"><div style="color:var(--text3);font-size:12px;text-align:center;padding:8px">Cargando...</div></div>
             <div class="sf">
               <div class="sr2"><input class="sin" id="sti-${r.id}" placeholder="Título del paso"/><select class="sse" id="ses-${r.id}"><option value="done">✅ Hecho</option><option value="active">🔧 En curso</option><option value="pending">⏳ Pendiente</option></select></div>
@@ -529,7 +576,10 @@ async function togC(id){
   const c=document.getElementById(`c-${id}`);
   const was=c.classList.contains('open');
   document.querySelectorAll('.rc.open').forEach(x=>x.classList.remove('open'));
-  if(!was){c.classList.add('open');await loadPasos(id);}
+  if(!was){
+    c.classList.add('open');
+    await Promise.all([loadPasos(id), loadFotos(id), loadCalif(id)]);
+  }
 }
 
 async function loadPasos(id){
@@ -630,13 +680,14 @@ function closeModal(){document.getElementById('modal').classList.remove('open');
 async function autoCliente(cod){
   if(cod.length<3)return;
   const res=await db('GET','clientes',`?codigo=eq.${cod}&limit=1`);
-  if(res?.length){document.getElementById('mNom').value=res[0].nombre||'';document.getElementById('mApe').value=res[0].apellido||'';document.getElementById('mTel').value=res[0].telefono||'';}
+  if(res?.length){document.getElementById('mNom').value=res[0].nombre||'';document.getElementById('mTel').value=res[0].telefono||'';}
 }
 
 async function crearRep(){
   const cod=document.getElementById('mCod').value.trim().toUpperCase();
   const nom=document.getElementById('mNom').value.trim();
   const ape=document.getElementById('mApe').value.trim();
+  const nomCompleto=ape?`${nom} ${ape}`:nom;
   const tel=document.getElementById('mTel').value.trim();
   const eq=document.getElementById('mEq').value.trim();
   const mod=document.getElementById('mMod').value.trim();
@@ -654,9 +705,232 @@ async function crearRep(){
     const rr=await db('POST','reparaciones','',{equipo_id:er[0].id,numero:num,problema:prob,presupuesto:pres,estado:'espera'});
     const hoy=new Date().toLocaleDateString('es-AR',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
     await db('POST','pasos','',{reparacion_id:rr[0].id,orden:1,titulo:'Equipo ingresado',nota:`Comprobante #${num}. ${prob}`,estado:'done',fecha:hoy,icono:'check'});
-
     closeModal();
     ['mCod','mNom','mApe','mTel','mEq','mMod','mProb','mPres'].forEach(id=>document.getElementById(id).value='');
+    await loadAll();
+    if(tel){
+      const msg=encodeURIComponent(
+        `Hola ${nom}! 👋 Te escribimos de *PCLAF - Servicio técnico*.\n\n`+
+        `✅ Recibimos tu equipo correctamente.\n\n`+
+        `📋 *Resumen de tu ingreso:*\n`+
+        `• Equipo: ${eq}${mod?' ('+mod+')':''}\n`+
+        `• Problema: ${prob}\n`+
+        `• N° de reparación: *#${num}*\n`+
+        `${pres?'• Presupuesto: '+pres+'\n':''}`+
+        `\n📍 Campana 51, Floresta. Lun-Vie 10 a 19hs.\n`+
+        `\nPodés seguir el estado en:\n`+
+        `🔗 https://www.pclaf.com.ar/historial.html\n`+
+        `(código: *${cod}*)\n\n`+
+        `Te avisamos cada novedad. ¡Gracias! 🙏`
+      );
+      toast(`Reparación #${num} creada ✓`);
+      abrirWA(tel,msg);
+    } else { toast(`Reparación #${num} creada ✓`); }
+  }catch(e){toast('Error: '+e.message,true);}
+}
+
+// ── FOTOS ──
+async function loadFotos(repId){
+  const cont=document.getElementById(`fotos-${repId}`);
+  if(!cont) return;
+  try{
+    const fotos=await db('GET','fotos',`?reparacion_id=eq.${repId}&order=created_at.asc`);
+    if(!fotos||!fotos.length){cont.innerHTML='<div style="color:var(--text3);font-size:12px;padding:4px 0">Sin fotos todavía</div>';return;}
+    const tipoIcon={antes:'📸',durante:'🔧',despues:'✅'};
+    cont.innerHTML=fotos.map(f=>`
+      <div style="position:relative;display:inline-block">
+        <img src="${f.url}" style="width:72px;height:72px;object-fit:cover;border-radius:8px;border:1px solid var(--border);cursor:pointer" onclick="window.open('${f.url}','_blank')" title="${tipoIcon[f.tipo]||'📷'} ${f.tipo}"/>
+        <span style="position:absolute;bottom:3px;left:3px;font-size:10px;background:rgba(0,0,0,.7);padding:1px 4px;border-radius:3px">${tipoIcon[f.tipo]||'📷'}</span>
+        <button onclick="borrarFoto('${f.id}','${repId}')" style="position:absolute;top:2px;right:2px;background:rgba(204,0,0,.85);border:none;color:#fff;width:16px;height:16px;border-radius:50%;font-size:9px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1">✕</button>
+      </div>`).join('');
+  }catch(e){if(cont) cont.innerHTML='<div style="color:var(--text3);font-size:12px">Sin fotos</div>';}
+}
+
+async function subirFoto(repId, input){
+  const file=input.files[0]; if(!file) return;
+  const tipo=document.getElementById(`fotoTipo-${repId}`)?.value||'antes';
+  toast('Subiendo foto...');
+  try{
+    // Convert to base64 and store as data URL (no Storage needed)
+    const reader=new FileReader();
+    reader.onload=async e=>{
+      const url=e.target.result;
+      await db('POST','fotos','',{reparacion_id:repId,url,tipo});
+      await loadFotos(repId);
+      toast('Foto subida ✓');
+    };
+    reader.readAsDataURL(file);
+  }catch(e){toast('Error subiendo foto',true);}
+  input.value='';
+}
+
+async function borrarFoto(fotoId,repId){
+  if(!confirm('¿Borrar esta foto?'))return;
+  await db('DELETE','fotos',`?id=eq.${fotoId}`);
+  await loadFotos(repId);
+  toast('Foto borrada');
+}
+
+// ── CALIFICACIONES ──
+async function loadCalif(repId){
+  const cont=document.getElementById(`calif-${repId}`);
+  if(!cont) return;
+  try{
+    const cal=await db('GET','calificaciones',`?reparacion_id=eq.${repId}&limit=1`);
+    if(!cal||!cal.length){
+      cont.innerHTML='<div style="color:var(--text3);font-size:12px">El cliente aún no calificó este servicio</div>';
+      return;
+    }
+    const c=cal[0];
+    const stars='⭐'.repeat(c.puntuacion)+'☆'.repeat(5-c.puntuacion);
+    cont.innerHTML=`<div style="font-size:18px;margin-bottom:4px">${stars}</div><div style="font-size:13px;color:var(--text2)">${c.comentario||'Sin comentario'}</div><div style="font-size:10px;color:var(--text3);margin-top:4px;font-family:var(--mono)">${new Date(c.created_at).toLocaleDateString('es-AR')}</div>`;
+  }catch(e){if(cont) cont.innerHTML='<div style="color:var(--text3);font-size:12px">Sin calificación</div>';}
+}
+
+// ── TURNOS ──
+let allTurnos=[], turnoFilter='todos';
+
+async function loadTurnos(){
+  document.getElementById('turnosList').innerHTML='<div class="empty"><div class="spinner"></div>Cargando...</div>';
+  try{
+    allTurnos=await db('GET','turnos','?order=fecha.asc,hora.asc');
+    renderTurnos();
+  }catch(e){document.getElementById('turnosList').innerHTML='<div class="empty">Error cargando turnos</div>';}
+}
+
+function filtTurno(f,btn){
+  turnoFilter=f;
+  document.querySelectorAll('[onclick^="filtTurno"]').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderTurnos();
+}
+
+function renderTurnos(){
+  const list=turnoFilter==='todos'?allTurnos:allTurnos.filter(t=>t.estado===turnoFilter);
+  if(!list.length){document.getElementById('turnosList').innerHTML='<div class="empty">Sin turnos</div>';return;}
+  const estCol={pendiente:'var(--amber)',confirmado:'var(--green)',cancelado:'var(--text3)',realizado:'var(--blue)'};
+  const estBg={pendiente:'var(--amber-dim)',confirmado:'var(--green-dim)',cancelado:'var(--black3)',realizado:'var(--blue-dim)'};
+  document.getElementById('turnosList').innerHTML=`<div style="display:flex;flex-direction:column;gap:8px">`+list.map(t=>`
+    <div style="background:var(--black2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+      <div style="font-family:var(--mono);font-size:11px;color:var(--text3);min-width:80px">
+        <div style="font-size:14px;color:#fff;font-weight:600">${t.fecha?new Date(t.fecha+'T12:00:00').toLocaleDateString('es-AR',{day:'numeric',month:'short'}):'–'}</div>
+        <div>${t.hora||'–'}</div>
+      </div>
+      <div style="flex:1;min-width:160px">
+        <div style="font-size:14px;font-weight:600;color:#fff">${t.nombre||''} ${t.apellido||''}</div>
+        <div style="font-size:12px;color:var(--text2)">${t.telefono||''} · ${t.servicio||''}</div>
+        ${t.nota?`<div style="font-size:11px;color:var(--text3);margin-top:2px">${t.nota}</div>`:''}
+      </div>
+      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+        <span style="font-size:10px;font-weight:600;padding:3px 9px;border-radius:20px;background:${estBg[t.estado]||'var(--black3)'};color:${estCol[t.estado]||'var(--text3)'};">${t.estado}</span>
+        ${t.telefono?`<a href="https://wa.me/54${t.telefono.replace(/\D/g,'')}?text=${encodeURIComponent(`Hola ${t.nombre}! Confirmamos tu turno en PCLAF para el ${t.fecha} a las ${t.hora}. Campana 51, Floresta.`)}" target="_blank" style="background:#25d366;color:#fff;padding:5px 10px;border-radius:6px;font-size:11px;font-weight:700;text-decoration:none;">✓ Confirmar WA</a>`:''}
+        <select onchange="cambiarEstadoTurno('${t.id}',this.value)" style="background:var(--black3);border:1px solid var(--border2);border-radius:6px;padding:5px 8px;font-size:11px;color:var(--text2);cursor:pointer;outline:none;">
+          <option value="pendiente" ${t.estado==='pendiente'?'selected':''}>Pendiente</option>
+          <option value="confirmado" ${t.estado==='confirmado'?'selected':''}>Confirmado</option>
+          <option value="realizado" ${t.estado==='realizado'?'selected':''}>Realizado</option>
+          <option value="cancelado" ${t.estado==='cancelado'?'selected':''}>Cancelado</option>
+        </select>
+      </div>
+    </div>`).join('')+'</div>';
+}
+
+async function cambiarEstadoTurno(id,estado){
+  await db('PATCH','turnos',`?id=eq.${id}`,{estado});
+  const t=allTurnos.find(x=>x.id===id); if(t) t.estado=estado;
+  renderTurnos();
+  toast(`Turno → ${estado} ✓`);
+}
+
+// ── AGENDA ──
+let agendaDate=new Date();
+
+function agendaNav(d){agendaDate.setDate(agendaDate.getDate()+d);renderAgenda();}
+function agendaHoy(){agendaDate=new Date();renderAgenda();}
+
+async function renderAgenda(){
+  const label=agendaDate.toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long'});
+  document.getElementById('agendaFechaLabel').textContent=label.charAt(0).toUpperCase()+label.slice(1);
+  const grid=document.getElementById('agendaGrid');
+  grid.innerHTML='<div class="empty" style="grid-column:1/-1"><div class="spinner"></div></div>';
+
+  const hoy=agendaDate.toISOString().slice(0,10);
+
+  // Load turnos for this date + active repairs
+  const [turnos, reps]=await Promise.all([
+    db('GET','turnos',`?fecha=eq.${hoy}&order=hora.asc`),
+    db('GET','reparaciones','?estado=neq.entregado&order=created_at.desc'),
+  ]);
+
+  // Build agenda columns
+  const espera=reps.filter(r=>r.estado==='espera');
+  const proceso=reps.filter(r=>r.estado==='proceso');
+  const listo=reps.filter(r=>r.estado==='listo');
+
+  const col=(titulo,color,items,type)=>`
+    <div style="background:var(--black2);border:1px solid var(--border);border-radius:12px;overflow:hidden;">
+      <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+        <div style="font-size:13px;font-weight:600;color:#fff">${titulo}</div>
+        <span style="font-family:var(--mono);font-size:11px;padding:2px 8px;border-radius:20px;background:${color+'22'};color:${color}">${items.length}</span>
+      </div>
+      <div style="padding:10px;display:flex;flex-direction:column;gap:6px;min-height:80px;">
+        ${items.length?items.map(it=>type==='turno'?`
+          <div style="background:var(--black3);border-radius:7px;padding:9px 10px;">
+            <div style="font-size:12px;font-weight:600;color:#fff">${it.nombre} ${it.apellido||''}</div>
+            <div style="font-size:11px;color:var(--text2)">${it.hora} · ${it.servicio}</div>
+          </div>`:
+          `<div style="background:var(--black3);border-radius:7px;padding:9px 10px;cursor:pointer" onclick="document.getElementById('view-rep').querySelector('.tab[onclick*=rep]') && switchTabById('rep')">
+            <div style="font-size:11px;font-family:var(--mono);color:var(--text3)">#${it.numero}</div>
+            <div style="font-size:12px;font-weight:600;color:#fff">${getNombreRep(it)}</div>
+            <div style="font-size:11px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${it.problema||''}</div>
+          </div>`
+        ).join(''):'<div style="color:var(--text3);font-size:12px;text-align:center;padding:12px">Vacío</div>'}
+      </div>
+    </div>`;
+
+  grid.innerHTML=
+    col('🗓️ Turnos del día','#f59e0b',turnos||[],'turno')+
+    col('⏳ En espera','#f59e0b',espera,'rep')+
+    col('🔧 En proceso','#CC0000',proceso,'rep')+
+    `<div style="background:var(--black2);border:1px solid var(--border);border-radius:12px;overflow:hidden;">
+      <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+        <div style="font-size:13px;font-weight:600;color:#fff">✅ Listos para retirar</div>
+        <span style="font-family:var(--mono);font-size:11px;padding:2px 8px;border-radius:20px;background:var(--green-dim);color:var(--green)">${listo.length}</span>
+      </div>
+      <div style="padding:10px;display:flex;flex-direction:column;gap:6px;min-height:80px;">
+        ${listo.length?listo.map(it=>`
+          <div style="background:var(--black3);border-radius:7px;padding:9px 10px;">
+            <div style="font-size:11px;font-family:var(--mono);color:var(--text3)">#${it.numero}</div>
+            <div style="font-size:12px;font-weight:600;color:#fff">${getNombreRep(it)}</div>
+          </div>`).join(''):'<div style="color:var(--text3);font-size:12px;text-align:center;padding:12px">Vacío</div>'}
+      </div>
+    </div>`;
+}
+
+function getNombreRep(rep){
+  const eq=aE.find(e=>e.id===rep.equipo_id)||{};
+  const cl=aC.find(c=>c.id===eq.cliente_id)||{};
+  const ape=cl.apellido?` ${cl.apellido}`:'';
+  return `${cl.nombre||'–'}${ape}`;
+}
+  const eq=document.getElementById('mEq').value.trim();
+  const mod=document.getElementById('mMod').value.trim();
+  const num=document.getElementById('mNum').value.trim();
+  const prob=document.getElementById('mProb').value.trim();
+  const pres=document.getElementById('mPres').value.trim();
+  const ico=document.getElementById('mIco').value;
+  if(!cod||!nom||!eq||!num||!prob){toast('Completá los campos obligatorios',true);return;}
+  try{
+    let clArr=await db('GET','clientes',`?codigo=eq.${cod}`);
+    let cid;
+    if(clArr?.length){cid=clArr[0].id;}
+    else{const nv=await db('POST','clientes','',{codigo:cod,nombre:nom,telefono:tel});cid=nv[0].id;}
+    const er=await db('POST','equipos','',{cliente_id:cid,nombre:eq,modelo:mod,icono:ico});
+    const rr=await db('POST','reparaciones','',{equipo_id:er[0].id,numero:num,problema:prob,presupuesto:pres,estado:'espera'});
+    const hoy=new Date().toLocaleDateString('es-AR',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+    await db('POST','pasos','',{reparacion_id:rr[0].id,orden:1,titulo:'Equipo ingresado',nota:`Comprobante #${num}. ${prob}`,estado:'done',fecha:hoy,icono:'check'});
+
+    closeModal();
+    ['mCod','mNom','mTel','mEq','mMod','mProb','mPres'].forEach(id=>document.getElementById(id).value='');
     await loadAll();
 
     // WA de bienvenida con resumen completo
@@ -775,7 +1049,7 @@ function generarPDF(id){
   </div>
   <div class="section">
     <div class="section-title">Datos del cliente</div>
-    <div class="row"><span class="lbl">Nombre</span><span class="val">${c.nombre||'–'}</span></div>
+    <div class="row"><span class="lbl">Nombre</span><span class="val">${c.nombre||'–'}${c.apellido?' '+c.apellido:''}</span></div>
     <div class="row"><span class="lbl">Teléfono</span><span class="val">${c.telefono||'–'}</span></div>
     <div class="row"><span class="lbl">Código de cliente</span><span class="val">${c.codigo||'–'}</span></div>
   </div>
@@ -797,7 +1071,7 @@ function generarPDF(id){
   <div class="valid">✅ Presupuesto válido por 15 días. El precio puede variar si se detectan fallas adicionales durante la reparación.</div>
   <div class="footer">
     PCLAF - Servicio técnico · Campana 51, Floresta, CABA<br>
-    Tel: 11 3570-8345 · pclaf.com.ar · @servicepclaf
+    Tel: 11 4175-8129 · pclaf.com.ar · @servicepclaf
   </div>
   </body></html>`;
 
@@ -843,7 +1117,7 @@ function imprimirComprobante(id){
     <div class="sub">Comprobante de ingreso · ${hoy}</div>
   </div>
   <div style="text-align:center"><span class="badge">N° REPARACIÓN: #${r.numero}</span></div>
-  <div class="row"><span class="lbl">Cliente</span><span class="val">${c.nombre||'–'}</span></div>
+  <div class="row"><span class="lbl">Cliente</span><span class="val">${c.nombre||'–'}${c.apellido?' '+c.apellido:''}</span></div>
   <div class="row"><span class="lbl">Teléfono</span><span class="val">${c.telefono||'–'}</span></div>
   <div class="row"><span class="lbl">Equipo</span><span class="val">${e.nombre||'–'}${e.modelo?' — '+e.modelo:''}</span></div>
   <div class="row"><span class="lbl">Problema</span><span class="val">${r.problema||'–'}</span></div>
@@ -856,7 +1130,7 @@ function imprimirComprobante(id){
   </div>
   <div class="footer">
     PCLAF - Servicio técnico<br>
-    Campana 51, Floresta, CABA · 11 3570-8345<br>
+    Campana 51, Floresta, CABA · 11 4175-8129<br>
     Lunes a Viernes 10 a 19hs
   </div>
   </body></html>`;
@@ -886,7 +1160,7 @@ function buscarClientes(q){
     const reps=aR.filter(r=>eqs.some(e=>e.id===r.equipo_id));
     const activas=reps.filter(r=>r.estado!=='entregado').length;
     return `<div class="sp-client" onclick="filtrarPorCliente('${c.id}')">
-      <div class="sp-client-name">${c.nombre||'–'} <span style="color:var(--text3);font-size:11px;font-family:var(--mono)">${c.codigo||''}</span></div>
+      <div class="sp-client-name">${c.nombre||''} ${c.apellido||''} <span style="color:var(--text3);font-size:11px;font-family:var(--mono)">${c.codigo||''}</span></div>
       <div class="sp-client-meta">${c.telefono||''} · ${reps.length} reparación${reps.length!==1?'es':''} total · ${activas} activa${activas!==1?'s':''}</div>
     </div>`;
   }).join('');
@@ -964,34 +1238,8 @@ function mTbl(reps){
   document.getElementById('tblCnt').textContent=reps.length+' registros';
   if(!reps.length){document.getElementById('metTbl').innerHTML='<div class="empty">Sin datos</div>';return;}
   const LB={espera:'En espera',proceso:'En reparación',listo:'Listo',entregado:'Entregado'};
-  const rows=reps.slice(0,25).map(r=>{const e=aE.find(x=>x.id===r.equipo_id)||{};const c=aC.find(x=>x.id===e.cliente_id)||{};const f=r.created_at?new Date(r.created_at).toLocaleDateString('es-AR',{day:'numeric',month:'short',year:'2-digit'}):'–';return`<tr><td class="tdm">#${r.numero}</td><td>${c.nombre||'–'}</td><td>${(e.icono||'💻')+' '+(e.nombre||'–')}</td><td>${r.problema||'–'}</td><td class="tdm tdg">${r.presupuesto||'–'}</td><td><span class="sb sb-${r.estado}">${LB[r.estado]||r.estado}</span></td><td style="color:var(--text3)">${f}</td></tr>`;}).join('');
+  const rows=reps.slice(0,25).map(r=>{const e=aE.find(x=>x.id===r.equipo_id)||{};const c=aC.find(x=>x.id===e.cliente_id)||{};const f=r.created_at?new Date(r.created_at).toLocaleDateString('es-AR',{day:'numeric',month:'short',year:'2-digit'}):'–';return`<tr><td class="tdm">#${r.numero}</td><td>${c.nombre||'–'}${c.apellido?' '+c.apellido:''}</td><td>${(e.icono||'💻')+' '+(e.nombre||'–')}</td><td>${r.problema||'–'}</td><td class="tdm tdg">${r.presupuesto||'–'}</td><td><span class="sb sb-${r.estado}">${LB[r.estado]||r.estado}</span></td><td style="color:var(--text3)">${f}</td></tr>`;}).join('');
   document.getElementById('metTbl').innerHTML=`<table><thead><tr><th>#</th><th>Cliente</th><th>Equipo</th><th>Problema</th><th>Presupuesto</th><th>Estado</th><th>Fecha</th></tr></thead><tbody>${rows}</tbody></table>`;
-}
-
-// ── SUBIR DIAGNÓSTICO HTML ──
-async function subirDiagnostico(id, input){
-  const file=input.files[0];
-  if(!file){return;}
-  const reader=new FileReader();
-  reader.onload=async function(e){
-    const html=e.target.result;
-    try{
-      await db('PATCH','reparaciones',`?id=eq.${id}`,{diagnostico_html:html});
-      const d=aR.find(r=>r.id===id);if(d) d.diagnostico_html=html;
-      toast('Diagnóstico subido ✓');
-      renderList();
-    }catch(err){toast('Error al subir: '+err.message,true);}
-  };
-  reader.readAsText(file);
-  input.value='';
-}
-
-function verDiagnostico(id){
-  const r=aR.find(x=>x.id===id);
-  if(!r||!r.diagnostico_html){toast('Sin diagnóstico',true);return;}
-  const w=window.open('','_blank');
-  w.document.write(r.diagnostico_html);
-  w.document.close();
 }
 
 let tt;
