@@ -954,51 +954,7 @@ function getNombreRep(rep){
   const ape=cl.apellido?` ${cl.apellido}`:'';
   return `${cl.nombre||'–'}${ape}`;
 }
-  const eq=document.getElementById('mEq').value.trim();
-  const mod=document.getElementById('mMod').value.trim();
-  const num=document.getElementById('mNum').value.trim();
-  const prob=document.getElementById('mProb').value.trim();
-  const pres=document.getElementById('mPres').value.trim();
-  const ico=document.getElementById('mIco').value;
-  if(!cod||!nom||!eq||!num||!prob){toast('Completá los campos obligatorios',true);return;}
-  try{
-    let clArr=await db('GET','clientes',`?codigo=eq.${cod}`);
-    let cid;
-    if(clArr?.length){cid=clArr[0].id;}
-    else{const nv=await db('POST','clientes','',{codigo:cod,nombre:nom,telefono:tel});cid=nv[0].id;}
-    const er=await db('POST','equipos','',{cliente_id:cid,nombre:eq,modelo:mod,icono:ico});
-    const rr=await db('POST','reparaciones','',{equipo_id:er[0].id,numero:num,problema:prob,presupuesto:pres,estado:'espera'});
-    const hoy=new Date().toLocaleDateString('es-AR',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
-    await db('POST','pasos','',{reparacion_id:rr[0].id,orden:1,titulo:'Equipo ingresado',nota:`Comprobante #${num}. ${prob}`,estado:'done',fecha:hoy,icono:'check'});
 
-    closeModal();
-    ['mCod','mNom','mTel','mEq','mMod','mProb','mPres'].forEach(id=>document.getElementById(id).value='');
-    await loadAll();
-
-    // WA de bienvenida con resumen completo
-    if(tel){
-      const telLimpio=tel.replace(/\D/g,'');
-      const nombre=nom.split(' ')[0];
-      const msg=encodeURIComponent(
-        `Hola ${nombre}! 👋 Te escribimos de *PCLAF - Servicio técnico*.\n\n` +
-        `✅ Recibimos tu equipo correctamente.\n\n` +
-        `📋 *Resumen de tu ingreso:*\n` +
-        `• Equipo: ${eq}${mod?' ('+mod+')':''}\n` +
-        `• Problema: ${prob}\n` +
-        `• N° de reparación: *#${num}*\n` +
-        `${pres?'• Presupuesto: '+pres+'\n':''}` +
-        `\n📍 Campana 51, Floresta. Lun-Vie 10 a 19hs.\n` +
-        `\nPodés seguir el estado de tu reparación en:\n` +
-        `🔗 https://www.pclaf.com.ar/historial.html\n` +
-        `(usá tu código: *${cod}*)\n\n` +
-        `Te avisamos cada novedad. ¡Gracias! 🙏`
-      );
-      toast(`Reparación #${num} creada ✓`); abrirWA(tel, msg);
-    } else {
-      toast(`Reparación #${num} creada ✓`);
-    }
-  }catch(e){toast('Error: '+e.message,true);}
-}
 
 // ── DESCUENTO RESEÑA ──
 async function toggleDescuento(clienteId, btn){
@@ -1235,11 +1191,6 @@ function filtrarPorCliente(clienteId){
   document.getElementById('srch').value=c.nombre||'';
   renderList();
 }
-
-// ── RESEÑA AUTOMÁTICA AL ENTREGAR ──
-// (se agrega dentro de chEst, que ya llama abrirWA para entregado)
-// El mensaje de entregado ya incluye el agradecimiento; agregamos reseña:
-const _origChEst = chEst;
 
 // MÉTRICAS
 let cPer='mes';
