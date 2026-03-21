@@ -153,7 +153,7 @@ footer a:hover{color:var(--red);}
 
 <main>
   <div class="search-block">
-    <div class="search-heading">Consultá el historial de tus reparaciónes</div>
+    <div class="search-heading">Consultá el historial de tus reparaciones</div>
     <div class="search-sub">Ingresá el código de cliente que te dimos cuando dejaste tu equipo por primera vez.</div>
     <div class="search-row">
       <input class="search-input" id="searchInput" type="text" placeholder="Ej: LUCAS01" autocomplete="off"/>
@@ -251,7 +251,7 @@ async function cargar(code) {
     const equipos = await db('equipos', `?cliente_id=eq.${cliente.id}&order=created_at.asc`);
 
     for (const eq of equipos) {
-      eq.repairs = await db('reparaciónes', `?equipo_id=eq.${eq.id}&order=created_at.desc`);
+      eq.repairs = await db('reparaciones', `?equipo_id=eq.${eq.id}&order=created_at.desc`);
       const activa = eq.repairs.find(r => ['listo','proceso','espera'].includes(r.estado));
       eq.lastStatus = activa?.estado || 'ok';
     }
