@@ -434,12 +434,19 @@ async function db(m,t,q='',b=null){
 
 // LOGIN
 function doLogin(){
-  if(document.getElementById('loginPass').value===PASS){
+  const val = document.getElementById('loginPass').value;
+  if(val === PASS){
     sessionStorage.setItem('pclaf_a','1');
     document.getElementById('loginScreen').style.display='none';
     document.getElementById('app').style.display='block';
     loadAll();
-  } else { document.getElementById('loginErr').style.display='block'; document.getElementById('loginPass').value=''; }
+  } else {
+    const err = document.getElementById('loginErr');
+    err.style.display='block';
+    err.textContent='Contraseña incorrecta';
+    document.getElementById('loginPass').value='';
+    document.getElementById('loginPass').focus();
+  }
 }
 function logout(){sessionStorage.removeItem('pclaf_a');location.reload();}
 if(sessionStorage.getItem('pclaf_a')){document.getElementById('loginScreen').style.display='none';document.getElementById('app').style.display='block';}
