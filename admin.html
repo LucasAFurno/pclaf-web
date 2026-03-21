@@ -1275,7 +1275,12 @@ async function procesarReporte(repId, input) {
   
   const reader = new FileReader();
   reader.onload = async (e) => {
-    const htmlContent = e.target.result;
+    // Clean null bytes, BOM and problematic unicode sequences
+    let htmlContent = e.target.result;
+    htmlContent = htmlContent.replace(/\u0000/g, '')  // null bytes
+                             .replace(/\uFEFF/g, '')  // BOM
+                             .replace(/\x00/g, '')    // more null bytes
+                             .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, ''); // control chars
     try {
       // Check if report already exists for this repair
       const existing = await db('GET', 'reportes', `?reparacion_id=eq.${repId}&limit=1`);
