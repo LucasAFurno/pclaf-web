@@ -195,6 +195,14 @@ tr:hover td{background:var(--black3);}
 }
 #printArea{display:none;font-family:'Inter',sans-serif;}
 
+/* DESCUENTO RESEÑA */
+.descuento-banner{background:linear-gradient(135deg,rgba(34,197,94,0.15),rgba(34,197,94,0.05));border:1.5px solid rgba(34,197,94,0.35);border-radius:10px;padding:12px 14px;margin-top:8px;display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.descuento-badge{display:inline-flex;align-items:center;gap:5px;background:var(--green-dim);color:var(--green);border:1px solid rgba(34,197,94,.3);border-radius:6px;padding:3px 9px;font-size:11px;font-weight:700;font-family:var(--mono);}
+.descuento-toggle{display:flex;align-items:center;gap:8px;cursor:pointer;background:none;border:none;padding:0;}
+.toggle-track{width:36px;height:20px;border-radius:10px;background:var(--border2);position:relative;transition:background .2s;flex-shrink:0;}
+.toggle-track.on{background:var(--green);}
+.toggle-knob{width:16px;height:16px;border-radius:50%;background:#fff;position:absolute;top:2px;left:2px;transition:transform .2s;}
+.toggle-track.on .toggle-knob{transform:translateX(16px);}
 /* MISC */
 .empty{text-align:center;padding:44px;color:var(--text3);font-size:13px;}
 .spinner{width:24px;height:24px;border:2.5px solid var(--border);border-top-color:var(--red);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 10px;}
@@ -486,7 +494,9 @@ function renderList(){
     const c=aC.find(x=>x.id===e.cliente_id)||{};
     const tel=(c.telefono||'').replace(/\D/g,'');
     const wm=encodeURIComponent(`Hola ${(c.nombre||'').split(' ')[0]}, te escribimos de PCLAF. Tu ${e.nombre||'equipo'} (#${r.numero}) está ${LB[r.estado]||r.estado}.`);
+    const descuentoActivo = c.descuento_resena;
     return `<div class="rc" id="c-${r.id}">
+      ${descuentoActivo ? `<div style="background:rgba(34,197,94,0.08);border-bottom:1px solid rgba(34,197,94,0.2);padding:7px 16px;display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;color:var(--green);">🎁 10% descuento por reseña Google — aplicar al cobrar</div>` : ''}
       <div class="rch" onclick="togC('${r.id}')">
         <div class="rcn">#${r.numero}</div>
         <div class="rcd"><div class="rcdn">${e.icono||'💻'} ${e.nombre||'–'}</div><div class="rcdc">${c.nombre||'–'}${c.apellido?' '+c.apellido:''} · ${c.codigo||''}</div></div>
@@ -508,6 +518,19 @@ function renderList(){
                 <input class="prin" id="pr-${r.id}" value="${r.presupuesto||''}" placeholder="$0.000" style="width:95px"/>
                 <button class="smbtn" style="padding:5px 9px;font-size:11px" onclick="savePr('${r.id}')">✓</button>
               </div>
+            </div>
+            <!-- DESCUENTO RESEÑA -->
+            <div class="descuento-banner" id="descBanner-${c.id}">
+              <div>
+                <div style="font-size:12px;font-weight:700;color:var(--green);margin-bottom:2px">🎁 Descuento por reseña Google</div>
+                <div style="font-size:11px;color:var(--text3)">10% off en la próxima reparación</div>
+              </div>
+              <button class="descuento-toggle" onclick="toggleDescuento('${c.id}',this)" title="Activar/desactivar descuento">
+                <div class="toggle-track ${c.descuento_resena?'on':''}" id="dTrack-${c.id}">
+                  <div class="toggle-knob"></div>
+                </div>
+                <span style="font-size:11px;color:${c.descuento_resena?'var(--green)':'var(--text3)'};font-weight:600" id="dLbl-${c.id}">${c.descuento_resena?'ACTIVO':'inactivo'}</span>
+              </button>
             </div>
             <div class="cir"><span class="cil">Entrega est.</span>
               <div class="fest-row">
@@ -638,10 +661,11 @@ async function chEst(id,st,btn){
     const nombre=cl.nombre?.split(' ')[0]||'';
     const equipo=eq.nombre||'tu equipo';
     const num=rep.numero||'';
+    const cod=cl.codigo||'';
     const msgs={
       proceso:`Hola ${nombre}! 🔧 Tu ${equipo} (#${num}) ya está en reparación. Te avisamos en cuanto esté listo.`,
       listo:`Hola ${nombre}! ✅ Tu ${equipo} (#${num}) está *listo para retirar*.\n\n📍 Campana 51, Floresta. Lun-Vie 10 a 19hs.\n\nTraé el comprobante. ¡Gracias!`,
-      entregado:`Hola ${nombre}! 📦 Confirmamos la entrega de tu ${equipo} (#${num}). ¡Gracias por elegirnos!\n\n¿Quedaste conforme? Nos ayudaría muchísimo si nos dejás una reseña en Google, lleva 1 minuto 🙏\n⭐ https://g.page/r/CebOQaDNkBJNEBM/review`,
+      entregado:`Hola ${nombre}! 📦 Tu ${equipo} (#${num}) está listo y entregado. ¡Gracias por elegirnos!\n\n🎁 *Descuento especial para vos:* si dejás una reseña en Google, en tu próxima visita tenés un *10% de descuento*.\n\n⭐ https://g.page/r/CebOQaDNkBJNEBM/review\n\nUna vez que dejes la reseña, respondé este mensaje con tu código de cliente (*${cod}*) y lo activamos. ¡Gracias! 🙏`,
       espera:`Hola ${nombre}! ⏳ Tu ${equipo} (#${num}) está en espera. Te avisamos cuando arranquemos con la reparación.`,
     };
     toast(`Estado → "${LB[st]}" ✓`);
@@ -654,7 +678,18 @@ async function chEst(id,st,btn){
 async function savePr(id){
   const v=document.getElementById(`pr-${id}`).value.trim();
   await db('PATCH','reparaciones',`?id=eq.${id}`,{presupuesto:v});
-  const d=aR.find(r=>r.id===id);if(d) d.presupuesto=v;
+  const d=aR.find(r=>r.id===id); if(d) d.presupuesto=v;
+  // Check if client has discount
+  const eq=aE.find(e=>e.id===d?.equipo_id)||{};
+  const cl=aC.find(c=>c.id===eq.cliente_id)||{};
+  if(cl.descuento_resena && v){
+    const num=parseFloat(v.replace(/[^0-9.,]/g,'').replace(',','.'));
+    if(!isNaN(num)){
+      const desc=Math.round(num*0.9).toLocaleString('es-AR');
+      toast(`Presupuesto guardado ✓ — con 10% descuento: $${desc}`);
+      return;
+    }
+  }
   toast('Presupuesto guardado ✓');
 }
 
@@ -956,6 +991,21 @@ function getNombreRep(rep){
       toast(`Reparación #${num} creada ✓`);
     }
   }catch(e){toast('Error: '+e.message,true);}
+}
+
+// ── DESCUENTO RESEÑA ──
+async function toggleDescuento(clienteId, btn){
+  const track = document.getElementById(`dTrack-${clienteId}`);
+  const lbl   = document.getElementById(`dLbl-${clienteId}`);
+  const cl    = aC.find(c=>c.id===clienteId);
+  if(!cl) return;
+  const nuevo = !cl.descuento_resena;
+  await db('PATCH','clientes',`?id=eq.${clienteId}`,{descuento_resena: nuevo});
+  cl.descuento_resena = nuevo;
+  track.classList.toggle('on', nuevo);
+  lbl.textContent  = nuevo ? 'ACTIVO' : 'inactivo';
+  lbl.style.color  = nuevo ? 'var(--green)' : 'var(--text3)';
+  toast(nuevo ? '🎁 Descuento activado — 10% en próxima reparación ✓' : 'Descuento desactivado');
 }
 
 // ── FECHA ESTIMADA ──
