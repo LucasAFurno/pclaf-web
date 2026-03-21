@@ -316,7 +316,8 @@ tr:hover td{background:var(--black3);}
         <input class="f-in" id="mCod" placeholder="Ej: LUCAS01" style="margin-bottom:4px" oninput="this.value=this.value.toUpperCase();autoCliente(this.value)"/>
         <div style="font-size:11px;color:var(--text3);margin-bottom:8px;">Si ya existe, se autocompleta el nombre y teléfono</div>
       </div>
-      <div><label class="f-lbl">Nombre del cliente</label><input class="f-in" id="mNom" placeholder="Ej: Lucas Méndez"/></div>
+      <div><label class="f-lbl">Nombre del cliente</label><input class="f-in" id="mNom" placeholder="Ej: Lucas"/></div>
+      <div><label class="f-lbl">Apellido</label><input class="f-in" id="mApe" placeholder="Ej: Méndez"/></div>
       <div><label class="f-lbl">Teléfono</label><input class="f-in" id="mTel" placeholder="Ej: 11 5823-9201"/></div>
       <div><label class="f-lbl">Equipo</label><input class="f-in" id="mEq" placeholder="Ej: Notebook HP"/></div>
       <div><label class="f-lbl">Modelo</label><input class="f-in" id="mMod" placeholder="Ej: Pavilion 15-eh1"/></div>
@@ -358,6 +359,7 @@ tr:hover td{background:var(--black3);}
     <input type="hidden" id="eClId"/>
     <div class="mgrid">
       <div><label class="f-lbl">Nombre del cliente</label><input class="f-in" id="eNom" placeholder="Nombre"/></div>
+      <div><label class="f-lbl">Apellido</label><input class="f-in" id="eApe" placeholder="Apellido"/></div>
       <div><label class="f-lbl">Teléfono</label><input class="f-in" id="eTel" placeholder="Teléfono"/></div>
       <div><label class="f-lbl">Equipo</label><input class="f-in" id="eEq" placeholder="Ej: Notebook HP"/></div>
       <div><label class="f-lbl">Modelo</label><input class="f-in" id="eMod" placeholder="Ej: Pavilion 15-eh1"/></div>
@@ -451,7 +453,7 @@ function renderList(){
     return `<div class="rc" id="c-${r.id}">
       <div class="rch" onclick="togC('${r.id}')">
         <div class="rcn">#${r.numero}</div>
-        <div class="rcd"><div class="rcdn">${e.icono||'💻'} ${e.nombre||'–'}</div><div class="rcdc">${c.nombre||'–'} · ${c.codigo||''}</div></div>
+        <div class="rcd"><div class="rcdn">${e.icono||'💻'} ${e.nombre||'–'}</div><div class="rcdc">${c.nombre||''}${c.apellido?' '+c.apellido:''} · ${c.codigo||''}</div></div>
         <div class="rcp">${r.problema||''}</div>
         <span class="sb sb-${r.estado}" style="margin:0 9px"><span class="dot"></span>${LB[r.estado]||r.estado}</span>
         <div class="rcch"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6l4 4 4-4"/></svg></div>
@@ -460,7 +462,7 @@ function renderList(){
         <div class="bgrid">
           <div class="bsec">
             <h4>Cliente y equipo</h4>
-            <div class="cir"><span class="cil">Nombre</span><span class="civ">${c.nombre||'–'}</span></div>
+            <div class="cir"><span class="cil">Nombre</span><span class="civ">${c.nombre||''}${c.apellido?' '+c.apellido:''}</span></div>
             <div class="cir"><span class="cil">Teléfono</span><span class="civ">${c.telefono||'–'}</span></div>
             <div class="cir"><span class="cil">Código</span><span class="civ">${c.codigo||'–'}</span></div>
             <div class="cir"><span class="cil">Equipo</span><span class="civ">${e.nombre||'–'}${e.modelo?' · '+e.modelo:''}</span></div>
@@ -489,6 +491,15 @@ function renderList(){
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
               Editar reparación
             </button>
+            <label class="pdf-btn" style="margin-top:4px;border-color:#3b82f6;color:#3b82f6;cursor:pointer">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              Subir diagnóstico HTML
+              <input type="file" accept=".html,.htm" style="display:none" onchange="subirDiagnostico('${r.id}',this)"/>
+            </label>
+            ${r.diagnostico_html?`<a class="pdf-btn" href="javascript:verDiagnostico('${r.id}')" style="margin-top:4px;border-color:var(--green);color:var(--green)">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              Ver diagnóstico
+            </a>`:''}
             ${tel?`<a class="wab" href="https://wa.me/54${tel}?text=${wm}" target="_blank">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
               WhatsApp a ${(c.nombre||'').split(' ')[0]||'cliente'}
@@ -619,12 +630,13 @@ function closeModal(){document.getElementById('modal').classList.remove('open');
 async function autoCliente(cod){
   if(cod.length<3)return;
   const res=await db('GET','clientes',`?codigo=eq.${cod}&limit=1`);
-  if(res?.length){document.getElementById('mNom').value=res[0].nombre||'';document.getElementById('mTel').value=res[0].telefono||'';}
+  if(res?.length){document.getElementById('mNom').value=res[0].nombre||'';document.getElementById('mApe').value=res[0].apellido||'';document.getElementById('mTel').value=res[0].telefono||'';}
 }
 
 async function crearRep(){
   const cod=document.getElementById('mCod').value.trim().toUpperCase();
   const nom=document.getElementById('mNom').value.trim();
+  const ape=document.getElementById('mApe').value.trim();
   const tel=document.getElementById('mTel').value.trim();
   const eq=document.getElementById('mEq').value.trim();
   const mod=document.getElementById('mMod').value.trim();
@@ -637,14 +649,14 @@ async function crearRep(){
     let clArr=await db('GET','clientes',`?codigo=eq.${cod}`);
     let cid;
     if(clArr?.length){cid=clArr[0].id;}
-    else{const nv=await db('POST','clientes','',{codigo:cod,nombre:nom,telefono:tel});cid=nv[0].id;}
+    else{const nv=await db('POST','clientes','',{codigo:cod,nombre:nom,apellido:ape,telefono:tel});cid=nv[0].id;}
     const er=await db('POST','equipos','',{cliente_id:cid,nombre:eq,modelo:mod,icono:ico});
     const rr=await db('POST','reparaciones','',{equipo_id:er[0].id,numero:num,problema:prob,presupuesto:pres,estado:'espera'});
     const hoy=new Date().toLocaleDateString('es-AR',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
     await db('POST','pasos','',{reparacion_id:rr[0].id,orden:1,titulo:'Equipo ingresado',nota:`Comprobante #${num}. ${prob}`,estado:'done',fecha:hoy,icono:'check'});
 
     closeModal();
-    ['mCod','mNom','mTel','mEq','mMod','mProb','mPres'].forEach(id=>document.getElementById(id).value='');
+    ['mCod','mNom','mApe','mTel','mEq','mMod','mProb','mPres'].forEach(id=>document.getElementById(id).value='');
     await loadAll();
 
     // WA de bienvenida con resumen completo
@@ -689,6 +701,7 @@ function editarRep(id){
   document.getElementById('eEqId').value=e.id||'';
   document.getElementById('eClId').value=c.id||'';
   document.getElementById('eNom').value=c.nombre||'';
+  document.getElementById('eApe').value=c.apellido||'';
   document.getElementById('eTel').value=c.telefono||'';
   document.getElementById('eEq').value=e.nombre||'';
   document.getElementById('eMod').value=e.modelo||'';
@@ -704,7 +717,7 @@ async function guardarEdicion(){
   const eid=document.getElementById('eEqId').value;
   const cid=document.getElementById('eClId').value;
   try{
-    await db('PATCH','clientes',`?id=eq.${cid}`,{nombre:document.getElementById('eNom').value.trim(),telefono:document.getElementById('eTel').value.trim()});
+    await db('PATCH','clientes',`?id=eq.${cid}`,{nombre:document.getElementById('eNom').value.trim(),apellido:document.getElementById('eApe').value.trim(),telefono:document.getElementById('eTel').value.trim()});
     await db('PATCH','equipos',`?id=eq.${eid}`,{nombre:document.getElementById('eEq').value.trim(),modelo:document.getElementById('eMod').value.trim()});
     await db('PATCH','reparaciones',`?id=eq.${rid}`,{problema:document.getElementById('eProb').value.trim(),presupuesto:document.getElementById('ePres').value.trim(),fecha_entrega:document.getElementById('eFest').value.trim()});
     closeEdit();
@@ -784,7 +797,7 @@ function generarPDF(id){
   <div class="valid">✅ Presupuesto válido por 15 días. El precio puede variar si se detectan fallas adicionales durante la reparación.</div>
   <div class="footer">
     PCLAF - Servicio técnico · Campana 51, Floresta, CABA<br>
-    Tel: 11 4175-8129 · pclaf.com.ar · @servicepclaf
+    Tel: 11 3570-8345 · pclaf.com.ar · @servicepclaf
   </div>
   </body></html>`;
 
@@ -843,7 +856,7 @@ function imprimirComprobante(id){
   </div>
   <div class="footer">
     PCLAF - Servicio técnico<br>
-    Campana 51, Floresta, CABA · 11 4175-8129<br>
+    Campana 51, Floresta, CABA · 11 3570-8345<br>
     Lunes a Viernes 10 a 19hs
   </div>
   </body></html>`;
@@ -953,6 +966,32 @@ function mTbl(reps){
   const LB={espera:'En espera',proceso:'En reparación',listo:'Listo',entregado:'Entregado'};
   const rows=reps.slice(0,25).map(r=>{const e=aE.find(x=>x.id===r.equipo_id)||{};const c=aC.find(x=>x.id===e.cliente_id)||{};const f=r.created_at?new Date(r.created_at).toLocaleDateString('es-AR',{day:'numeric',month:'short',year:'2-digit'}):'–';return`<tr><td class="tdm">#${r.numero}</td><td>${c.nombre||'–'}</td><td>${(e.icono||'💻')+' '+(e.nombre||'–')}</td><td>${r.problema||'–'}</td><td class="tdm tdg">${r.presupuesto||'–'}</td><td><span class="sb sb-${r.estado}">${LB[r.estado]||r.estado}</span></td><td style="color:var(--text3)">${f}</td></tr>`;}).join('');
   document.getElementById('metTbl').innerHTML=`<table><thead><tr><th>#</th><th>Cliente</th><th>Equipo</th><th>Problema</th><th>Presupuesto</th><th>Estado</th><th>Fecha</th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+
+// ── SUBIR DIAGNÓSTICO HTML ──
+async function subirDiagnostico(id, input){
+  const file=input.files[0];
+  if(!file){return;}
+  const reader=new FileReader();
+  reader.onload=async function(e){
+    const html=e.target.result;
+    try{
+      await db('PATCH','reparaciones',`?id=eq.${id}`,{diagnostico_html:html});
+      const d=aR.find(r=>r.id===id);if(d) d.diagnostico_html=html;
+      toast('Diagnóstico subido ✓');
+      renderList();
+    }catch(err){toast('Error al subir: '+err.message,true);}
+  };
+  reader.readAsText(file);
+  input.value='';
+}
+
+function verDiagnostico(id){
+  const r=aR.find(x=>x.id===id);
+  if(!r||!r.diagnostico_html){toast('Sin diagnóstico',true);return;}
+  const w=window.open('','_blank');
+  w.document.write(r.diagnostico_html);
+  w.document.close();
 }
 
 let tt;
