@@ -248,7 +248,7 @@ tr:hover td{background:var(--black3);}
     <div class="logo-wm">PC<em>LAF</em></div>
     <div class="abadge">ADMIN</div>
     <div class="tabs">
-      <div class="tab active" onclick="switchTab('rep',this)">Reparaciones</div>
+      <div class="tab active" onclick="switchTab('rep',this)">Reparaciónes</div>
       <div class="tab" onclick="switchTab('turnos',this)">Turnos</div>
       <div class="tab" onclick="switchTab('agenda',this)">Agenda</div>
       <div class="tab" onclick="switchTab('met',this)">Métricas</div>
@@ -280,7 +280,6 @@ tr:hover td{background:var(--black3);}
           Nueva reparación
         </button>
       </div>
-      </div>
       <div id="rlist" class="rlist"><div class="empty"><div class="spinner"></div>Cargando...</div></div>
     </div>
 
@@ -296,20 +295,20 @@ tr:hover td{background:var(--black3);}
       </div>
       <div class="kgrid">
         <div class="kc r"><div class="kl">Facturación</div><div class="kv r" id="kF">–</div><div class="ks">del período</div></div>
-        <div class="kc a"><div class="kl">Tickets</div><div class="kv a" id="kT">–</div><div class="ks">reparaciones</div></div>
+        <div class="kc a"><div class="kl">Tickets</div><div class="kv a" id="kT">–</div><div class="ks">reparaciónes</div></div>
         <div class="kc g"><div class="kl">Entregados</div><div class="kv g" id="kE">–</div><div class="ks">completados</div></div>
         <div class="kc b"><div class="kl">Ticket promedio</div><div class="kv b" id="kPr">–</div><div class="ks">por reparación</div></div>
       </div>
       <div class="cg2">
         <div class="cc"><div class="ct">Ingresos por mes</div><div class="cs">Facturación acumulada</div><canvas id="cI" height="200"></canvas></div>
-        <div class="cc"><div class="ct">Estado actual</div><div class="cs">Todas las reparaciones</div><canvas id="cE" height="200"></canvas></div>
+        <div class="cc"><div class="ct">Estado actual</div><div class="cs">Todas las reparaciónes</div><canvas id="cE" height="200"></canvas></div>
       </div>
       <div class="cgeq">
         <div class="cc"><div class="ct">Tickets por semana</div><div class="cs">Ingresados cada semana</div><canvas id="cT" height="160"></canvas></div>
         <div class="cc"><div class="ct">Servicios más pedidos</div><div class="cs">Top por tipo de problema</div><canvas id="cS" height="160"></canvas></div>
       </div>
       <div class="tblc">
-        <div class="tblh"><div class="tblt">Reparaciones del período</div><span style="font-family:var(--mono);font-size:11px;color:var(--text3)" id="tblCnt"></span></div>
+        <div class="tblh"><div class="tblt">Reparaciónes del período</div><span style="font-family:var(--mono);font-size:11px;color:var(--text3)" id="tblCnt"></span></div>
         <div id="metTbl"><div class="empty"><div class="spinner"></div></div></div>
       </div>
     </div>
@@ -473,7 +472,7 @@ let mCh={};
 
 async function loadAll(){
   try{
-    [aR,aE,aC]=await Promise.all([db('GET','reparaciones','?order=created_at.desc'),db('GET','equipos',''),db('GET','clientes','')]);
+    [aR,aE,aC]=await Promise.all([db('GET','reparaciónes','?order=created_at.desc'),db('GET','equipos',''),db('GET','clientes','')]);
     updStats(); renderList();
   }catch(e){document.getElementById('rlist').innerHTML='<div class="empty">Error cargando datos</div>';}
 }
@@ -496,7 +495,7 @@ function renderList(){
     const c=aC.find(x=>x.id===e.cliente_id)||{};
     return (c.nombre||'').toLowerCase().includes(q)||(e.nombre||'').toLowerCase().includes(q)||(r.numero||'').includes(q)||(r.problema||'').toLowerCase().includes(q);
   });
-  if(!data.length){document.getElementById('rlist').innerHTML='<div class="empty">Sin reparaciones</div>';return;}
+  if(!data.length){document.getElementById('rlist').innerHTML='<div class="empty">Sin reparaciónes</div>';return;}
   const LB={espera:'En espera',proceso:'En reparación',listo:'Listo para retirar',entregado:'Entregado'};
   const IC={espera:'⏳',proceso:'🔧',listo:'✅',entregado:'📦'};
   document.getElementById('rlist').innerHTML=data.map(r=>{
@@ -596,7 +595,7 @@ function renderList(){
             <div class="stl" id="st-${r.id}"><div style="color:var(--text3);font-size:12px;text-align:center;padding:8px">Cargando...</div></div>
             <div class="sf">
               <div class="sr2"><input class="sin" id="sti-${r.id}" placeholder="Título del paso"/><select class="sse" id="ses-${r.id}"><option value="done">✅ Hecho</option><option value="active">🔧 En curso</option><option value="pending">⏳ Pendiente</option></select></div>
-              <div class="sr2"><input class="sin" id="sno-${r.id}" placeholder="Nota (opcional)"/><input class="sin" id="sfe-${r.id}" placeholder="Fecha" style="max-width:110px" value="${new Date().toLocaleDateString('es-AR',{day:'numeric',month:'short'})}"/><button class="smbtn" onclick="addPaso('${r.id}')">+ Paso</button></div>
+              <div class="sr2"><input class="sin" id="sno-${r.id}" placeholder="Nota (opciónal)"/><input class="sin" id="sfe-${r.id}" placeholder="Fecha" style="max-width:110px" value="${new Date().toLocaleDateString('es-AR',{day:'numeric',month:'short'})}"/><button class="smbtn" onclick="addPaso('${r.id}')">+ Paso</button></div>
             </div>
           </div>
         </div>
@@ -618,7 +617,7 @@ async function togC(id){
 async function loadPasos(id){
   const co=document.getElementById(`st-${id}`);
   try{
-    const p=await db('GET','pasos',`?reparacion_id=eq.${id}&order=orden.asc`);
+    const p=await db('GET','pasos',`?reparación_id=eq.${id}&order=orden.asc`);
     if(!p.length){co.innerHTML='<div style="color:var(--text3);font-size:12px;text-align:center;padding:8px">Sin pasos todavía</div>';return;}
     const ei={done:'✅',active:'🔧',pending:'⏳'};
     co.innerHTML=p.map(x=>`<div class="str"><span>${ei[x.estado]||'•'}</span><span class="stt">${x.titulo}${x.nota?` — <span style="color:var(--text3)">${x.nota}</span>`:''}</span><span class="std">${x.fecha||''}</span><button class="sdel" onclick="delPaso('${x.id}','${id}')">✕</button></div>`).join('');
@@ -631,10 +630,10 @@ async function addPaso(id){
   const es=document.getElementById(`ses-${id}`).value;
   const no=document.getElementById(`sno-${id}`).value.trim();
   const fe=document.getElementById(`sfe-${id}`).value.trim();
-  const ex=await db('GET','pasos',`?reparacion_id=eq.${id}&select=orden&order=orden.desc&limit=1`);
+  const ex=await db('GET','pasos',`?reparación_id=eq.${id}&select=orden&order=orden.desc&limit=1`);
   const ord=ex?.length?ex[0].orden+1:1;
   const ico=es==='done'?'check':es==='active'?'wrench':'bell';
-  await db('POST','pasos','',{reparacion_id:id,orden:ord,titulo:t,estado:es,nota:no||null,fecha:fe||null,icono:ico});
+  await db('POST','pasos','',{reparación_id:id,orden:ord,titulo:t,estado:es,nota:no||null,fecha:fe||null,icono:ico});
   document.getElementById(`sti-${id}`).value='';document.getElementById(`sno-${id}`).value='';document.getElementById(`sfe-${id}`).value='';
   await loadPasos(id);
 
@@ -654,7 +653,7 @@ async function addPaso(id){
 async function delPaso(pid,id){if(!confirm('¿Borrar?'))return;await db('DELETE','pasos',`?id=eq.${pid}`);await loadPasos(id);toast('Paso borrado');}
 
 async function chEst(id,st,btn){
-  await db('PATCH','reparaciones',`?id=eq.${id}`,{estado:st});
+  await db('PATCH','reparaciónes',`?id=eq.${id}`,{estado:st});
   const d=aR.find(r=>r.id===id); if(d) d.estado=st;
   updStats();
   btn.closest('.sgrid').querySelectorAll('.so').forEach(b=>b.className='so');
@@ -687,7 +686,7 @@ async function chEst(id,st,btn){
 
 async function savePr(id){
   const v=document.getElementById(`pr-${id}`).value.trim();
-  await db('PATCH','reparaciones',`?id=eq.${id}`,{presupuesto:v});
+  await db('PATCH','reparaciónes',`?id=eq.${id}`,{presupuesto:v});
   const d=aR.find(r=>r.id===id); if(d) d.presupuesto=v;
   // Check if client has discount
   const eq=aE.find(e=>e.id===d?.equipo_id)||{};
@@ -714,7 +713,7 @@ async function openModal(){
   document.getElementById('modal').classList.add('open');
   document.getElementById('mNum').value='Calculando...';
   try{
-    const reps=await db('GET','reparaciones','?select=numero&order=created_at.desc');
+    const reps=await db('GET','reparaciónes','?select=numero&order=created_at.desc');
     let max=0;
     (reps||[]).forEach(r=>{const n=parseInt((r.numero||'').replace(/\D/g,''),10);if(!isNaN(n)&&n>max)max=n;});
     document.getElementById('mNum').value=String(max+1).padStart(4,'0');
@@ -747,9 +746,9 @@ async function crearRep(){
     if(clArr?.length){cid=clArr[0].id;}
     else{const nv=await db('POST','clientes','',{codigo:cod,nombre:nom,apellido:ape,telefono:tel});cid=nv[0].id;}
     const er=await db('POST','equipos','',{cliente_id:cid,nombre:eq,modelo:mod,icono:ico});
-    const rr=await db('POST','reparaciones','',{equipo_id:er[0].id,numero:num,problema:prob,presupuesto:pres,estado:'espera'});
+    const rr=await db('POST','reparaciónes','',{equipo_id:er[0].id,numero:num,problema:prob,presupuesto:pres,estado:'espera'});
     const hoy=new Date().toLocaleDateString('es-AR',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
-    await db('POST','pasos','',{reparacion_id:rr[0].id,orden:1,titulo:'Equipo ingresado',nota:`Comprobante #${num}. ${prob}`,estado:'done',fecha:hoy,icono:'check'});
+    await db('POST','pasos','',{reparación_id:rr[0].id,orden:1,titulo:'Equipo ingresado',nota:`Comprobante #${num}. ${prob}`,estado:'done',fecha:hoy,icono:'check'});
     closeModal();
     ['mCod','mNom','mApe','mTel','mEq','mMod','mProb','mPres'].forEach(id=>document.getElementById(id).value='');
     await loadAll();
@@ -779,7 +778,7 @@ async function loadFotos(repId){
   const cont=document.getElementById(`fotos-${repId}`);
   if(!cont) return;
   try{
-    const fotos=await db('GET','fotos',`?reparacion_id=eq.${repId}&order=created_at.asc`);
+    const fotos=await db('GET','fotos',`?reparación_id=eq.${repId}&order=created_at.asc`);
     if(!fotos||!fotos.length){cont.innerHTML='<div style="color:var(--text3);font-size:12px;padding:4px 0">Sin fotos todavía</div>';return;}
     const tipoIcon={antes:'📸',durante:'🔧',despues:'✅'};
     cont.innerHTML=fotos.map(f=>`
@@ -800,7 +799,7 @@ async function subirFoto(repId, input){
     const reader=new FileReader();
     reader.onload=async e=>{
       const url=e.target.result;
-      await db('POST','fotos','',{reparacion_id:repId,url,tipo});
+      await db('POST','fotos','',{reparación_id:repId,url,tipo});
       await loadFotos(repId);
       toast('Foto subida ✓');
     };
@@ -821,7 +820,7 @@ async function loadCalif(repId){
   const cont=document.getElementById(`calif-${repId}`);
   if(!cont) return;
   try{
-    const cal=await db('GET','calificaciones',`?reparacion_id=eq.${repId}&limit=1`);
+    const cal=await db('GET','calificaciones',`?reparación_id=eq.${repId}&limit=1`);
     if(!cal||!cal.length){
       cont.innerHTML='<div style="color:var(--text3);font-size:12px">El cliente aún no calificó este servicio</div>';
       return;
@@ -903,7 +902,7 @@ async function renderAgenda(){
   // Load turnos for this date + active repairs
   const [turnos, reps]=await Promise.all([
     db('GET','turnos',`?fecha=eq.${hoy}&order=hora.asc`),
-    db('GET','reparaciones','?estado=neq.entregado&order=created_at.desc'),
+    db('GET','reparaciónes','?estado=neq.entregado&order=created_at.desc'),
   ]);
 
   // Build agenda columns
@@ -977,7 +976,7 @@ async function toggleDescuento(clienteId, btn){
 // ── FECHA ESTIMADA ──
 async function saveFechaEst(id){
   const v=document.getElementById(`fe-${id}`).value.trim();
-  await db('PATCH','reparaciones',`?id=eq.${id}`,{fecha_entrega:v});
+  await db('PATCH','reparaciónes',`?id=eq.${id}`,{fecha_entrega:v});
   const d=aR.find(r=>r.id===id);if(d) d.fecha_entrega=v;
   toast('Fecha estimada guardada ✓');
 }
@@ -1009,7 +1008,7 @@ async function guardarEdicion(){
   try{
     await db('PATCH','clientes',`?id=eq.${cid}`,{nombre:document.getElementById('eNom').value.trim(),apellido:document.getElementById('eApe').value.trim(),telefono:document.getElementById('eTel').value.trim()});
     await db('PATCH','equipos',`?id=eq.${eid}`,{nombre:document.getElementById('eEq').value.trim(),modelo:document.getElementById('eMod').value.trim()});
-    await db('PATCH','reparaciones',`?id=eq.${rid}`,{problema:document.getElementById('eProb').value.trim(),presupuesto:document.getElementById('ePres').value.trim(),fecha_entrega:document.getElementById('eFest').value.trim()});
+    await db('PATCH','reparaciónes',`?id=eq.${rid}`,{problema:document.getElementById('eProb').value.trim(),presupuesto:document.getElementById('ePres').value.trim(),fecha_entrega:document.getElementById('eFest').value.trim()});
     closeEdit();
     await loadAll();
     toast('Cambios guardados ✓');
@@ -1187,7 +1186,7 @@ function filtrarPorCliente(clienteId){
   const reps=aR.filter(r=>eqs.includes(r.equipo_id));
   const LB={espera:'En espera',proceso:'En reparación',listo:'Listo para retirar',entregado:'Entregado'};
   const IC={espera:'⏳',proceso:'🔧',listo:'✅',entregado:'📦'};
-  if(!reps.length){document.getElementById('rlist').innerHTML='<div class="empty">Sin reparaciones para este cliente</div>';return;}
+  if(!reps.length){document.getElementById('rlist').innerHTML='<div class="empty">Sin reparaciónes para este cliente</div>';return;}
   document.getElementById('searchPanel').classList.remove('open');
   // Temporarily override renderList to show only this client
   const c=aC.find(x=>x.id===clienteId)||{};

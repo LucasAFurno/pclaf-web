@@ -153,7 +153,7 @@ footer a:hover{color:var(--red);}
 
 <main>
   <div class="search-block">
-    <div class="search-heading">Consultá el historial de tus reparaciones</div>
+    <div class="search-heading">Consultá el historial de tus reparaciónes</div>
     <div class="search-sub">Ingresá el código de cliente que te dimos cuando dejaste tu equipo por primera vez.</div>
     <div class="search-row">
       <input class="search-input" id="searchInput" type="text" placeholder="Ej: LUCAS01" autocomplete="off"/>
@@ -251,7 +251,7 @@ async function cargar(code) {
     const equipos = await db('equipos', `?cliente_id=eq.${cliente.id}&order=created_at.asc`);
 
     for (const eq of equipos) {
-      eq.repairs = await db('reparaciones', `?equipo_id=eq.${eq.id}&order=created_at.desc`);
+      eq.repairs = await db('reparaciónes', `?equipo_id=eq.${eq.id}&order=created_at.desc`);
       const activa = eq.repairs.find(r => ['listo','proceso','espera'].includes(r.estado));
       eq.lastStatus = activa?.estado || 'ok';
     }
@@ -303,9 +303,9 @@ async function showMachine(equipoId, evt) {
 
   const repHtml = await Promise.all(m.repairs.map(async (r,i) => {
     const [pasos, fotos, calArr] = await Promise.all([
-      db('pasos', `?reparacion_id=eq.${r.id}&order=orden.asc`),
-      db('fotos', `?reparacion_id=eq.${r.id}&order=created_at.asc`).catch(()=>[]),
-      db('calificaciones', `?reparacion_id=eq.${r.id}&limit=1`).catch(()=>[]),
+      db('pasos', `?reparación_id=eq.${r.id}&order=orden.asc`),
+      db('fotos', `?reparación_id=eq.${r.id}&order=created_at.asc`).catch(()=>[]),
+      db('calificaciones', `?reparación_id=eq.${r.id}&limit=1`).catch(()=>[]),
     ]);
     const fecha = r.created_at ? new Date(r.created_at).toLocaleDateString('es-AR',{month:'long',year:'numeric'}) : '';
 
@@ -359,7 +359,7 @@ async function showMachine(equipoId, evt) {
           <div style="display:flex;gap:6px;justify-content:center;margin-bottom:10px" id="stars-${r.id}">
             ${[1,2,3,4,5].map(n=>`<span onclick="selectStar('${r.id}',${n})" style="font-size:28px;cursor:pointer;transition:transform .1s;user-select:none" data-val="${n}">☆</span>`).join('')}
           </div>
-          <textarea id="califComent-${r.id}" placeholder="Contanos cómo fue (opcional)" style="width:100%;background:var(--black3);border:1px solid var(--border2);border-radius:8px;padding:10px;font-size:13px;color:var(--text);resize:none;outline:none;height:70px;font-family:var(--sans);margin-bottom:8px"></textarea>
+          <textarea id="califComent-${r.id}" placeholder="Contanos cómo fue (opciónal)" style="width:100%;background:var(--black3);border:1px solid var(--border2);border-radius:8px;padding:10px;font-size:13px;color:var(--text);resize:none;outline:none;height:70px;font-family:var(--sans);margin-bottom:8px"></textarea>
           <button onclick="enviarCalif('${r.id}')" style="width:100%;background:var(--red);border:none;border-radius:8px;padding:10px;font-size:13px;font-weight:700;color:#fff;cursor:pointer">Enviar calificación</button>`}
       </div>` : '';
 
@@ -425,7 +425,7 @@ async function enviarCalif(repId) {
     await fetch(`${SUPABASE_URL}/rest/v1/calificaciones`, {
       method:'POST',
       headers:{ apikey:SUPABASE_ANON_KEY, Authorization:`Bearer ${SUPABASE_ANON_KEY}`, 'Content-Type':'application/json', Prefer:'return=representation' },
-      body: JSON.stringify({ reparacion_id:repId, puntuacion:puntaje, comentario })
+      body: JSON.stringify({ reparación_id:repId, puntuacion:puntaje, comentario })
     });
     const bloque = document.getElementById(`califBloque-${repId}`);
     if (!bloque) return;
