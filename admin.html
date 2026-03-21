@@ -43,9 +43,9 @@ body{background:var(--black);color:var(--text);font-family:var(--sans);min-heigh
 .tr{margin-left:auto;display:flex;align-items:center;gap:8px;}
 .ibtn{font-size:12px;color:var(--text3);background:none;border:1px solid var(--border);border-radius:6px;padding:6px 12px;cursor:pointer;transition:all .15s;text-decoration:none;}
 .ibtn:hover{color:var(--red);border-color:var(--red);}
-.view{display:none;}
-.view.active{display:block;}
-main{max-width:1200px;margin:0 auto;padding:22px 24px 80px;}
+.view{display:none;position:relative;}
+.view.active{display:block;position:relative;}
+main{max-width:1200px;margin:0 auto;padding:22px 24px 80px;overflow:hidden;}
 .sbar{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px;}
 .sc{background:var(--black2);border:1px solid var(--border);border-radius:10px;padding:15px 17px;}
 .sn{font-family:var(--mono);font-size:26px;font-weight:700;color:#fff;margin-bottom:2px;}
@@ -454,10 +454,13 @@ document.getElementById('loginPass').addEventListener('keydown',e=>{if(e.key==='
 
 // TABS
 function switchTab(name,btn){
+  // Close all open repair cards first
+  document.querySelectorAll('.rc.open').forEach(c=>c.classList.remove('open'));
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   btn.classList.add('active');
   document.getElementById('view-'+name).classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
   if(name==='met') renderMetrics();
   if(name==='turnos') loadTurnos();
   if(name==='agenda') renderAgenda();
