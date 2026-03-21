@@ -555,6 +555,12 @@ function renderList(){
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
               Imprimir comprobante
             </button>
+            <button class="pdf-btn" onclick="subirReporte('${r.id}')" style="margin-top:4px;border-color:#3b82f6;color:#3b82f6">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              Subir reporte de diagnóstico
+              <input type="file" accept=".html" style="display:none" id="reporteInput-${r.id}" onchange="procesarReporte('${r.id}',this)"/>
+            </button>
+            <div id="reporteStatus-${r.id}" style="font-size:11px;color:var(--text3);margin-top:4px;display:none"></div>
             <button class="pdf-btn" onclick="editarRep('${r.id}')" style="margin-top:4px;border-color:var(--amber);color:var(--amber)">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
               Editar reparación
@@ -610,14 +616,16 @@ async function togC(id){
   document.querySelectorAll('.rc.open').forEach(x=>x.classList.remove('open'));
   if(!was){
     c.classList.add('open');
-    await Promise.all([loadPasos(id), loadFotos(id), loadCalif(id)]);
+    await loadPasos(id);
+    loadFotos(id).catch(()=>{const c=document.getElementById(`fotos-${id}`);if(c)c.innerHTML='<div style="color:var(--text3);font-size:12px">Subí fotos una vez creada la tabla en Supabase</div>';});
+    loadCalif(id).catch(()=>{const c=document.getElementById(`calif-${id}`);if(c)c.innerHTML='<div style="color:var(--text3);font-size:12px">Sin calificación todavía</div>';});
   }
 }
 
 async function loadPasos(id){
   const co=document.getElementById(`st-${id}`);
   try{
-    const p=await db('GET','pasos',`?reparación_id=eq.${id}&order=orden.asc`);
+    const p=await db('GET','pasos',`?reparacion_id=eq.${id}&order=orden.asc`);
     if(!p.length){co.innerHTML='<div style="color:var(--text3);font-size:12px;text-align:center;padding:8px">Sin pasos todavía</div>';return;}
     const ei={done:'✅',active:'🔧',pending:'⏳'};
     co.innerHTML=p.map(x=>`<div class="str"><span>${ei[x.estado]||'•'}</span><span class="stt">${x.titulo}${x.nota?` — <span style="color:var(--text3)">${x.nota}</span>`:''}</span><span class="std">${x.fecha||''}</span><button class="sdel" onclick="delPaso('${x.id}','${id}')">✕</button></div>`).join('');
@@ -630,10 +638,10 @@ async function addPaso(id){
   const es=document.getElementById(`ses-${id}`).value;
   const no=document.getElementById(`sno-${id}`).value.trim();
   const fe=document.getElementById(`sfe-${id}`).value.trim();
-  const ex=await db('GET','pasos',`?reparación_id=eq.${id}&select=orden&order=orden.desc&limit=1`);
+  const ex=await db('GET','pasos',`?reparacion_id=eq.${id}&select=orden&order=orden.desc&limit=1`);
   const ord=ex?.length?ex[0].orden+1:1;
   const ico=es==='done'?'check':es==='active'?'wrench':'bell';
-  await db('POST','pasos','',{reparación_id:id,orden:ord,titulo:t,estado:es,nota:no||null,fecha:fe||null,icono:ico});
+  await db('POST','pasos','',{reparacion_id:id,orden:ord,titulo:t,estado:es,nota:no||null,fecha:fe||null,icono:ico});
   document.getElementById(`sti-${id}`).value='';document.getElementById(`sno-${id}`).value='';document.getElementById(`sfe-${id}`).value='';
   await loadPasos(id);
 
@@ -748,7 +756,7 @@ async function crearRep(){
     const er=await db('POST','equipos','',{cliente_id:cid,nombre:eq,modelo:mod,icono:ico});
     const rr=await db('POST','reparaciones','',{equipo_id:er[0].id,numero:num,problema:prob,presupuesto:pres,estado:'espera'});
     const hoy=new Date().toLocaleDateString('es-AR',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
-    await db('POST','pasos','',{reparación_id:rr[0].id,orden:1,titulo:'Equipo ingresado',nota:`Comprobante #${num}. ${prob}`,estado:'done',fecha:hoy,icono:'check'});
+    await db('POST','pasos','',{reparacion_id:rr[0].id,orden:1,titulo:'Equipo ingresado',nota:`Comprobante #${num}. ${prob}`,estado:'done',fecha:hoy,icono:'check'});
     closeModal();
     ['mCod','mNom','mApe','mTel','mEq','mMod','mProb','mPres'].forEach(id=>document.getElementById(id).value='');
     await loadAll();
@@ -778,7 +786,7 @@ async function loadFotos(repId){
   const cont=document.getElementById(`fotos-${repId}`);
   if(!cont) return;
   try{
-    const fotos=await db('GET','fotos',`?reparación_id=eq.${repId}&order=created_at.asc`);
+    const fotos=await db('GET','fotos',`?reparacion_id=eq.${repId}&order=created_at.asc`);
     if(!fotos||!fotos.length){cont.innerHTML='<div style="color:var(--text3);font-size:12px;padding:4px 0">Sin fotos todavía</div>';return;}
     const tipoIcon={antes:'📸',durante:'🔧',despues:'✅'};
     cont.innerHTML=fotos.map(f=>`
@@ -799,7 +807,7 @@ async function subirFoto(repId, input){
     const reader=new FileReader();
     reader.onload=async e=>{
       const url=e.target.result;
-      await db('POST','fotos','',{reparación_id:repId,url,tipo});
+      await db('POST','fotos','',{reparacion_id:repId,url,tipo});
       await loadFotos(repId);
       toast('Foto subida ✓');
     };
@@ -820,7 +828,7 @@ async function loadCalif(repId){
   const cont=document.getElementById(`calif-${repId}`);
   if(!cont) return;
   try{
-    const cal=await db('GET','calificaciones',`?reparación_id=eq.${repId}&limit=1`);
+    const cal=await db('GET','calificaciones',`?reparacion_id=eq.${repId}&limit=1`);
     if(!cal||!cal.length){
       cont.innerHTML='<div style="color:var(--text3);font-size:12px">El cliente aún no calificó este servicio</div>';
       return;
@@ -1250,6 +1258,53 @@ function mTbl(reps){
   const LB={espera:'En espera',proceso:'En reparación',listo:'Listo',entregado:'Entregado'};
   const rows=reps.slice(0,25).map(r=>{const e=aE.find(x=>x.id===r.equipo_id)||{};const c=aC.find(x=>x.id===e.cliente_id)||{};const f=r.created_at?new Date(r.created_at).toLocaleDateString('es-AR',{day:'numeric',month:'short',year:'2-digit'}):'–';return`<tr><td class="tdm">#${r.numero}</td><td>${c.nombre||'–'}${c.apellido?' '+c.apellido:''}</td><td>${(e.icono||'💻')+' '+(e.nombre||'–')}</td><td>${r.problema||'–'}</td><td class="tdm tdg">${r.presupuesto||'–'}</td><td><span class="sb sb-${r.estado}">${LB[r.estado]||r.estado}</span></td><td style="color:var(--text3)">${f}</td></tr>`;}).join('');
   document.getElementById('metTbl').innerHTML=`<table><thead><tr><th>#</th><th>Cliente</th><th>Equipo</th><th>Problema</th><th>Presupuesto</th><th>Estado</th><th>Fecha</th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+
+// ── SUBIR REPORTE HTML ──
+function subirReporte(repId) {
+  document.getElementById(`reporteInput-${repId}`).click();
+}
+
+async function procesarReporte(repId, input) {
+  const file = input.files[0];
+  if (!file) return;
+  const status = document.getElementById(`reporteStatus-${repId}`);
+  status.style.display = 'block';
+  status.textContent = 'Subiendo reporte...';
+  status.style.color = 'var(--amber)';
+  
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    const htmlContent = e.target.result;
+    try {
+      // Check if report already exists for this repair
+      const existing = await db('GET', 'reportes', `?reparacion_id=eq.${repId}&limit=1`);
+      if (existing?.length) {
+        // Update existing
+        await db('PATCH', 'reportes', `?id=eq.${existing[0].id}`, {
+          html_content: htmlContent,
+          filename: file.name,
+          created_at: new Date().toISOString()
+        });
+      } else {
+        // Insert new
+        await db('POST', 'reportes', '', {
+          reparacion_id: repId,
+          html_content: htmlContent,
+          filename: file.name
+        });
+      }
+      status.textContent = '✓ Reporte subido — el cliente puede verlo en su historial';
+      status.style.color = 'var(--green)';
+      toast('Reporte subido ✓');
+    } catch(e) {
+      status.textContent = 'Error al subir el reporte';
+      status.style.color = 'var(--red)';
+      toast('Error: ' + e.message, true);
+    }
+  };
+  reader.readAsText(file, 'UTF-8');
+  input.value = '';
 }
 
 let tt;

@@ -302,10 +302,11 @@ async function showMachine(equipoId, evt) {
   evt?.currentTarget?.classList.add('selected');
 
   const repHtml = await Promise.all(m.repairs.map(async (r,i) => {
-    const [pasos, fotos, calArr] = await Promise.all([
-      db('pasos', `?reparación_id=eq.${r.id}&order=orden.asc`),
-      db('fotos', `?reparación_id=eq.${r.id}&order=created_at.asc`).catch(()=>[]),
-      db('calificaciones', `?reparación_id=eq.${r.id}&limit=1`).catch(()=>[]),
+    const [pasos, fotos, calArr, repArr] = await Promise.all([
+      db('pasos', `?reparacion_id=eq.${r.id}&order=orden.asc`),
+      db('fotos', `?reparacion_id=eq.${r.id}&order=created_at.asc`).catch(()=>[]),
+      db('calificaciones', `?reparacion_id=eq.${r.id}&limit=1`).catch(()=>[]),
+      db('reportes', `?reparacion_id=eq.${r.id}&order=created_at.desc&limit=1`).catch(()=>[]),
     ]);
     const fecha = r.created_at ? new Date(r.created_at).toLocaleDateString('es-AR',{month:'long',year:'numeric'}) : '';
 
@@ -346,6 +347,17 @@ async function showMachine(equipoId, evt) {
         </div>
       </div>` : '';
 
+    // Reporte de diagnóstico
+    const reporteHtml = repArr?.length ? `
+      <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border)">
+        <div style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">📊 Reporte de diagnóstico</div>
+        <div style="font-size:12px;color:var(--text2);margin-bottom:10px">${new Date(repArr[0].created_at).toLocaleDateString('es-AR',{day:'numeric',month:'long',year:'numeric'})}</div>
+        <button onclick="verReporte('${repArr[0].id}')" style="display:inline-flex;align-items:center;gap:7px;background:var(--black3);border:1.5px solid var(--border2);color:var(--text);padding:9px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s" onmouseover="this.style.borderColor='var(--red)';this.style.color='var(--red)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--text)'">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          Ver reporte completo
+        </button>
+      </div>` : '';
+
     // Calificacion
     const yaCalificó = calArr?.length > 0;
     const califHtml = r.estado === 'entregado' ? `
@@ -359,7 +371,7 @@ async function showMachine(equipoId, evt) {
           <div style="display:flex;gap:6px;justify-content:center;margin-bottom:10px" id="stars-${r.id}">
             ${[1,2,3,4,5].map(n=>`<span onclick="selectStar('${r.id}',${n})" style="font-size:28px;cursor:pointer;transition:transform .1s;user-select:none" data-val="${n}">☆</span>`).join('')}
           </div>
-          <textarea id="califComent-${r.id}" placeholder="Contanos cómo fue (opciónal)" style="width:100%;background:var(--black3);border:1px solid var(--border2);border-radius:8px;padding:10px;font-size:13px;color:var(--text);resize:none;outline:none;height:70px;font-family:var(--sans);margin-bottom:8px"></textarea>
+          <textarea id="califComent-${r.id}" placeholder="Contanos cómo fue (opcional)" style="width:100%;background:var(--black3);border:1px solid var(--border2);border-radius:8px;padding:10px;font-size:13px;color:var(--text);resize:none;outline:none;height:70px;font-family:var(--sans);margin-bottom:8px"></textarea>
           <button onclick="enviarCalif('${r.id}')" style="width:100%;background:var(--red);border:none;border-radius:8px;padding:10px;font-size:13px;font-weight:700;color:#fff;cursor:pointer">Enviar calificación</button>`}
       </div>` : '';
 
@@ -376,6 +388,7 @@ async function showMachine(equipoId, evt) {
         ${fechaEstHtml}
         <div class="mini-tl" style="margin-top:${r.fecha_entrega?'14px':'0'}">${stepsHtml}</div>
         ${fotosHtml}
+        ${reporteHtml}
         ${califHtml}
       </div>
     </div>`;
@@ -403,6 +416,33 @@ async function showMachine(equipoId, evt) {
 function toggleRepair(i) { document.getElementById('rep-'+i).classList.toggle('open'); }
 function volverMaquinas() { hide('panelHistory'); document.getElementById('panelMachines').scrollIntoView({behavior:'smooth',block:'start'}); }
 
+// ── VER REPORTE ──
+let allReportes = {};
+async function verReporte(reporteId) {
+  // If we have it cached, open it
+  if (allReportes[reporteId]) {
+    const w = window.open('', '_blank');
+    w.document.write(allReportes[reporteId].html_content);
+    w.document.close();
+    return;
+  }
+  // Fetch from DB
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/reportes?id=eq.${reporteId}&select=html_content`, {
+      headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` }
+    });
+    const data = await res.json();
+    if (data?.[0]?.html_content) {
+      allReportes[reporteId] = data[0];
+      const w = window.open('', '_blank');
+      w.document.write(data[0].html_content);
+      w.document.close();
+    }
+  } catch(e) {
+    alert('Error al cargar el reporte');
+  }
+}
+
 // ── CALIFICACIÓN ──
 let selectedStars = {};
 
@@ -425,7 +465,7 @@ async function enviarCalif(repId) {
     await fetch(`${SUPABASE_URL}/rest/v1/calificaciones`, {
       method:'POST',
       headers:{ apikey:SUPABASE_ANON_KEY, Authorization:`Bearer ${SUPABASE_ANON_KEY}`, 'Content-Type':'application/json', Prefer:'return=representation' },
-      body: JSON.stringify({ reparación_id:repId, puntuacion:puntaje, comentario })
+      body: JSON.stringify({ reparacion_id:repId, puntuacion:puntaje, comentario })
     });
     const bloque = document.getElementById(`califBloque-${repId}`);
     if (!bloque) return;
