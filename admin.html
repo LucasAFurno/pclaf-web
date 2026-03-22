@@ -1505,91 +1505,124 @@ function renderTools() {}
 const TOOLS_BASE = 'https://raw.githubusercontent.com/LucasAFurno/pclaf-reporte/main';
 
 function lanzarScript(tipo) {
-  const archivos = {
-    tecnico: { cmd: 'DiagnosticoPC_Tecnico.cmd', label: 'TECNICO' },
-    cliente: { cmd: 'DiagnosticoPC_Cliente.cmd', label: 'CLIENTE' },
-    verificar: { cmd: null, label: 'VERIFICAR' },
+  const modos = {
+    tecnico:   { modo: 'tecnico',  label: 'TECNICO',   emoji: '🔧' },
+    cliente:   { modo: 'cliente',  label: 'CLIENTE',   emoji: '👤' },
+    verificar: { modo: null,       label: 'VERIFICAR', emoji: '🔍' },
   };
-  const cfg = archivos[tipo];
-  let batContent = '';
+  const cfg = modos[tipo];
+  let bat = '';
 
   if (tipo === 'verificar') {
-    batContent = `@echo off
-title PCLAF - Historial del equipo
+    bat = `@echo off
+title PCLAF - Verificar historial
+color 0A
 echo.
-echo ============================================================
-echo                     P C L A F
-echo              HISTORIAL DE REPARACIONES
-echo ============================================================
+echo  ============================================================
+echo                      P C L A F
+echo           Verificando historial en este equipo...
+echo  ============================================================
 echo.
-reg query HKLM\SOFTWARE\PCLAF\Historial 2>nul || echo No se encontraron registros PCLAF en este equipo.
+reg query HKLM\SOFTWARE\PCLAF\Diagnostics 2>nul
+if %ERRORLEVEL% NEQ 0 (
+  echo  No se encontraron registros PCLAF en este equipo.
+) else (
+  echo  [OK] Datos de ultima revision encontrados arriba.
+)
+echo.
+if exist "C:\ProgramData\PCLAF\last.json" (
+  echo  [OK] Archivo local encontrado: C:\ProgramData\PCLAF\last.json
+) else (
+  echo  Sin archivo de revision previo.
+)
 echo.
 pause`;
   } else {
-    batContent = `@echo off
-title PCLAF - Reporte ${cfg.label}
+    bat = `@echo off
+title PCLAF - Diagnostico ${cfg.label}
+color 0A
 echo.
-echo ============================================================
-echo                     P C L A F
-echo         Descargando y ejecutando diagnostico...
-echo ============================================================
+echo  ============================================================
+echo                      P C L A F
+echo       Descargando y ejecutando diagnostico...
+echo       Modo: ${cfg.modo.toUpperCase()}
+echo  ============================================================
 echo.
-cd /d "%TEMP%"
-echo Descargando DiagnosticoPC.ps1...
-powershell -Command "Invoke-WebRequest '${TOOLS_BASE}/DiagnosticoPC.ps1' -OutFile DiagnosticoPC.ps1"
-echo Descargando ${cfg.cmd}...
-powershell -Command "Invoke-WebRequest '${TOOLS_BASE}/${cfg.cmd}' -OutFile ${cfg.cmd}"
-echo Ejecutando...
-call "%TEMP%\${cfg.cmd}"`;
+
+ping -n 1 raw.githubusercontent.com >nul 2>nul
+if %ERRORLEVEL% NEQ 0 (
+  echo  ERROR: Sin conexion a internet.
+  pause & exit /b 1
+)
+
+echo  [1/2] Descargando DiagnosticoPC.ps1...
+powershell -NoProfile -Command "Invoke-WebRequest -Uri '${TOOLS_BASE}/DiagnosticoPC.ps1' -OutFile '%TEMP%\DiagnosticoPC_PCLAF.ps1' -UseBasicParsing" 2>nul
+
+if not exist "%TEMP%\DiagnosticoPC_PCLAF.ps1" (
+  echo  ERROR: No se pudo descargar el script.
+  echo  Verificar conexion o que el repo sea publico.
+  pause & exit /b 1
+)
+echo  [OK] Script descargado.
+echo.
+echo  [2/2] Ejecutando en modo ${cfg.modo}...
+powershell -NoProfile -ExecutionPolicy Bypass -File "%TEMP%\DiagnosticoPC_PCLAF.ps1" -Modo ${cfg.modo}
+
+if %ERRORLEVEL% NEQ 0 (
+  echo.
+  echo  Algo salio mal. Proba ejecutar como Administrador.
+) else (
+  echo.
+  echo  [OK] Reporte generado. Busca el HTML en el Escritorio.
+)
+echo.
+pause`;
   }
 
-  // Create and download the BAT file
-  const blob = new Blob([batContent], { type: 'application/bat' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
+  const blob = new Blob([bat], { type: 'text/plain' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
   a.download = `PCLAF_${cfg.label}.bat`;
+  document.body.appendChild(a);
   a.click();
+  document.body.removeChild(a);
   URL.revokeObjectURL(url);
-  toast(`✓ Descargando PCLAF_${cfg.label}.bat — abrilo como Administrador`);
+  toast(`${cfg.emoji} Descargando PCLAF_${cfg.label}.bat — abrilo como Administrador`);
 }
 
 function lanzarMarca() {
   const nro = document.getElementById('nroRepMarca')?.value?.trim();
   if (!nro) { toast('Ingresá el número de reparación', true); return; }
 
-  const batContent = `@echo off
+  const bat = `@echo off
 title PCLAF - Marcar equipo #${nro}
+color 0A
 echo.
-echo ============================================================
-echo                     P C L A F
-echo           MARCANDO EQUIPO - Rep #${nro}
-echo ============================================================
+echo  ============================================================
+echo                      P C L A F
+echo           Marcando equipo - Reparacion #${nro}
+echo  ============================================================
 echo.
-SET REP=${nro}
-SET FECHA=%DATE% %TIME%
-SET EQUIPO=%COMPUTERNAME%
-echo Escribiendo en registro de Windows...
-reg add "HKLM\SOFTWARE\PCLAF\Historial" /v "Rep_%REP%" /t REG_SZ /d "Numero=%REP% | Equipo=%EQUIPO% | Fecha=%FECHA% | Tecnico=PCLAF" /f
+reg add "HKLM\SOFTWARE\PCLAF\Historial" /v "Rep_${nro}" /t REG_SZ /d "Numero=${nro} | Equipo=%COMPUTERNAME% | Fecha=%DATE% %TIME% | Tecnico=PCLAF" /f
 if %ERRORLEVEL%==0 (
-  echo.
-  echo [OK] Equipo marcado correctamente.
-  echo Reparacion #%REP% registrada en HKLM\SOFTWARE\PCLAF\Historial
+  echo  [OK] Equipo marcado. Clave: HKLM\SOFTWARE\PCLAF\Historial\Rep_${nro}
 ) else (
-  echo.
-  echo [ERROR] No se pudo escribir. Ejecuta como Administrador.
+  echo  [ERROR] No se pudo escribir. Ejecuta como Administrador.
 )
 echo.
 pause`;
 
-  const blob = new Blob([batContent], { type: 'application/bat' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
+  const blob = new Blob([bat], { type: 'text/plain' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
   a.download = `PCLAF_Marcar_${nro}.bat`;
+  document.body.appendChild(a);
   a.click();
+  document.body.removeChild(a);
   URL.revokeObjectURL(url);
-  toast(`✓ Descargando PCLAF_Marcar_${nro}.bat — abrilo como Administrador`);
+  toast(`🔖 Descargando PCLAF_Marcar_${nro}.bat — abrilo como Administrador`);
 }
 
 let tt;
