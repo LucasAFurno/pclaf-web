@@ -1595,20 +1595,30 @@ function lanzarMarca() {
   const nro = document.getElementById('nroRepMarca')?.value?.trim();
   if (!nro) { toast('Ingresá el número de reparación', true); return; }
 
+  // Build the reg add command - avoid | in /d value (CMD treats it as pipe)
+  const regKey  = 'HKLM\\SOFTWARE\\PCLAF\\Historial';
+  const regVal  = `Rep_${nro}`;
+  const regData = `PCLAF Rep${nro} %COMPUTERNAME% %DATE%`;
+
   const bat = `@echo off
 title PCLAF - Marcar equipo #${nro}
 color 0A
 echo.
 echo  ============================================================
 echo                      P C L A F
-echo           Marcando equipo - Reparacion #${nro}
+echo       Marcando equipo - Reparacion #${nro}
 echo  ============================================================
 echo.
-reg add "HKLM\SOFTWARE\PCLAF\Historial" /v "Rep_${nro}" /t REG_SZ /d "Numero=${nro} | Equipo=%COMPUTERNAME% | Fecha=%DATE% %TIME% | Tecnico=PCLAF" /f
+echo  Escribiendo en registro de Windows...
+reg add "HKLM\\SOFTWARE\\PCLAF\\Historial" /v "Rep_${nro}" /t REG_SZ /d "PCLAF-${nro}-%COMPUTERNAME%-PCLAF" /f
 if %ERRORLEVEL%==0 (
-  echo  [OK] Equipo marcado. Clave: HKLM\SOFTWARE\PCLAF\Historial\Rep_${nro}
+  echo.
+  echo  [OK] Equipo marcado correctamente.
+  echo  Clave: HKLM\\SOFTWARE\\PCLAF\\Historial\\Rep_${nro}
 ) else (
-  echo  [ERROR] No se pudo escribir. Ejecuta como Administrador.
+  echo.
+  echo  [ERROR] Fallo la escritura.
+  echo  Asegurate de ejecutar como Administrador.
 )
 echo.
 pause`;
