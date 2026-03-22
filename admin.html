@@ -360,7 +360,7 @@ tr:hover td{background:var(--black3);}
               <div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:4px;">🔧 Reporte técnico</div>
               <div style="font-size:12px;color:var(--text2);margin-bottom:10px;line-height:1.6;">Hardware completo, SMART, procesos, eventos críticos, seriales, registro. Solo para vos.</div>
               <div style="background:var(--black3);border:1px solid var(--border);border-radius:7px;padding:10px;display:flex;align-items:center;gap:8px;">
-                <code id="cmdTec" style="flex:1;font-family:var(--mono);font-size:11px;color:var(--red);background:none;border:none;word-break:break-all;">https://raw.githubusercontent.com/LucasAFurno/pclaf-reporte/main/DiagnosticoPC_Tecnico.cmd</code>
+                <code id="cmdTec" style="flex:1;font-family:var(--mono);font-size:11px;color:var(--red);background:none;border:none;word-break:break-all;">irm "https://raw.githubusercontent.com/LucasAFurno/pclaf-reporte/main/DiagnosticoPC_Tecnico.cmd" -o "$env:TEMP\dtec.cmd"; & "$env:TEMP\dtec.cmd"</code>
                 <button onclick="copiarCmd('cmdTec')" style="flex-shrink:0;background:var(--black4);border:1px solid var(--border2);color:var(--text2);padding:5px 10px;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;">📋 Copiar</button>
               </div>
             </div>
@@ -380,7 +380,7 @@ tr:hover td{background:var(--black3);}
               <div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:4px;">👤 Reporte cliente</div>
               <div style="font-size:12px;color:var(--text2);margin-bottom:10px;line-height:1.6;">Versión simplificada sin datos sensibles. El cliente lo ve desde su historial en la web.</div>
               <div style="background:var(--black3);border:1px solid var(--border);border-radius:7px;padding:10px;display:flex;align-items:center;gap:8px;">
-                <code id="cmdCli" style="flex:1;font-family:var(--mono);font-size:11px;color:var(--green);background:none;border:none;word-break:break-all;">https://raw.githubusercontent.com/LucasAFurno/pclaf-reporte/main/DiagnosticoPC_Cliente.cmd</code>
+                <code id="cmdCli" style="flex:1;font-family:var(--mono);font-size:11px;color:var(--green);background:none;border:none;word-break:break-all;">irm "https://raw.githubusercontent.com/LucasAFurno/pclaf-reporte/main/DiagnosticoPC_Cliente.cmd" -o "$env:TEMP\dcli.cmd"; & "$env:TEMP\dcli.cmd"</code>
                 <button onclick="copiarCmd('cmdCli')" style="flex-shrink:0;background:var(--black4);border:1px solid var(--border2);color:var(--text2);padding:5px 10px;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;">📋 Copiar</button>
               </div>
             </div>
