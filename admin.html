@@ -1515,23 +1515,38 @@ function lanzarScript(tipo) {
 
   if (tipo === 'verificar') {
     bat = `@echo off
-title PCLAF - Verificar historial
+chcp 65001 >nul
+title PCLAF - Historial del equipo
 color 0A
 echo.
 echo  ============================================================
 echo                      P C L A F
-echo           Verificando historial en este equipo...
+echo           Historial de reparaciones: %COMPUTERNAME%
 echo  ============================================================
 echo.
-reg query HKLM\SOFTWARE\PCLAF\Diagnostics 2>nul
-if %ERRORLEVEL% NEQ 0 (
-  echo  No se encontraron registros PCLAF en este equipo.
+
+:: Verificar diagnostico del PS1
+reg query HKLM\SOFTWARE\PCLAF\Diagnostics /s >nul 2>nul
+if %ERRORLEVEL%==0 (
+  echo  [DIAGNOSTICO - ultima revision del script]
+  reg query HKLM\SOFTWARE\PCLAF\Diagnostics /s 2>nul
 ) else (
-  echo  [OK] Datos de ultima revision encontrados arriba.
+  echo  Sin datos de diagnostico previo en este equipo.
 )
 echo.
+
+:: Verificar reparaciones marcadas manualmente
+reg query HKLM\SOFTWARE\PCLAF\Diagnostics /s 2>nul | findstr /i "Rep" >nul 2>nul
+echo.
+
+:: Mostrar archivo JSON si existe
 if exist "C:\ProgramData\PCLAF\last.json" (
-  echo  [OK] Archivo local encontrado: C:\ProgramData\PCLAF\last.json
+  echo  [ARCHIVO LOCAL] C:\ProgramData\PCLAF\last.json
+  echo  Ultima modificacion:
+  for %%f in ("C:\ProgramData\PCLAF\last.json") do echo    %%~tf
+  echo.
+  echo  Resumen:
+  powershell -NoProfile -Command "try { $j=Get-Content 'C:\ProgramData\PCLAF\last.json' | ConvertFrom-Json; Write-Host '  Fecha     :' $j.Metadata.Fecha; Write-Host '  Tecnico   :' $j.Metadata.Tecnico; Write-Host '  Estado    :' $j.FinalStatus.EstadoGeneral; Write-Host '  CPU       :' $j.SystemSummary.CPU; Write-Host '  RAM       :' $j.SystemSummary.RAM_Total_GB 'GB' } catch { Write-Host '  (no se pudo leer el JSON)' }"
 ) else (
   echo  Sin archivo de revision previo.
 )
@@ -1620,7 +1635,7 @@ reg add "HKLM\\SOFTWARE\\PCLAF\\Diagnostics" /v "Rep${nro}" /t REG_SZ /d "PCLAF_
 if %ERRORLEVEL%==0 (
   echo.
   echo  [OK] Equipo marcado correctamente.
-  echo  Clave: HKLM\\SOFTWARE\\PCLAF\\Diagnostics\\Reparacion_${nro}
+  echo  Clave: HKLM\\SOFTWARE\\PCLAF\\Diagnostics - Valor: Rep${nro}
 ) else (
   echo.
   echo  [ERROR] Fallo la escritura.
