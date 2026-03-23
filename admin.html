@@ -1580,15 +1580,20 @@ echo.
 pause`;
   }
 
+  // Prevent multiple rapid clicks
+  if (window._pclafDownloading) { toast('Ya hay una descarga en curso...', true); return; }
+  window._pclafDownloading = true;
+  setTimeout(() => { window._pclafDownloading = false; }, 3000);
+
   const blob = new Blob([bat], { type: 'text/plain' });
   const url  = URL.createObjectURL(blob);
   const a    = document.createElement('a');
   a.href     = url;
   a.download = `PCLAF_${cfg.label}.bat`;
+  a.style.display = 'none';
   document.body.appendChild(a);
   a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+  setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 500);
   toast(`${cfg.emoji} Descargando PCLAF_${cfg.label}.bat — abrilo como Administrador`);
 }
 
@@ -1611,11 +1616,11 @@ echo       Marcando equipo - Reparacion #${nro}
 echo  ============================================================
 echo.
 echo  Escribiendo en registro de Windows...
-reg add "HKLM\\SOFTWARE\\PCLAF\\Historial" /v "Rep_${nro}" /t REG_SZ /d "PCLAF-${nro}-%COMPUTERNAME%-PCLAF" /f
+reg add "HKLM\\SOFTWARE\\PCLAF\\Diagnostics" /v "Rep${nro}" /t REG_SZ /d "PCLAF_%COMPUTERNAME%_${nro}" /f
 if %ERRORLEVEL%==0 (
   echo.
   echo  [OK] Equipo marcado correctamente.
-  echo  Clave: HKLM\\SOFTWARE\\PCLAF\\Historial\\Rep_${nro}
+  echo  Clave: HKLM\\SOFTWARE\\PCLAF\\Diagnostics\\Reparacion_${nro}
 ) else (
   echo.
   echo  [ERROR] Fallo la escritura.
