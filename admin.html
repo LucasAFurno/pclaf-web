@@ -1525,19 +1525,30 @@ echo           Historial de reparaciones: %COMPUTERNAME%
 echo  ============================================================
 echo.
 
-:: Verificar diagnostico del PS1
-reg query HKLM\SOFTWARE\PCLAF\Diagnostics /s >nul 2>nul
-if %ERRORLEVEL%==0 (
-  echo  [DIAGNOSTICO - ultima revision del script]
-  reg query HKLM\SOFTWARE\PCLAF\Diagnostics /s 2>nul
-) else (
-  echo  Sin datos de diagnostico previo en este equipo.
+:: Verificar si la clave existe
+reg query "HKLM\SOFTWARE\PCLAF" >nul 2>nul
+if %ERRORLEVEL% NEQ 0 (
+  echo  Sin datos PCLAF en este equipo.
+  goto :nodata
 )
+
+:: Mostrar todos los valores de Diagnostics
+echo  [HISTORIAL PCLAF - %COMPUTERNAME%]
+echo  -----------------------------------------
+reg query "HKLM\SOFTWARE\PCLAF\Diagnostics" 2>nul
+if %ERRORLEVEL% NEQ 0 (
+  echo  Sin diagnostico previo registrado.
+) 
 echo.
 
-:: Verificar reparaciones marcadas manualmente
-reg query HKLM\SOFTWARE\PCLAF\Diagnostics /s 2>nul | findstr /i "Rep" >nul 2>nul
+:: Mostrar reparaciones marcadas especificamente
+echo  [REPARACIONES MARCADAS]
+echo  -----------------------------------------
+reg query "HKLM\SOFTWARE\PCLAF\Diagnostics" 2>nul | findstr /i "Rep "
+if %ERRORLEVEL% NEQ 0 echo  Sin reparaciones marcadas.
 echo.
+
+:nodata
 
 :: Mostrar archivo JSON si existe
 if exist "C:\ProgramData\PCLAF\last.json" (
