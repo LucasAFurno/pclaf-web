@@ -1515,15 +1515,6 @@ function lanzarScript(tipo) {
 
   if (tipo === 'verificar') {
     bat = `@echo off
-:: Auto-elevar a administrador
->nul 2>&1 "%SYSTEMROOT%\system32\cacls.exe" "%SYSTEMROOT%\system32\config\system"
-if %ERRORLEVEL% NEQ 0 (
-  echo Set UAC = CreateObject^("Shell.Application"^) > "%TEMP%\pclaf_elev.vbs"
-  echo UAC.ShellExecute "cmd.exe", "/k cd /d %CD% && %~s0", "", "runas", 1 >> "%TEMP%\pclaf_elev.vbs"
-  "%TEMP%\pclaf_elev.vbs"
-  del "%TEMP%\pclaf_elev.vbs"
-  exit /b
-)
 title PCLAF - Historial del equipo
 color 0A
 echo.
@@ -1533,7 +1524,7 @@ echo           Historial de reparaciones: %COMPUTERNAME%
 echo  ============================================================
 echo.
 
-reg query HKLM\SOFTWARE\PCLAF\Diagnostics >nul 2>nul
+reg query HKCU\SOFTWARE\PCLAF\Diagnostics >nul 2>nul
 if %ERRORLEVEL% NEQ 0 (
   echo  Sin registros PCLAF en este equipo.
   echo.
@@ -1542,7 +1533,7 @@ if %ERRORLEVEL% NEQ 0 (
 
 echo  [REGISTROS EN WINDOWS]
 echo  -----------------------------------------
-reg query HKLM\SOFTWARE\PCLAF\Diagnostics
+reg query HKCU\SOFTWARE\PCLAF\Diagnostics
 echo.
 
 :chkjson
@@ -1626,15 +1617,6 @@ function lanzarMarca() {
   const regData = `PCLAF Rep${nro} %COMPUTERNAME% %DATE%`;
 
   const bat = `@echo off
-:: Auto-elevar a administrador
->nul 2>&1 "%SYSTEMROOT%\system32\cacls.exe" "%SYSTEMROOT%\system32\config\system"
-if %ERRORLEVEL% NEQ 0 (
-  echo Set UAC = CreateObject^("Shell.Application"^) > "%TEMP%\pclaf_elev.vbs"
-  echo UAC.ShellExecute "cmd.exe", "/k cd /d %CD% && %~s0", "", "runas", 1 >> "%TEMP%\pclaf_elev.vbs"
-  "%TEMP%\pclaf_elev.vbs"
-  del "%TEMP%\pclaf_elev.vbs"
-  exit /b
-)
 title PCLAF - Marcar equipo #${nro}
 color 0A
 echo.
@@ -1644,7 +1626,7 @@ echo       Marcando equipo - Reparacion #${nro}
 echo  ============================================================
 echo.
 echo  Escribiendo en registro de Windows...
-reg add "HKLM\\SOFTWARE\\PCLAF\\Diagnostics" /v "Rep${nro}" /t REG_SZ /d "PCLAF_%COMPUTERNAME%_${nro}" /f
+reg add "HKCU\\SOFTWARE\\PCLAF\\Diagnostics" /v "Rep${nro}" /t REG_SZ /d "PCLAF_%COMPUTERNAME%_${nro}" /f
 if %ERRORLEVEL%==0 (
   echo.
   echo  [OK] Equipo marcado correctamente.
