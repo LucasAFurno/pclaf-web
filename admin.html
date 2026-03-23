@@ -1515,7 +1515,6 @@ function lanzarScript(tipo) {
 
   if (tipo === 'verificar') {
     bat = `@echo off
-chcp 65001 >nul
 title PCLAF - Historial del equipo
 color 0A
 echo.
@@ -1525,41 +1524,26 @@ echo           Historial de reparaciones: %COMPUTERNAME%
 echo  ============================================================
 echo.
 
-:: Verificar si la clave existe
-reg query "HKLM\SOFTWARE\PCLAF" >nul 2>nul
+reg query HKLM\SOFTWARE\PCLAF\Diagnostics >nul 2>nul
 if %ERRORLEVEL% NEQ 0 (
-  echo  Sin datos PCLAF en este equipo.
-  goto :nodata
+  echo  Sin registros PCLAF en este equipo.
+  echo.
+  goto :chkjson
 )
 
-:: Mostrar todos los valores de Diagnostics
-echo  [HISTORIAL PCLAF - %COMPUTERNAME%]
+echo  [REGISTROS EN WINDOWS]
 echo  -----------------------------------------
-reg query "HKLM\SOFTWARE\PCLAF\Diagnostics" 2>nul
-if %ERRORLEVEL% NEQ 0 (
-  echo  Sin diagnostico previo registrado.
-) 
+reg query HKLM\SOFTWARE\PCLAF\Diagnostics
 echo.
 
-:: Mostrar reparaciones marcadas especificamente
-echo  [REPARACIONES MARCADAS]
-echo  -----------------------------------------
-reg query "HKLM\SOFTWARE\PCLAF\Diagnostics" 2>nul | findstr /i "Rep "
-if %ERRORLEVEL% NEQ 0 echo  Sin reparaciones marcadas.
-echo.
-
-:nodata
-
-:: Mostrar archivo JSON si existe
-if exist "C:\ProgramData\PCLAF\last.json" (
-  echo  [ARCHIVO LOCAL] C:\ProgramData\PCLAF\last.json
-  echo  Ultima modificacion:
-  for %%f in ("C:\ProgramData\PCLAF\last.json") do echo    %%~tf
-  echo.
-  echo  Resumen:
-  powershell -NoProfile -Command "try { $j=Get-Content 'C:\ProgramData\PCLAF\last.json' | ConvertFrom-Json; Write-Host '  Fecha     :' $j.Metadata.Fecha; Write-Host '  Tecnico   :' $j.Metadata.Tecnico; Write-Host '  Estado    :' $j.FinalStatus.EstadoGeneral; Write-Host '  CPU       :' $j.SystemSummary.CPU; Write-Host '  RAM       :' $j.SystemSummary.RAM_Total_GB 'GB' } catch { Write-Host '  (no se pudo leer el JSON)' }"
+:chkjson
+if exist C:\ProgramData\PCLAF\last.json (
+  echo  [ULTIMO DIAGNOSTICO - archivo local]
+  echo  -----------------------------------------
+  for %%f in (C:\ProgramData\PCLAF\last.json) do echo  Modificado: %%~tf
+  powershell -NoProfile -Command "& { $j = Get-Content C:\ProgramData\PCLAF\last.json | ConvertFrom-Json; Write-Host '  Fecha    :' $j.Metadata.Fecha; Write-Host '  Estado   :' $j.FinalStatus.EstadoGeneral; Write-Host '  CPU      :' $j.SystemSummary.CPU; Write-Host '  RAM      :' ($j.SystemSummary.RAM_Total_GB) 'GB' }"
 ) else (
-  echo  Sin archivo de revision previo.
+  echo  Sin archivo de diagnostico previo.
 )
 echo.
 pause`;
