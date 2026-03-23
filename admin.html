@@ -1524,8 +1524,13 @@ echo           Historial de reparaciones: %COMPUTERNAME%
 echo  ============================================================
 echo.
 
+set FOUND=0
 reg query HKCU\SOFTWARE\PCLAF\Diagnostics >nul 2>nul
-if %ERRORLEVEL% NEQ 0 (
+if %ERRORLEVEL%==0 set FOUND=1
+reg query HKLM\SOFTWARE\PCLAF\Diagnostics >nul 2>nul
+if %ERRORLEVEL%==0 set FOUND=1
+
+if %FOUND%==0 (
   echo  Sin registros PCLAF en este equipo.
   echo.
   goto :chkjson
@@ -1533,7 +1538,8 @@ if %ERRORLEVEL% NEQ 0 (
 
 echo  [REGISTROS EN WINDOWS]
 echo  -----------------------------------------
-reg query HKCU\SOFTWARE\PCLAF\Diagnostics
+reg query HKCU\SOFTWARE\PCLAF\Diagnostics 2>nul
+reg query HKLM\SOFTWARE\PCLAF\Diagnostics 2>nul
 echo.
 
 :chkjson
@@ -1630,7 +1636,7 @@ reg add "HKCU\\SOFTWARE\\PCLAF\\Diagnostics" /v "Rep${nro}" /t REG_SZ /d "PCLAF_
 if %ERRORLEVEL%==0 (
   echo.
   echo  [OK] Equipo marcado correctamente.
-  echo  Clave: HKLM\\SOFTWARE\\PCLAF\\Diagnostics - Valor: Rep${nro}
+  echo  Clave: HKCU\\SOFTWARE\\PCLAF\\Diagnostics - Valor: Rep${nro}
 ) else (
   echo.
   echo  [ERROR] Fallo la escritura.
