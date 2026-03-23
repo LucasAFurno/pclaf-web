@@ -1539,6 +1539,7 @@ echo.
 pause`;
   } else {
     bat = `@echo off
+chcp 65001 >nul
 title PCLAF - Diagnostico ${cfg.label}
 color 0A
 echo.
@@ -1556,7 +1557,7 @@ if %ERRORLEVEL% NEQ 0 (
 )
 
 echo  [1/2] Descargando DiagnosticoPC.ps1...
-powershell -NoProfile -Command "Invoke-WebRequest -Uri '${TOOLS_BASE}/DiagnosticoPC.ps1' -OutFile '%TEMP%\DiagnosticoPC_PCLAF.ps1' -UseBasicParsing" 2>nul
+powershell -NoProfile -Command "[Net.ServicePointManager]::SecurityProtocol='Tls12'; Invoke-WebRequest -Uri '${TOOLS_BASE}/DiagnosticoPC.ps1' -OutFile '%TEMP%\DiagnosticoPC_PCLAF.ps1' -UseBasicParsing" 2>nul
 
 if not exist "%TEMP%\DiagnosticoPC_PCLAF.ps1" (
   echo  ERROR: No se pudo descargar el script.
