@@ -890,15 +890,32 @@ async function openModal(){
   }catch(e){document.getElementById('mNum').value='';}
 }
 
-async function openModalFromTurno(nom, ape, tel, servicio, precio, urgente){
+async function openModalFromTurno(nom, ape, tel, servicio, _unused, urgente){
   await openModal();
   document.getElementById('mNom').value=nom||'';
   document.getElementById('mApe').value=ape||'';
   document.getElementById('mTel').value=tel||'';
   document.getElementById('mProb').value=servicio||'';
-  document.getElementById('mPres').value=precio||'';
-  // Store urgente flag for crearRep
   document.getElementById('mUrgente').value=urgente?'1':'';
+
+  // Derive price from service name
+  const PRECIOS={
+    'Limpieza interna PC + pasta térmica':   {normal:'$70.000', urgente:'$105.000'},
+    'Limpieza interna Notebook':             {normal:'$90.000', urgente:'$135.000'},
+    'Formateo Windows 11 + drivers':         {normal:'$70.000', urgente:'$105.000'},
+    'Formateo Windows 11 + drivers + Office + apps': {normal:'$85.000', urgente:'$128.000'},
+    'Optimización sin formateo':             {normal:'$50.000', urgente:'$75.000'},
+    'Optimización sin formateo GAMER':       {normal:'$120.000', urgente:'$180.000'},
+    'Service GPU / Placa de video':          {normal:'$70.000', urgente:'$105.000'},
+    'Backup de archivos':                    {normal:'desde $20.000', urgente:'desde $30.000'},
+    'Atención remota':                       {normal:'$30.000', urgente:''},
+  };
+  const match=Object.entries(PRECIOS).find(([k])=>servicio&&servicio.includes(k));
+  if(match){
+    const p=match[1];
+    document.getElementById('mPres').value=urgente&&p.urgente ? p.urgente : p.normal;
+  }
+
   // Try to find existing client by phone
   if(tel){
     try{
