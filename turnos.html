@@ -27,8 +27,8 @@ nav{background:var(--black2);border-bottom:2px solid var(--red);padding:0 24px;h
 .nav-logo{display:flex;align-items:center;gap:10px;text-decoration:none;}
 .logo-wm{font-family:var(--display);font-size:18px;font-weight:800;color:#fff;}
 .logo-wm em{color:var(--red);font-style:normal;}
-.nav-back{font-size:12px;color:var(--text3);text-decoration:none;margin-left:auto;transition:color .15s;}
-.nav-back:hover{color:var(--text2);}
+.nav-back{display:flex;align-items:center;gap:7px;background:var(--red);color:#fff;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:700;text-decoration:none;margin-left:auto;transition:background .15s;white-space:nowrap;}
+.nav-back:hover{background:var(--red-dark);}
 
 .hero{max-width:700px;margin:0 auto;padding:48px 24px 32px;text-align:center;}
 .hero-eyebrow{font-family:var(--mono);font-size:11px;color:var(--red);letter-spacing:.14em;text-transform:uppercase;margin-bottom:12px;}
@@ -137,7 +137,10 @@ textarea.f-in{resize:none;height:80px;}
     </svg>
     <div class="logo-wm">PC<em>LAF</em></div>
   </a>
-  <a class="nav-back" href="index.html">← Volver</a>
+  <a class="nav-back" href="index.html">
+    <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M8 2L3 6.5 8 11"/></svg>
+    Volver al inicio
+  </a>
 </nav>
 
 <div class="hero">
