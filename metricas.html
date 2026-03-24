@@ -19,7 +19,7 @@
   --purple:#a855f7;--purple-dim:rgba(168,85,247,0.1);
   --mono:'JetBrains Mono',monospace;--sans:'Inter',sans-serif;
 }
-body{background:var(--black);color:var(--text);font-family:var(--sans);min-height:100vh;}
+body{background:var(--black);color:var(--text);font-family:var(--sans);min-height:100vh;overflow-x:hidden;}
 
 /* LOGIN */
 #loginScreen{min-height:100vh;display:flex;align-items:center;justify-content:center;}
@@ -111,6 +111,7 @@ tr:hover td{background:var(--black3);}
 }
 @media(max-width:500px){
   .kpi-grid{grid-template-columns:1fr;}
+  main{padding-bottom:80px;}
 }
 </style>
 </head>
@@ -523,12 +524,14 @@ function renderTable(reps) {
   }).join('');
 
   document.getElementById('tableBody').innerHTML = `
+    <div style="overflow-x:auto;-webkit-overflow-scrolling:touch">
     <table>
       <thead><tr>
         <th>#</th><th>Cliente</th><th>Equipo</th><th>Problema</th><th>Presupuesto</th><th>Estado</th><th>Fecha</th>
       </tr></thead>
       <tbody>${rows}</tbody>
-    </table>`;
+    </table>
+    </div>`;
 }
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

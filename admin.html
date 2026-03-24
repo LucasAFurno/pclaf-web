@@ -20,7 +20,7 @@
   --blue:#3b82f6;--blue-dim:rgba(59,130,246,0.1);
   --mono:'JetBrains Mono',monospace;--sans:'Inter',sans-serif;
 }
-body{background:var(--black);color:var(--text);font-family:var(--sans);min-height:100vh;}
+body{background:var(--black);color:var(--text);font-family:var(--sans);min-height:100vh;overflow-x:hidden;}
 #loginScreen{min-height:100vh;display:flex;align-items:center;justify-content:center;}
 .login-box{background:var(--black2);border:1px solid var(--border);border-top:3px solid var(--red);border-radius:14px;padding:40px;width:100%;max-width:340px;}
 .f-lbl{font-size:12px;font-weight:600;color:var(--text3);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em;}
@@ -248,7 +248,7 @@ tr:hover td{background:var(--black3);}
   .tab[onclick*="met"]::before{content:"📊";}
   .tab[onclick*="tools"]::before{content:"⚙️";}
   /* Push content above bottom nav */
-  .content{padding-bottom:64px;}
+  main{padding-bottom:80px;}
   /* Stats */
   .kgrid,.sbar{grid-template-columns:1fr 1fr;}
   .cg2,.cgeq,.bgrid{grid-template-columns:1fr;}
@@ -1471,7 +1471,7 @@ function mTbl(reps){
   if(!reps.length){document.getElementById('metTbl').innerHTML='<div class="empty">Sin datos</div>';return;}
   const LB={espera:'En espera',proceso:'En reparación',listo:'Listo',entregado:'Entregado'};
   const rows=reps.slice(0,25).map(r=>{const e=aE.find(x=>x.id===r.equipo_id)||{};const c=aC.find(x=>x.id===e.cliente_id)||{};const f=r.created_at?new Date(r.created_at).toLocaleDateString('es-AR',{day:'numeric',month:'short',year:'2-digit'}):'–';return`<tr><td class="tdm">#${r.numero}</td><td>${c.nombre||'–'}${c.apellido?' '+c.apellido:''}</td><td>${(e.icono||'💻')+' '+(e.nombre||'–')}</td><td>${r.problema||'–'}</td><td class="tdm tdg">${r.presupuesto||'–'}</td><td><span class="sb sb-${r.estado}">${LB[r.estado]||r.estado}</span></td><td style="color:var(--text3)">${f}</td></tr>`;}).join('');
-  document.getElementById('metTbl').innerHTML=`<table><thead><tr><th>#</th><th>Cliente</th><th>Equipo</th><th>Problema</th><th>Presupuesto</th><th>Estado</th><th>Fecha</th></tr></thead><tbody>${rows}</tbody></table>`;
+  document.getElementById('metTbl').innerHTML=`<div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table><thead><tr><th>#</th><th>Cliente</th><th>Equipo</th><th>Problema</th><th>Presupuesto</th><th>Estado</th><th>Fecha</th></tr></thead><tbody>${rows}</tbody></table></div>`;
 }
 
 // ── SUBIR REPORTE HTML ──
