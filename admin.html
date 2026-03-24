@@ -210,8 +210,63 @@ tr:hover td{background:var(--black3);}
 .toast{position:fixed;bottom:20px;right:20px;background:var(--black2);border:1px solid var(--border2);border-left:3px solid var(--green);border-radius:10px;padding:11px 16px;font-size:13px;font-weight:600;color:#fff;z-index:300;transform:translateY(70px);opacity:0;transition:all .3s;pointer-events:none;}
 .toast.show{transform:translateY(0);opacity:1;}
 .toast.err{border-left-color:var(--red);}
-@media(max-width:900px){.kgrid,.sbar{grid-template-columns:1fr 1fr;}.cg2,.cgeq,.bgrid{grid-template-columns:1fr;}.rcp{display:none;}}
-@media(max-width:500px){.kgrid,.sbar{grid-template-columns:1fr;}.tabs{display:none;}}
+/* ── RESPONSIVE ─────────────────────────────── */
+@media(max-width:900px){
+  .kgrid,.sbar{grid-template-columns:1fr 1fr;}
+  .cg2,.cgeq,.bgrid{grid-template-columns:1fr;}
+  .rcp{display:none;}
+  .topbar{padding:0 12px;gap:8px;}
+  .tabs{gap:1px;}
+  .tab{padding:6px 10px;font-size:12px;}
+}
+
+@media(max-width:650px){
+  /* Header */
+  .topbar{height:auto;flex-wrap:wrap;padding:8px 12px;gap:6px;}
+  .logo-wm,.abadge{display:none;}
+  /* Tabs -> bottom nav bar */
+  .tabs{
+    position:fixed;bottom:0;left:0;right:0;z-index:999;
+    display:flex;flex-direction:row;
+    background:var(--black2);border-top:1px solid var(--border);
+    margin:0;padding:0;gap:0;
+    height:56px;
+  }
+  .tab{
+    flex:1;display:flex;align-items:center;justify-content:center;
+    font-size:10px;font-weight:700;
+    padding:4px 2px;border-radius:0;border:none;
+    color:var(--text3);background:transparent;
+    border-top:2px solid transparent;
+    flex-direction:column;gap:2px;
+  }
+  .tab.active{color:var(--red);border-top-color:var(--red);background:rgba(204,0,0,.07);}
+  .tab::before{font-size:18px;line-height:1;}
+  .tab[onclick*="rep"]::before{content:"🔧";}
+  .tab[onclick*="turnos"]::before{content:"📅";}
+  .tab[onclick*="agenda"]::before{content:"📆";}
+  .tab[onclick*="met"]::before{content:"📊";}
+  .tab[onclick*="tools"]::before{content:"⚙️";}
+  /* Push content above bottom nav */
+  .content{padding-bottom:64px;}
+  /* Stats */
+  .kgrid,.sbar{grid-template-columns:1fr 1fr;}
+  .cg2,.cgeq,.bgrid{grid-template-columns:1fr;}
+  .rcp{display:none;}
+  /* Repair cards */
+  .card-actions{flex-wrap:wrap;}
+  .btn{font-size:11px;padding:6px 10px;}
+  /* Tables */
+  table{font-size:12px;}
+  th,td{padding:6px 8px;}
+  /* Login */
+  .login-box{margin:20px;padding:24px;}
+}
+
+@media(max-width:400px){
+  .kgrid,.sbar{grid-template-columns:1fr;}
+  .tab{font-size:9px;}
+}
 </style>
 </head>
 <body>

@@ -157,7 +157,17 @@ nav{
 .nav-wa:hover{background:var(--red-dark);}
 .nav-wa svg{width:14px;height:14px;}
 
-/* hamburger and mobile menu removed */
+/* ── HAMBURGER MENU ── */
+.hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;padding:8px;border-radius:6px;background:var(--black3);border:1px solid var(--border);}
+.hamburger span{display:block;width:20px;height:2px;background:var(--white);border-radius:2px;transition:all .2s;}
+.mobile-menu{display:none;position:fixed;top:56px;left:0;right:0;background:rgba(8,8,8,.97);border-bottom:1px solid var(--border);padding:16px;z-index:99;flex-direction:column;gap:4px;}
+.mobile-menu a{color:var(--text2);text-decoration:none;padding:12px 16px;border-radius:8px;font-weight:600;font-size:14px;display:block;}
+.mobile-menu a:hover{background:var(--black3);color:var(--white);}
+.mobile-menu.open{display:flex;}
+@media(max-width:768px){
+  .hamburger{display:flex;}
+  .nav-links{display:none;}
+}
 
 /* ─── HERO ─── */
 .hero{
@@ -785,9 +795,46 @@ footer{
 }
 @media(max-width:480px){
   .steps{grid-template-columns:1fr;}
-  .hero-ctas{flex-direction:column;}
-  .btn-primary,.btn-secondary{justify-content:center;}
+  .hero-ctas{flex-direction:column;align-items:stretch;}
+  .btn-primary,.btn-secondary{justify-content:center;width:100%;}
   .footer-inner{grid-template-columns:1fr;}
+}
+
+/* ── NAV MOBILE ── */
+@media(max-width:768px){
+  .nav-inner{padding:0 16px;height:56px;}
+  .nav-links{display:none;}
+  .nav-social{display:none !important;}
+  .nav-actions{gap:6px;}
+  .nav-actions a{padding:7px 12px;font-size:12px;}
+}
+
+/* ── HERO MOBILE ── */
+@media(max-width:480px){
+  .hero-inner{padding:100px 20px 60px;}
+  .hero-kicker{font-size:11px;}
+  .hero-title{font-size:clamp(38px,10vw,56px);}
+  .hero-sub{font-size:15px;}
+  .hero-stats{flex-direction:column;gap:10px;align-items:flex-start;}
+  .stat{padding:0;}
+  .stat-val{font-size:32px;}
+}
+
+/* ── SECTIONS MOBILE ── */
+@media(max-width:480px){
+  .section-inner{padding:60px 20px;}
+  .sec-label{font-size:10px;}
+  .sec-title{font-size:clamp(28px,8vw,42px);}
+  .service-card{padding:20px;}
+  .faq-q{font-size:14px;padding:14px 16px;}
+  .faq-a{padding:0 16px 14px;}
+  .about-strip{padding:24px 20px;gap:20px;}
+  .contact-bar{padding:40px 20px;}
+  .contact-bar h2{font-size:clamp(28px,8vw,42px);}
+  .contact-btns{flex-direction:column;align-items:stretch;}
+  .contact-btns a{text-align:center;justify-content:center;}
+  .footer-inner{padding:40px 20px 20px;}
+  .reviews-grid{grid-template-columns:1fr;}
 }
 </style>
 </head>
@@ -832,7 +879,19 @@ footer{
       </a>
     </div>
   </div>
+    <button class="hamburger" onclick="toggleMenu(this)" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
 </nav>
+<div class="mobile-menu" id="mobileMenu">
+  <a href="#servicios" onclick="closeMenu()">Servicios</a>
+  <a href="#precios" onclick="closeMenu()">Precios</a>
+  <a href="#nosotros" onclick="closeMenu()">Nosotros</a>
+  <a href="#contacto" onclick="closeMenu()">Contacto</a>
+  <a href="turnos.html" onclick="closeMenu()" style="color:var(--red);font-weight:800;">📅 Pedir turno</a>
+</div>
 
 <!-- ─── SEGUIMIENTO DESTACADO ─── -->
 <div style="background:var(--black2);border-bottom:1px solid var(--border);padding:28px 24px;">
@@ -1126,7 +1185,7 @@ footer{
         <span>¿Hacen service a domicilio o solo en el taller?</span>
         <div class="faq-icon"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 4l4 4 4-4"/></svg></div>
       </div>
-      <div class="faq-a">El service interno (limpieza, pasta, reparaciónes de hardware) se hace en el taller de Floresta porque necesitamos el espacio y las herramientas. Para instalación de software y configuraciónes podemos hacer servicio remoto por AnyDesk.</div>
+      <div class="faq-a">El service interno (limpieza, pasta, reparaciones de hardware) se hace en el taller de Floresta porque necesitamos el espacio y las herramientas. Para instalación de software y configuraciónes podemos hacer servicio remoto por AnyDesk.</div>
     </div>
     <div class="faq-item">
       <div class="faq-q" onclick="toggleFaq(this)">
@@ -1520,6 +1579,15 @@ window.addEventListener('scroll',()=>{
   document.querySelector('nav').style.borderBottomColor =
     window.scrollY > 20 ? 'var(--red)' : 'var(--border)';
 });
+function toggleMenu(btn){
+  const m=document.getElementById('mobileMenu');
+  m.classList.toggle('open');
+  const s=btn.querySelectorAll('span');
+  if(m.classList.contains('open')){s[0].style.transform='rotate(45deg) translate(5px,5px)';s[1].style.opacity='0';s[2].style.transform='rotate(-45deg) translate(5px,-5px)';}
+  else{s[0].style.transform='';s[1].style.opacity='';s[2].style.transform='';}
+}
+function closeMenu(){document.getElementById('mobileMenu').classList.remove('open');}
+document.addEventListener('click',e=>{const m=document.getElementById('mobileMenu');if(m&&m.classList.contains('open')&&!e.target.closest('nav')&&!e.target.closest('.mobile-menu'))closeMenu();});
 </script>
 </body>
 </html>
