@@ -35,7 +35,7 @@ main{width:100%;max-width:720px;padding:28px 20px 80px;}
 .search-row:focus-within{border-color:var(--red);box-shadow:0 0 0 3px rgba(204,0,0,0.15);}
 .search-input{flex:1;background:transparent;border:none;outline:none;padding:13px 16px;font-family:var(--mono);font-size:15px;font-weight:500;color:var(--text);letter-spacing:.04em;}
 .search-input::placeholder{color:var(--text3);font-size:13px;letter-spacing:0;font-family:var(--sans);}
-.search-btn{background:var(--red);border:none;padding:0 22px;cursor:pointer;font-size:13px;font-weight:700;color:#fff;transition:background .15s;display:flex;align-items:center;gap:7px;white-space:nowrap;}
+.search-btn{background:var(--red);border:none;padding:0 18px;cursor:pointer;font-size:13px;font-weight:700;color:#fff;transition:background .15s;display:flex;align-items:center;gap:7px;white-space:nowrap;min-width:64px;justify-content:center;}
 .search-btn:hover{background:var(--red-dark);}
 .demos-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:13px;align-items:center;}
 .demos-label{font-size:11px;color:var(--text3);}
@@ -306,7 +306,7 @@ async function showMachine(equipoId, evt) {
       db('pasos', `?reparacion_id=eq.${r.id}&order=orden.asc`),
       db('fotos', `?reparacion_id=eq.${r.id}&order=created_at.asc`).catch(()=>[]),
       db('calificaciones', `?reparacion_id=eq.${r.id}&limit=1`).catch(()=>[]),
-      db('reportes', `?reparacion_id=eq.${r.id}&order=created_at.desc&limit=1`).catch(()=>[]),
+      db('reportes', `?reparacion_id=eq.${r.id}&order=created_at.desc&limit=1&select=id,created_at,html_cliente`).catch(()=>[]),
     ]);
     const fecha = r.created_at ? new Date(r.created_at).toLocaleDateString('es-AR',{month:'long',year:'numeric'}) : '';
 
@@ -331,7 +331,7 @@ async function showMachine(equipoId, evt) {
         <div style="display:flex;gap:8px;flex-wrap:wrap">
           ${fotos.map(f=>`
             <div style="text-align:center">
-              <img src="${f.url}" onclick="window.open('${f.url}','_blank')" style="width:80px;height:80px;object-fit:cover;border-radius:8px;border:1px solid var(--border);cursor:pointer;display:block;margin-bottom:4px"/>
+              <img src="${f.url}" onclick="abrirFoto('${f.url}','${f.tipo}')" style="width:80px;height:80px;object-fit:cover;border-radius:8px;border:1px solid var(--border);cursor:pointer;display:block;margin-bottom:4px"/>
               <div style="font-size:9px;color:var(--text3)">${tipoIcon[f.tipo]||'📷'}</div>
             </div>`).join('')}
         </div>
@@ -428,14 +428,17 @@ async function verReporte(reporteId) {
   }
   // Fetch from DB
   try {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/reportes?id=eq.${reporteId}&select=html_content`, {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/reportes?id=eq.${reporteId}&select=id,html_cliente,html_content`, {
       headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` }
     });
     const data = await res.json();
-    if (data?.[0]?.html_content) {
-      allReportes[reporteId] = data[0];
+    const reporte = data?.[0];
+    if (reporte) {
+      allReportes[reporteId] = reporte;
+      // Show client version if available, otherwise full report
+      const content = reporte.html_cliente || reporte.html_content;
       const w = window.open('', '_blank');
-      w.document.write(data[0].html_content);
+      w.document.write(content);
       w.document.close();
     }
   } catch(e) {
@@ -503,6 +506,21 @@ async function enviarCalif(repId) {
 }
 
 document.getElementById('searchInput').addEventListener('keydown', e => { if(e.key==='Enter') buscar(); });
+
+// ── LIGHTBOX ──────────────────────────────────────────────
+function abrirFoto(url, tipo){
+  const overlay=document.createElement('div');
+  overlay.style.cssText='position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.92);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:zoom-out;';
+  const tipoLabel={antes:'📸 Antes',durante:'🔧 Durante',despues:'✅ Después'};
+  overlay.innerHTML=`
+    <div style="position:absolute;top:16px;right:20px;color:#fff;font-size:24px;cursor:pointer;" onclick="this.parentElement.remove()">✕</div>
+    <div style="color:#aaa;font-size:12px;margin-bottom:10px;text-transform:uppercase;letter-spacing:.1em">${tipoLabel[tipo]||'📷 Foto'}</div>
+    <img src="${url}" style="max-width:94vw;max-height:86vh;border-radius:10px;object-fit:contain;box-shadow:0 8px 40px rgba(0,0,0,.6)">
+    <div style="color:#555;font-size:11px;margin-top:10px">Tocá para cerrar</div>
+  `;
+  overlay.onclick=e=>{ if(e.target===overlay) overlay.remove(); };
+  document.body.appendChild(overlay);
+}
 </script>
 </body>
 </html>

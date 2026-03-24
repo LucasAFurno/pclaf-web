@@ -409,7 +409,7 @@ tr:hover td{background:var(--black3);}
         <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:4px;"><span style="font-size:20px;font-weight:700;color:#fff;">Herramientas del taller</span><span style="font-family:var(--mono);font-size:11px;color:var(--text3);background:var(--black3);padding:2px 8px;border-radius:4px;border:1px solid var(--border);">Suite v3.0</span></div>
         <div style="font-size:12px;color:var(--text3);margin-bottom:24px;">Un clic — se descarga y ejecuta solo en la PC del cliente</div>
 
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin-bottom:20px;">
 
           <!-- BOTÓN 1: Reporte técnico -->
           <div style="background:var(--black2);border:1.5px solid var(--border);border-radius:12px;padding:20px;display:flex;flex-direction:column;gap:10px;">
@@ -951,27 +951,41 @@ async function loadFotos(repId){
     const tipoIcon={antes:'📸',durante:'🔧',despues:'✅'};
     cont.innerHTML=fotos.map(f=>`
       <div style="position:relative;display:inline-block">
-        <img src="${f.url}" style="width:72px;height:72px;object-fit:cover;border-radius:8px;border:1px solid var(--border);cursor:pointer" onclick="window.open('${f.url}','_blank')" title="${tipoIcon[f.tipo]||'📷'} ${f.tipo}"/>
+        <img src="${f.url}" style="width:72px;height:72px;object-fit:cover;border-radius:8px;border:1px solid var(--border);cursor:pointer" onclick="abrirFoto('${f.url}','${f.tipo}')" title="${tipoIcon[f.tipo]||'📷'} ${f.tipo}"/>
         <span style="position:absolute;bottom:3px;left:3px;font-size:10px;background:rgba(0,0,0,.7);padding:1px 4px;border-radius:3px">${tipoIcon[f.tipo]||'📷'}</span>
         <button onclick="borrarFoto('${f.id}','${repId}')" style="position:absolute;top:2px;right:2px;background:rgba(204,0,0,.85);border:none;color:#fff;width:16px;height:16px;border-radius:50%;font-size:9px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1">✕</button>
       </div>`).join('');
   }catch(e){if(cont) cont.innerHTML='<div style="color:var(--text3);font-size:12px">Sin fotos</div>';}
 }
 
+async function comprimirFoto(file, maxW=900, quality=0.72){
+  return new Promise(resolve=>{
+    const img=new Image();
+    const url=URL.createObjectURL(file);
+    img.onload=()=>{
+      URL.revokeObjectURL(url);
+      const scale=Math.min(1, maxW/img.width);
+      const w=Math.round(img.width*scale);
+      const h=Math.round(img.height*scale);
+      const canvas=document.createElement('canvas');
+      canvas.width=w; canvas.height=h;
+      canvas.getContext('2d').drawImage(img,0,0,w,h);
+      resolve(canvas.toDataURL('image/jpeg', quality));
+    };
+    img.src=url;
+  });
+}
+
 async function subirFoto(repId, input){
   const file=input.files[0]; if(!file) return;
   const tipo=document.getElementById(`fotoTipo-${repId}`)?.value||'antes';
-  toast('Subiendo foto...');
+  toast('Comprimiendo y subiendo foto...');
   try{
-    // Convert to base64 and store as data URL (no Storage needed)
-    const reader=new FileReader();
-    reader.onload=async e=>{
-      const url=e.target.result;
-      await db('POST','fotos','',{reparacion_id:repId,url,tipo});
-      await loadFotos(repId);
-      toast('Foto subida ✓');
-    };
-    reader.readAsDataURL(file);
+    const url=await comprimirFoto(file);
+    const kb=Math.round(url.length*0.75/1024);
+    await db('POST','fotos','',{reparacion_id:repId,url,tipo});
+    await loadFotos(repId);
+    toast(`Foto subida ✓ (~${kb}KB)`);
   }catch(e){toast('Error subiendo foto',true);}
   input.value='';
 }
@@ -1020,10 +1034,10 @@ function filtTurno(f,btn){
 function renderTurnos(){
   const list=turnoFilter==='todos'?allTurnos:allTurnos.filter(t=>t.estado===turnoFilter);
   if(!list.length){document.getElementById('turnosList').innerHTML='<div class="empty">Sin turnos</div>';return;}
-  const estCol={pendiente:'var(--amber)',confirmado:'var(--green)',cancelado:'var(--text3)',realizado:'var(--blue)'};
-  const estBg={pendiente:'var(--amber-dim)',confirmado:'var(--green-dim)',cancelado:'var(--black3)',realizado:'var(--blue-dim)'};
+  const estCol={pendiente:'var(--amber)',confirmado:'#ff6b6b',cancelado:'var(--text3)'};
+  const estBg={pendiente:'var(--amber-dim)',confirmado:'rgba(204,0,0,.18)',cancelado:'var(--black3)'};
   document.getElementById('turnosList').innerHTML=`<div style="display:flex;flex-direction:column;gap:8px">`+list.map(t=>`
-    <div style="background:var(--black2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+    <div style="background:${t.estado==='confirmado'?'rgba(204,0,0,.07)':'var(--black2)'};border:1px solid ${t.estado==='confirmado'?'rgba(204,0,0,.35)':'var(--border)'};border-radius:10px;padding:14px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
       <div style="font-family:var(--mono);font-size:11px;color:var(--text3);min-width:80px">
         <div style="font-size:14px;color:#fff;font-weight:600">${t.fecha?new Date(t.fecha+'T12:00:00').toLocaleDateString('es-AR',{day:'numeric',month:'short'}):'–'}</div>
         <div>${t.hora||'–'}</div>
@@ -1785,6 +1799,21 @@ pause`;
 
 let tt;
 function toast(msg,err=false){const t=document.getElementById('toast');t.textContent=msg;t.className='toast show'+(err?' err':'');clearTimeout(tt);tt=setTimeout(()=>t.className='toast',3000);}
+
+// ── LIGHTBOX DE FOTOS ──────────────────────────────────────
+function abrirFoto(url, tipo){
+  const overlay=document.createElement('div');
+  overlay.style.cssText='position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.92);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:zoom-out;';
+  const tipoIcon={antes:'📸 Antes',durante:'🔧 Durante',despues:'✅ Después'};
+  overlay.innerHTML=`
+    <div style="position:absolute;top:16px;right:20px;color:#fff;font-size:22px;cursor:pointer;opacity:.7;" onclick="this.parentElement.remove()">✕</div>
+    <div style="color:var(--text2);font-size:12px;margin-bottom:12px;letter-spacing:.1em;text-transform:uppercase;">${tipoIcon[tipo]||'📷 Foto'}</div>
+    <img src="${url}" style="max-width:94vw;max-height:86vh;border-radius:10px;box-shadow:0 8px 40px rgba(0,0,0,.6);object-fit:contain;">
+    <div style="color:var(--text3);font-size:11px;margin-top:12px;">Tocá para cerrar</div>
+  `;
+  overlay.onclick=e=>{ if(e.target===overlay) overlay.remove(); };
+  document.body.appendChild(overlay);
+}
 
 if(sessionStorage.getItem('pclaf_a')) loadAll();
 
