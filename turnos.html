@@ -535,7 +535,8 @@ async function confirmarTurno(){
       nombre:nom, apellido:ape, telefono:tel,
       servicio:state.servicio, fecha:state.fecha, hora:state.hora,
       nota:(eq?'Equipo: '+eq+'. ':'')+nota,
-      estado:'pendiente'
+      estado:'pendiente',
+      urgente: state.urgencia || false
     });
     const id=res?.[0]?.id||'';
     const shortId='#T'+id.slice(0,6).toUpperCase();
