@@ -117,6 +117,14 @@ textarea.f-in{resize:none;height:80px;}
 .section-sub{font-size:13px;color:var(--text3);margin-bottom:18px;}
 .nav-btns{display:flex;gap:8px;margin-top:16px;}
 .notice{background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);border-radius:8px;padding:12px 16px;font-size:13px;color:var(--amber);margin-bottom:20px;}
+.srv-card .srv-urgencia{display:none;font-family:var(--mono);font-size:11px;color:var(--amber);margin-top:2px;}
+.urgencia-toggle{display:flex;align-items:center;gap:14px;background:rgba(245,158,11,0.1);border:1.5px solid rgba(245,158,11,0.35);border-radius:12px;padding:16px 20px;margin-bottom:20px;}
+.ut-label{font-size:15px;color:var(--text);flex:1;line-height:1.5;}
+.ut-label strong{color:var(--amber);}
+.toggle-track{width:52px;height:28px;border-radius:14px;background:var(--border2);position:relative;transition:background .2s;flex-shrink:0;cursor:pointer;}
+.toggle-track.on{background:var(--amber);}
+.toggle-knob{width:22px;height:22px;border-radius:50%;background:#fff;position:absolute;top:3px;left:3px;transition:transform .2s;}
+.toggle-track.on .toggle-knob{transform:translateX(24px);}
 
 @media(max-width:480px){
   .service-grid{grid-template-columns:1fr;}
@@ -163,38 +171,99 @@ textarea.f-in{resize:none;height:80px;}
   <div class="panel active" id="panel1">
     <div class="section-title-sm">¿Qué necesitás?</div>
     <div class="section-sub">Seleccioná el tipo de servicio</div>
-    <div class="service-grid" id="serviceGrid">
-      <div class="srv-card" onclick="selServicio(this,'Limpieza + pasta térmica','desde $70.000')">
-        <div class="srv-icon">🧹</div>
-        <div class="srv-name">Limpieza + pasta térmica</div>
-        <div class="srv-price">desde $70.000</div>
-      </div>
-      <div class="srv-card" onclick="selServicio(this,'Formateo PC / Notebook','desde $70.000')">
-        <div class="srv-icon">💾</div>
-        <div class="srv-name">Formateo PC / Notebook</div>
-        <div class="srv-price">desde $70.000</div>
-      </div>
-      <div class="srv-card" onclick="selServicio(this,'Service general','desde $70.000')">
-        <div class="srv-icon">🖥️</div>
-        <div class="srv-name">Service general</div>
-        <div class="srv-price">desde $70.000</div>
-      </div>
-      <div class="srv-card" onclick="selServicio(this,'Instalación de Windows / Software','desde $22.000')">
-        <div class="srv-icon">🪟</div>
-        <div class="srv-name">Windows / Software</div>
-        <div class="srv-price">desde $22.000</div>
-      </div>
-      <div class="srv-card" onclick="selServicio(this,'Service GPU / Placa de video','desde $70.000')">
-        <div class="srv-icon">🎮</div>
-        <div class="srv-name">Service GPU / PC Gamer</div>
-        <div class="srv-price">consultar</div>
-      </div>
-      <div class="srv-card" onclick="selServicio(this,'Diagnóstico','Gratis con service')">
-        <div class="srv-icon">🔍</div>
-        <div class="srv-name">Diagnóstico</div>
-        <div class="srv-price">Gratis con service</div>
+
+    <!-- Urgency toggle — always visible, affects cards that support it -->
+    <div class="urgencia-toggle visible" id="urgenciaToggle">
+      <div class="ut-label">⚡ <strong>¿Lo necesitás para hoy?</strong></div>
+      <div class="toggle-track" id="urgTrack" onclick="toggleUrgencia()">
+        <div class="toggle-knob"></div>
       </div>
     </div>
+
+    <div class="service-grid" id="serviceGrid">
+
+      <div class="srv-card" data-nombre="Limpieza interna PC + pasta térmica" data-precio="$70.000" data-urgencia="$105.000" onclick="selServicio(this)">
+        <div class="srv-icon">🧹</div>
+        <div class="srv-name">Limpieza interna PC + pasta térmica</div>
+        <div class="srv-price">$70.000</div>
+        <div class="srv-urgencia">⚡ Urgencia: $105.000</div>
+      </div>
+
+      <div class="srv-card" data-nombre="Limpieza interna Notebook" data-precio="$90.000" data-urgencia="$135.000" onclick="selServicio(this)">
+        <div class="srv-icon">💻</div>
+        <div class="srv-name">Limpieza interna Notebook</div>
+        <div class="srv-price">$90.000</div>
+        <div class="srv-urgencia">⚡ Urgencia: $135.000</div>
+      </div>
+
+      <div class="srv-card" data-nombre="Formateo Windows 11 + drivers" data-precio="$70.000" data-urgencia="$105.000" onclick="selServicio(this)">
+        <div class="srv-icon">💾</div>
+        <div class="srv-name">Formateo Windows 11 + drivers</div>
+        <div class="srv-price">$70.000</div>
+        <div class="srv-urgencia">⚡ Urgencia: $105.000</div>
+      </div>
+
+      <div class="srv-card" data-nombre="Formateo Windows 11 + drivers + Office + apps" data-precio="$85.000" data-urgencia="$128.000" onclick="selServicio(this)">
+        <div class="srv-icon">📦</div>
+        <div class="srv-name">Formateo + Office + apps básicas</div>
+        <div class="srv-price">$85.000</div>
+        <div class="srv-urgencia">⚡ Urgencia: $128.000</div>
+      </div>
+
+      <div class="srv-card" data-nombre="Optimización sin formateo" data-precio="$50.000" data-urgencia="$75.000" onclick="selServicio(this)">
+        <div class="srv-icon">⚡</div>
+        <div class="srv-name">Optimización sin formateo</div>
+        <div class="srv-price">$50.000</div>
+        <div class="srv-urgencia">⚡ Urgencia: $75.000</div>
+      </div>
+
+      <div class="srv-card" data-nombre="Optimización sin formateo GAMER" data-precio="$120.000" data-urgencia="$180.000" onclick="selServicio(this)">
+        <div class="srv-icon">🎮</div>
+        <div class="srv-name">Optimización GAMER</div>
+        <div class="srv-price">$120.000</div>
+        <div class="srv-urgencia">⚡ Urgencia: $180.000</div>
+      </div>
+
+      <div class="srv-card" data-nombre="Service GPU / Placa de video" data-precio="$70.000" data-urgencia="$105.000" onclick="selServicio(this)">
+        <div class="srv-icon">🖥️</div>
+        <div class="srv-name">Service GPU / Placa de video</div>
+        <div class="srv-price">$70.000</div>
+        <div class="srv-urgencia">⚡ Urgencia: $105.000</div>
+      </div>
+
+      <div class="srv-card" data-nombre="Backup de archivos" data-precio="desde $20.000" data-urgencia="desde $30.000" onclick="selServicio(this)">
+        <div class="srv-icon">🗄️</div>
+        <div class="srv-name">Backup de archivos</div>
+        <div class="srv-price">desde $20.000</div>
+        <div class="srv-urgencia">⚡ Urgencia: desde $30.000</div>
+      </div>
+
+      <div class="srv-card" data-nombre="Atención remota" data-precio="$30.000" data-urgencia="" onclick="selServicio(this)">
+        <div class="srv-icon">🌐</div>
+        <div class="srv-name">Atención remota</div>
+        <div class="srv-price">$30.000</div>
+      </div>
+
+      <div class="srv-card" data-nombre="Reparación motherboard" data-precio="desde $95.000" data-urgencia="" onclick="selServicio(this)">
+        <div class="srv-icon">🔌</div>
+        <div class="srv-name">Reparación motherboard</div>
+        <div class="srv-price">desde $95.000</div>
+      </div>
+
+      <div class="srv-card" data-nombre="Revisión y diagnóstico" data-precio="$1.000 (desc. si hacés el service)" data-urgencia="" onclick="selServicio(this)">
+        <div class="srv-icon">🔍</div>
+        <div class="srv-name">Revisión y diagnóstico</div>
+        <div class="srv-price">$1.000</div>
+      </div>
+
+      <div class="srv-card" data-nombre="Otro / No sé qué tiene" data-precio="a presupuestar" data-urgencia="" onclick="selServicio(this)">
+        <div class="srv-icon">❓</div>
+        <div class="srv-name">Otro / No sé qué tiene</div>
+        <div class="srv-price">a presupuestar</div>
+      </div>
+
+    </div>
+
     <button class="btn-primary" id="btnNext1" disabled onclick="goTo(2)">Elegir día y horario →</button>
   </div>
 
@@ -281,7 +350,7 @@ async function db(m,t,q='',b=null){
 }
 
 // ── STATE ──
-let state={servicio:'',precio:'',fecha:null,hora:'',calOffset:0};
+let state={servicio:'',precio:'',urgencia:false,fecha:null,hora:'',calOffset:0};
 
 // ── STEPS ──
 function goTo(n){
@@ -306,11 +375,49 @@ function goTo(n){
 }
 
 // ── SERVICIO ──
-function selServicio(el,nombre,precio){
-  document.querySelectorAll('.srv-card').forEach(c=>c.classList.remove('selected'));
+let urgenciaOn = false;
+
+function selServicio(el){
+  document.querySelectorAll('.srv-card').forEach(c=>{
+    c.classList.remove('selected');
+    const u = c.querySelector('.srv-urgencia');
+    if(u) u.style.display='none';
+  });
   el.classList.add('selected');
-  state.servicio=nombre; state.precio=precio;
-  document.getElementById('btnNext1').disabled=false;
+
+  const nombre = el.dataset.nombre;
+  const precio = el.dataset.precio;
+  const urgencia = el.dataset.urgencia;
+
+  // Show urgencia price on selected card if applicable
+  if(urgenciaOn && urgencia){
+    el.querySelector('.srv-urgencia').style.display='block';
+    state.precio = urgencia;
+  } else {
+    state.precio = precio;
+  }
+
+  state.servicio = nombre;
+  state.urgencia = urgenciaOn && !!urgencia;
+  document.getElementById('btnNext1').disabled = false;
+}
+
+function toggleUrgencia(){
+  urgenciaOn = !urgenciaOn;
+  document.getElementById('urgTrack').classList.toggle('on', urgenciaOn);
+  const card = document.querySelector('.srv-card.selected');
+  if(!card) return;
+  const urgencia = card.dataset.urgencia;
+  const u = card.querySelector('.srv-urgencia');
+  if(urgenciaOn && urgencia){
+    if(u) u.style.display='block';
+    state.precio = urgencia;
+    state.urgencia = true;
+  } else {
+    if(u) u.style.display='none';
+    state.precio = card.dataset.precio;
+    state.urgencia = false;
+  }
 }
 
 // ── CALENDARIO ──
@@ -404,8 +511,8 @@ function buildResumen(){
   const date=new Date(state.fecha+'T12:00:00');
   const fechaLabel=date.toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
   document.getElementById('resumenBox').innerHTML=`
-    <div class="res-row"><span class="res-lbl">Servicio</span><span class="res-val">${state.servicio}</span></div>
-    <div class="res-row"><span class="res-lbl">Precio estimado</span><span class="res-val" style="color:var(--red)">${state.precio}</span></div>
+    <div class="res-row"><span class="res-lbl">Servicio</span><span class="res-val">${state.servicio}${state.urgencia?' ⚡ URGENTE':''}</span></div>
+    <div class="res-row"><span class="res-lbl">Precio estimado</span><span class="res-val" style="color:${state.urgencia?'var(--amber)':'var(--red)'}">${state.precio}</span></div>
     <div class="res-row"><span class="res-lbl">Día</span><span class="res-val">${fechaLabel.charAt(0).toUpperCase()+fechaLabel.slice(1)}</span></div>
     <div class="res-row"><span class="res-lbl">Horario</span><span class="res-val">${state.hora}hs</span></div>
     <div class="res-row"><span class="res-lbl">Nombre</span><span class="res-val">${nom} ${ape}</span></div>
@@ -438,7 +545,7 @@ async function confirmarTurno(){
     document.getElementById('panelOK').classList.add('active');
     // Open WA to PCLAF (notify)
     setTimeout(()=>{
-      const msg=encodeURIComponent(`🗓️ *Nuevo turno solicitado*\n\n*${nom} ${ape}*\n📱 ${tel}\n🔧 ${state.servicio}\n📅 ${state.fecha} a las ${state.hora}hs\n💻 ${eq||'Sin especificar'}\n${nota?'📝 '+nota:''}\n\nRef: ${shortId}`);
+      const msg=encodeURIComponent(`🗓️ *Nuevo turno solicitado*\n\n*${nom} ${ape}*\n📱 ${tel}\n🔧 ${state.servicio}${state.urgencia?' ⚡ URGENTE':''}\n💰 ${state.precio}\n📅 ${state.fecha} a las ${state.hora}hs\n💻 ${eq||'Sin especificar'}\n${nota?'📝 '+nota:''}\n\nRef: ${shortId}`);
       window.open(`https://wa.me/541141758129?text=${msg}`,'_blank');
     }, 800);
   }catch(e){
