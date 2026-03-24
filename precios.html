@@ -81,12 +81,27 @@ nav{background:var(--black2);border-bottom:2px solid var(--red);padding:0 24px;h
 .price-table tbody tr:not(:last-child) td{border-bottom:1px solid rgba(37,37,37,.6);}
 .price-table td{padding:14px 18px;font-size:14px;color:var(--text2);}
 .price-table td:first-child{color:#fff;font-weight:600;}
-.price-table td:last-child{font-family:var(--mono);color:var(--red);font-weight:600;white-space:nowrap;}
+.price-table td.price-normal{font-family:var(--mono);color:var(--red);font-weight:600;white-space:nowrap;}
+.price-table td.price-urgencia{font-family:var(--mono);color:var(--amber);font-weight:600;white-space:nowrap;font-size:13px;}
+.price-table td:last-child{white-space:nowrap;}
 .price-table .included{color:var(--green);font-size:12px;}
 .badge-pop{background:var(--red);color:#fff;font-family:var(--mono);font-size:9px;font-weight:600;padding:2px 6px;border-radius:4px;margin-left:8px;vertical-align:middle;letter-spacing:.04em;}
 .badge-new{background:var(--green);color:#111;font-family:var(--mono);font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;margin-left:8px;vertical-align:middle;}
-
-/* FAQ */
+.badge-remote{background:var(--blue-dim,rgba(59,130,246,0.15));color:#60a5fa;font-family:var(--mono);font-size:9px;font-weight:600;padding:2px 6px;border-radius:4px;margin-left:8px;vertical-align:middle;}
+.urgencia-banner{background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.25);border-left:3px solid var(--amber);border-radius:10px;padding:13px 18px;margin-bottom:20px;display:flex;align-items:flex-start;gap:12px;}
+.urgencia-banner .ub-icon{font-size:18px;flex-shrink:0;margin-top:1px;}
+.urgencia-banner .ub-text{font-size:13px;color:var(--text2);line-height:1.6;}
+.urgencia-banner .ub-text strong{color:var(--amber);}
+.info-card{background:var(--black3);border:1px solid var(--border);border-radius:10px;padding:16px 20px;margin-top:14px;}
+.info-card-title{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;display:flex;align-items:center;gap:7px;}
+.info-card ul{list-style:none;display:flex;flex-direction:column;gap:6px;}
+.info-card li{font-size:13px;color:var(--text2);padding-left:16px;position:relative;line-height:1.5;}
+.info-card li::before{content:'·';position:absolute;left:4px;color:var(--text3);}
+.remote-note{background:rgba(59,130,246,0.07);border:1px solid rgba(59,130,246,0.2);border-radius:8px;padding:10px 16px;margin-top:12px;font-size:13px;color:#93c5fd;display:flex;align-items:center;gap:8px;}
+@media(max-width:600px){
+  .price-table td:nth-child(2){display:none;}
+  .price-table th:nth-child(2){display:none;}
+}
 .faq-list{display:flex;flex-direction:column;gap:2px;}
 .faq-item{background:var(--black2);border:1px solid var(--border);border-radius:8px;overflow:hidden;}
 .faq-q{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;cursor:pointer;user-select:none;transition:background .15s;gap:14px;}
@@ -117,6 +132,10 @@ footer a:hover{color:var(--red);}
 @media(max-width:600px){
   .price-table td:nth-child(2){display:none;}
   .price-table th:nth-child(2){display:none;}
+}
+@media(max-width:430px){
+  .price-table td:nth-child(3){display:none;}
+  .price-table th:nth-child(3){display:none;}
 }
 </style>
 </head>
@@ -150,135 +169,160 @@ footer a:hover{color:var(--red);}
   <div class="hero-note">📍 Los precios incluyen mano de obra. Los repuestos se presupuestan por separado.</div>
 </div>
 
-<!-- SERVICE INTERNO -->
+<!-- FORMATEO Y SOFTWARE -->
 <div class="section">
-  <h2 class="sec-title">Service <span>interno</span></h2>
-  <p class="sec-sub">Hardware y mantenimiento de PC y notebook</p>
+  <h2 class="sec-title">Formateo <span>y software</span></h2>
+  <p class="sec-sub">Windows limpio, sin publicidades ni programas basura</p>
   <table class="price-table">
     <thead>
-      <tr><th>Servicio</th><th>Incluye</th><th>Precio</th></tr>
+      <tr><th>Servicio</th><th>Incluye</th><th>Normal</th><th>Urgencia</th></tr>
     </thead>
     <tbody>
       <tr>
-        <td>Limpieza interna + cambio de pasta térmica PC <span class="badge-pop">MÁS PEDIDO</span></td>
-        <td>Desmontaje, limpieza profunda, pasta Arctic MX-4</td>
-        <td>$70.000</td>
+        <td>Formateo Windows 11 + drivers <span class="badge-pop">MÁS PEDIDO</span></td>
+        <td>Windows limpio + drivers actualizados. Listo en 24/48hs</td>
+        <td class="price-normal">$70.000</td>
+        <td class="price-urgencia">$105.000</td>
       </tr>
       <tr>
-        <td>Limpieza interna + cambio de pasta térmica Notebook <span class="badge-pop">MÁS PEDIDO</span></td>
-        <td>Desmontaje, limpieza, pasta nueva aplicada</td>
-        <td>$70.000</td>
+        <td>Formateo Windows 11 + drivers + Office + apps básicas</td>
+        <td>Todo lo anterior + Office completo + programas esenciales instalados</td>
+        <td class="price-normal">$85.000</td>
+        <td class="price-urgencia">$128.000</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- SERVICE INTERNO -->
+<div class="section">
+  <h2 class="sec-title">Service <span>interno</span></h2>
+  <p class="sec-sub">Limpieza y mantenimiento de hardware</p>
+  <table class="price-table">
+    <thead>
+      <tr><th>Servicio</th><th>Incluye</th><th>Normal</th><th>Urgencia</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Limpieza interna PC + pasta térmica <span class="badge-pop">MÁS PEDIDO</span></td>
+        <td>Desmontaje, limpieza profunda, pasta Arctic MX-4 aplicada</td>
+        <td class="price-normal">$70.000</td>
+        <td class="price-urgencia">$105.000</td>
       </tr>
       <tr>
-        <td>Service general PC</td>
-        <td>Revisión completa, limpieza, diagnóstico de componentes</td>
-        <td>$70.000</td>
+        <td>Limpieza interna Notebook</td>
+        <td>Desmontaje completo, limpieza de cooler, pasta nueva aplicada</td>
+        <td class="price-normal">$90.000</td>
+        <td class="price-urgencia">$135.000</td>
       </tr>
       <tr>
-        <td>Service general Notebook</td>
-        <td>Revisión, limpieza, testeo de batería y puertos</td>
-        <td>$70.000</td>
-      </tr>
-      <tr>
-        <td>Revisión y diagnóstico</td>
-        <td>Informe del estado del equipo, se descuenta del service</td>
-        <td>$1.000</td>
+        <td>Atención remota <span class="badge-remote">REMOTO</span></td>
+        <td>Soporte a distancia por AnyDesk para software, configuraciones y optimizaciones</td>
+        <td class="price-normal">$30.000</td>
+        <td class="price-urgencia">—</td>
       </tr>
       <tr>
         <td>Service GPU / Placa de video</td>
-        <td>Limpieza, pasta, testeo de GPU</td>
-        <td>$70.000</td>
+        <td>Limpieza, cambio de pasta, testeo bajo carga</td>
+        <td class="price-normal">$70.000</td>
+        <td class="price-urgencia">$105.000</td>
+      </tr>
+      <tr>
+        <td>Revisión y diagnóstico</td>
+        <td>Informe del estado del equipo. Se descuenta si hacés el service</td>
+        <td class="price-normal">$1.000</td>
+        <td class="price-urgencia">—</td>
       </tr>
       <tr>
         <td>Reparación motherboard PC</td>
         <td>Diagnóstico y reparación de placa madre</td>
-        <td>desde $95.000</td>
+        <td class="price-normal">desde $95.000</td>
+        <td class="price-urgencia">consultar</td>
       </tr>
       <tr>
         <td>Reparación motherboard Notebook</td>
         <td>Diagnóstico y reparación de placa madre</td>
-        <td>desde $190.000</td>
+        <td class="price-normal">desde $190.000</td>
+        <td class="price-urgencia">consultar</td>
       </tr>
     </tbody>
   </table>
 </div>
 
-<!-- SISTEMA OPERATIVO Y SOFTWARE -->
+<!-- OPTIMIZACIÓN -->
 <div class="section">
-  <h2 class="sec-title">Sistema operativo <span>y software</span></h2>
-  <p class="sec-sub">Instalación limpia, sin publicidades ni extras</p>
+  <h2 class="sec-title">Optimización <span>del sistema</span></h2>
+  <p class="sec-sub">Mejora de rendimiento sin necesidad de formatear</p>
   <table class="price-table">
     <thead>
-      <tr><th>Servicio</th><th>Incluye</th><th>Precio</th></tr>
+      <tr><th>Servicio</th><th>Incluye</th><th>Normal</th><th>Urgencia</th></tr>
     </thead>
     <tbody>
       <tr>
-        <td>Formateo PC / Notebook <span class="badge-pop">MÁS PEDIDO</span></td>
-        <td>Windows limpio + drivers + programas básicos. Listo en 24/48hs</td>
-        <td>$70.000</td>
+        <td>Optimización sin formateo</td>
+        <td>Limpieza de inicio, servicios, registro, actualizaciones y antivirus</td>
+        <td class="price-normal">$50.000</td>
+        <td class="price-urgencia">$75.000</td>
       </tr>
       <tr>
-        <td>Formateo express con backup <span class="badge-new">EN EL DÍA</span></td>
-        <td>Formateo + backup de tus archivos incluido. Listo el mismo día</td>
-        <td>$92.000</td>
-      </tr>
-      <tr>
-        <td>Instalación Windows 10</td>
-        <td>Solo instalación, sin formateo previo</td>
-        <td>$22.000</td>
-      </tr>
-      <tr>
-        <td>Instalación Windows 11</td>
-        <td>Solo instalación, sin formateo previo</td>
-        <td>$22.000</td>
-      </tr>
-      <tr>
-        <td>Microsoft Office (Word, Excel, PowerPoint)</td>
-        <td>Paquete completo instalado y activado</td>
-        <td>$31.000</td>
-      </tr>
-      <tr>
-        <td>Paquete Adobe (Photoshop, Premiere, etc.)</td>
-        <td>Suite completa según necesidad</td>
-        <td>desde $11.000</td>
+        <td>Optimización sin formateo <span class="badge-pop">GAMER</span></td>
+        <td>Todo lo anterior + tweaks de rendimiento, drivers GPU, modo juego, overclock básico</td>
+        <td class="price-normal">$120.000</td>
+        <td class="price-urgencia">$180.000</td>
       </tr>
     </tbody>
   </table>
 </div>
 
-<!-- COMBOS -->
+<!-- BACKUP -->
 <div class="section">
-  <h2 class="sec-title">Combos <span>recomendados</span></h2>
-  <p class="sec-sub">Los más elegidos — ahorrás tiempo y plata</p>
+  <h2 class="sec-title">Backup <span>de archivos</span></h2>
+  <p class="sec-sub">Resguardo de tus archivos personales antes de cualquier intervención</p>
   <table class="price-table">
     <thead>
-      <tr><th>Combo</th><th>Qué incluye</th><th>Precio</th></tr>
+      <tr><th>Capacidad</th><th>Tipo</th><th>Normal</th><th>Urgencia</th></tr>
     </thead>
     <tbody>
       <tr>
-        <td>🔥 Formateo + Limpieza y pasta térmica <span class="badge-pop">MÁS PEDIDO</span></td>
-        <td>Formateo completo + limpieza interna + pasta Arctic MX-4</td>
-        <td>$140.000</td>
+        <td>Hasta 50 GB</td>
+        <td>Archivos personales estándar</td>
+        <td class="price-normal">$20.000</td>
+        <td class="price-urgencia">$30.000</td>
       </tr>
       <tr>
-        <td>🔥 Combo Notebook completa</td>
-        <td>Formateo + limpieza + pasta térmica + Office</td>
-        <td>consultar</td>
+        <td>Hasta 100 GB</td>
+        <td>Archivos personales extendidos</td>
+        <td class="price-normal">$30.000</td>
+        <td class="price-urgencia">$45.000</td>
       </tr>
       <tr>
-        <td>🔥 Combo PC gaming</td>
-        <td>Service general + cambio de pasta + testeo GPU</td>
-        <td>consultar</td>
+        <td>Hasta 200 GB</td>
+        <td>Archivos personales + fotos/videos</td>
+        <td class="price-normal">$45.000</td>
+        <td class="price-urgencia">$68.000</td>
       </tr>
       <tr>
-        <td>🔥 Combo nueva vida</td>
-        <td>Formateo express + backup + Office + antivirus</td>
-        <td>consultar</td>
+        <td>Más de 200 GB</td>
+        <td>A presupuestar según volumen</td>
+        <td class="price-normal">consultar</td>
+        <td class="price-urgencia">consultar</td>
       </tr>
     </tbody>
   </table>
-  <div style="margin-top:12px;font-size:13px;color:var(--text3);font-family:var(--mono);">Los combos se presupuestan según el equipo. Consultanos por WhatsApp para armar uno a medida.</div>
+  <div class="info-card">
+    <div class="info-card-title">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+      Importante sobre el backup
+    </div>
+    <ul>
+      <li>El backup incluye solo <strong>archivos personales</strong>: documentos, fotos, videos, música y descargas. No incluye programas instalados.</li>
+      <li>El precio <strong>no incluye recuperación de datos dañados</strong> (disco roto, formateo accidental, etc.) — eso se presupuesta aparte.</li>
+      <li>Si tenés archivos en ubicaciones no estándar (carpetas propias, discos secundarios, etc.) <strong>indicanoslo antes</strong> — no garantizamos el contenido que no se nos señala.</li>
+    </ul>
+  </div>
 </div>
+
+
 
 <!-- FAQ PRECIOS -->
 <div class="section">
