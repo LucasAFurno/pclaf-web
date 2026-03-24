@@ -652,8 +652,6 @@ function renderList(){
   const q=(document.getElementById('srch').value||'').toLowerCase();
   let data=aR;
   if(fSt!=='todos') data=data.filter(r=>r.estado===fSt);
-  // hide entregado by default unless explicitly filtered or searching
-  else if(!q) data=data.filter(r=>r.estado!=='entregado');
   if(q) data=data.filter(r=>{
     const e=aE.find(x=>x.id===r.equipo_id)||{};
     const c=aC.find(x=>x.id===e.cliente_id)||{};
