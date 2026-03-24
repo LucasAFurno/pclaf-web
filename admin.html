@@ -1058,6 +1058,10 @@ let agendaDate=new Date();
 function agendaNav(d){agendaDate.setDate(agendaDate.getDate()+d);renderAgenda();}
 function agendaHoy(){agendaDate=new Date();renderAgenda();}
 
+function localDateStr(d){
+  const dt=d||new Date();
+  return dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0');
+}
 function getMondayOf(date){
   const d=new Date(date);
   const day=d.getDay();
@@ -1070,7 +1074,6 @@ function renderAgenda(){
   const grid=document.getElementById('agendaGrid');
   grid.innerHTML='<div class="empty"><div class="spinner"></div></div>';
 
-  // Get Monday of the week containing agendaDate
   const monday=getMondayOf(agendaDate);
   const days=[];
   for(let i=0;i<7;i++){
@@ -1083,20 +1086,25 @@ function renderAgenda(){
   const weekEnd=days[6].toLocaleDateString('es-AR',{day:'numeric',month:'short',year:'numeric'});
   document.getElementById('agendaFechaLabel').textContent=`${weekStart} — ${weekEnd}`;
 
-  const fechaMin=days[0].toISOString().slice(0,10);
-  const fechaMax=days[6].toISOString().slice(0,10);
-  const todayStr=new Date().toISOString().slice(0,10);
+  const fechaMin=localDateStr(days[0]);
+  const fechaMax=localDateStr(days[6]);
+  const todayStr=localDateStr();
 
   db('GET','turnos',`?fecha=gte.${fechaMin}&fecha=lte.${fechaMax}&estado=neq.cancelado&order=fecha.asc,hora.asc`).then(turnos=>{
-    const HOURS=['08:00','09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00','19:00'];
-    const nowHour=new Date().getHours();
+    // Include half-hour slots
+    const HOURS=['08:00','08:30','09:00','09:30','10:00','10:30','11:00','11:30',
+                 '12:00','12:30','13:00','13:30','14:00','14:30','15:00','15:30',
+                 '16:00','16:30','17:00','17:30','18:00','18:30','19:00'];
+    const now=new Date();
+    const nowHour=now.getHours();
+    const nowMin=now.getMinutes();
 
     let html=`<div style="display:grid;grid-template-columns:52px repeat(7,minmax(110px,1fr));min-width:600px;">`;
 
     // Header row - day names
     html+=`<div style="padding:6px;"></div>`;
     days.forEach(d=>{
-      const dStr=d.toISOString().slice(0,10);
+      const dStr=localDateStr(d);
       const isToday=dStr===todayStr;
       const dn=d.toLocaleDateString('es-AR',{weekday:'short'});
       const dm=d.toLocaleDateString('es-AR',{day:'numeric',month:'numeric'});
@@ -1110,14 +1118,13 @@ function renderAgenda(){
 
     // Hour rows
     HOURS.forEach(hour=>{
-      const hNum=parseInt(hour);
-      const isPast=todayStr===new Date().toISOString().slice(0,10)&&hNum<nowHour;
-      const isCurrent=todayStr===new Date().toISOString().slice(0,10)&&hNum===nowHour;
+      const [hNum,mNum]=[parseInt(hour),parseInt(hour.split(':')[1]||0)]; const isPast=todayStr===localDateStr()&&(hNum<nowHour||(hNum===nowHour&&mNum<nowMin));
+      const isCurrent=todayStr===localDateStr()&&hNum===nowHour&&Math.abs(mNum-nowMin)<30;
 
       html+=`<div style="padding:4px 6px;text-align:right;font-size:10px;font-family:var(--mono);color:${isCurrent?'var(--red)':'var(--text3)'};border-top:1px solid var(--border);line-height:48px;">${hour}</div>`;
 
       days.forEach(d=>{
-        const dStr=d.toISOString().slice(0,10);
+        const dStr=localDateStr(d);
         const isToday=dStr===todayStr;
         const cellTurnos=(turnos||[]).filter(t=>t.fecha===dStr&&t.hora&&t.hora.slice(0,5)===hour);
         const bg=isCurrent&&isToday?'rgba(204,0,0,.06)':isPast?'rgba(0,0,0,.2)':'var(--black2)';
@@ -1141,7 +1148,7 @@ function renderAgenda(){
     grid.innerHTML=html;
 
     // Scroll to current hour if today is visible
-    const todayVisible=days.some(d=>d.toISOString().slice(0,10)===todayStr);
+    const todayVisible=days.some(d=>localDateStr(d)===todayStr);
     if(todayVisible){
       setTimeout(()=>{
         const rows=grid.querySelectorAll('div[style*="min-height:48px"]');
