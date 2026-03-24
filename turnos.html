@@ -423,6 +423,18 @@ function toggleUrgencia(){
 // ── CALENDARIO ──
 const HORAS=['10:00','10:30','11:00','11:30','12:00','12:30','14:00','14:30','15:00','15:30','16:00','16:30','17:00','17:30','18:00','18:30'];
 
+// ── FERIADOS ARGENTINOS ──
+const FERIADOS = new Set([
+  // 2025
+  '2025-01-01','2025-02-03','2025-02-04','2025-03-24','2025-04-02',
+  '2025-04-18','2025-05-01','2025-05-25','2025-06-16','2025-06-20',
+  '2025-07-09','2025-08-17','2025-10-12','2025-11-20','2025-12-08','2025-12-25',
+  // 2026
+  '2026-01-01','2026-02-16','2026-02-17','2026-03-24','2026-04-02',
+  '2026-04-03','2026-05-01','2026-05-25','2026-06-15','2026-06-20',
+  '2026-07-09','2026-08-17','2026-10-12','2026-11-20','2026-12-08','2026-12-25',
+]);
+
 let occupiedSlots={}; // fecha -> [horas ocupadas]
 
 async function loadOccupied(year,month){
@@ -458,16 +470,18 @@ async function renderCal(){
     const dow=date.getDay();
     const isPast=date<today;
     const isWeekend=dow===0||dow===6;
+    const isHoliday=FERIADOS.has(dateStr);
+    const isBlocked=isPast||isWeekend||isHoliday;
     const isToday=date.getTime()===today.getTime();
     const isSelected=state.fecha===dateStr;
     let cls='cal-cell this-month';
-    if(isPast||isWeekend) cls+=' past';
+    if(isBlocked) cls+=' past';
     else{
       cls+=' available';
       if(isSelected) cls+=' selected-day';
       if(isToday&&!isSelected) cls+=' today';
     }
-    const onclick=(!isPast&&!isWeekend)?`onclick="selFecha('${dateStr}',${d})"`:'' ;
+    const onclick=(!isBlocked)?`onclick="selFecha('${dateStr}',${d})"`:'' ;
     html+=`<div class="${cls}" ${onclick}>${d}</div>`;
   }
   grid.innerHTML=html;

@@ -379,17 +379,20 @@ tr:hover td{background:var(--black3);}
 
     <!-- ── TURNOS ── -->
     <div class="view" id="view-turnos">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
         <div>
           <div style="font-size:20px;font-weight:700;color:#fff;margin-bottom:2px;">Turnos solicitados</div>
           <div style="font-size:12px;color:var(--text3);">Los clientes piden turno desde la web</div>
         </div>
-        <div style="display:flex;gap:8px;">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
           <button class="fbtn active" onclick="filtTurno('todos',this)" id="ft-todos">Todos</button>
           <button class="fbtn" onclick="filtTurno('pendiente',this)">Pendientes</button>
           <button class="fbtn" onclick="filtTurno('confirmado',this)">Confirmados</button>
           <button class="fbtn" onclick="filtTurno('cancelado',this)">Cancelados</button>
         </div>
+      </div>
+      <div class="frow" style="margin-bottom:16px;">
+        <input class="srch" id="srchTurno" placeholder="Buscar nombre, teléfono, servicio..." oninput="renderTurnos()"/>
       </div>
       <div id="turnosList"><div class="empty"><div class="spinner"></div>Cargando...</div></div>
     </div>
@@ -1045,7 +1048,15 @@ function filtTurno(f,btn){
 }
 
 function renderTurnos(){
-  const list=turnoFilter==='todos'?allTurnos:allTurnos.filter(t=>t.estado===turnoFilter);
+  const q=(document.getElementById('srchTurno')?.value||'').toLowerCase().trim();
+  let list=turnoFilter==='todos'?allTurnos:allTurnos.filter(t=>t.estado===turnoFilter);
+  if(q) list=list.filter(t=>
+    (t.nombre||'').toLowerCase().includes(q)||
+    (t.apellido||'').toLowerCase().includes(q)||
+    (t.telefono||'').includes(q)||
+    (t.servicio||'').toLowerCase().includes(q)||
+    (t.nota||'').toLowerCase().includes(q)
+  );
   if(!list.length){document.getElementById('turnosList').innerHTML='<div class="empty">Sin turnos</div>';return;}
   const estCol={pendiente:'var(--amber)',confirmado:'var(--green)',cancelado:'var(--text3)'};
   const estBg={pendiente:'var(--amber-dim)',confirmado:'var(--green-dim)',cancelado:'var(--black3)'};
@@ -1116,6 +1127,16 @@ function getMondayOf(date){
   return d;
 }
 
+// ── FERIADOS (para agenda admin) ──
+const FERIADOS_AR = new Set([
+  '2025-01-01','2025-02-03','2025-02-04','2025-03-24','2025-04-02',
+  '2025-04-18','2025-05-01','2025-05-25','2025-06-16','2025-06-20',
+  '2025-07-09','2025-08-17','2025-10-12','2025-11-20','2025-12-08','2025-12-25',
+  '2026-01-01','2026-02-16','2026-02-17','2026-03-24','2026-04-02',
+  '2026-04-03','2026-05-01','2026-05-25','2026-06-15','2026-06-20',
+  '2026-07-09','2026-08-17','2026-10-12','2026-11-20','2026-12-08','2026-12-25',
+]);
+
 function renderAgenda(){
   const grid=document.getElementById('agendaGrid');
   grid.innerHTML='<div class="empty"><div class="spinner"></div></div>';
@@ -1152,11 +1173,15 @@ function renderAgenda(){
     days.forEach(d=>{
       const dStr=localDateStr(d);
       const isToday=dStr===todayStr;
+      const dow=d.getDay();
+      const isWeekend=dow===0||dow===6;
+      const isHoliday=FERIADOS_AR.has(dStr);
+      const isOff=isWeekend||isHoliday;
       const dn=d.toLocaleDateString('es-AR',{weekday:'short'});
       const dm=d.toLocaleDateString('es-AR',{day:'numeric',month:'numeric'});
       const hasTurnos=(turnos||[]).some(t=>t.fecha===dStr);
-      html+=`<div style="padding:8px 4px;text-align:center;border-bottom:2px solid ${isToday?'var(--red)':'var(--border)'};background:${isToday?'rgba(204,0,0,.08)':'var(--black2)'};border-radius:8px 8px 0 0;margin:0 2px;">
-        <div style="font-size:11px;font-weight:700;color:${isToday?'var(--red)':'var(--text2)'};text-transform:uppercase">${dn}</div>
+      html+=`<div style="padding:8px 4px;text-align:center;border-bottom:2px solid ${isToday?'var(--red)':'var(--border)'};background:${isToday?'rgba(204,0,0,.08)':isOff?'rgba(0,0,0,.3)':'var(--black2)'};border-radius:8px 8px 0 0;margin:0 2px;opacity:${isOff?'0.45':'1'};">
+        <div style="font-size:11px;font-weight:700;color:${isToday?'var(--red)':isOff?'var(--text3)':'var(--text2)'};text-transform:uppercase">${dn}${isHoliday?' 🗓':''}</div>
         <div style="font-size:14px;font-weight:800;color:${isToday?'#fff':'var(--text)'}">${d.getDate()}</div>
         ${hasTurnos?`<div style="width:6px;height:6px;border-radius:50%;background:var(--red);margin:2px auto 0;"></div>`:'<div style="height:8px;"></div>'}
       </div>`;
@@ -1172,11 +1197,14 @@ function renderAgenda(){
       days.forEach(d=>{
         const dStr=localDateStr(d);
         const isToday=dStr===todayStr;
+        const dow=d.getDay();
+        const isOff=dow===0||dow===6||FERIADOS_AR.has(dStr);
         const cellTurnos=(turnos||[]).filter(t=>t.fecha===dStr&&t.hora&&t.hora.slice(0,5)===hour);
-        const bg=isCurrent&&isToday?'rgba(204,0,0,.06)':isPast?'rgba(0,0,0,.2)':'var(--black2)';
-        const border=isCurrent&&isToday?'1px solid rgba(204,0,0,.3)':'1px solid var(--border)';
+        const bg=isOff?'rgba(0,0,0,.25)':isCurrent&&isToday?'rgba(204,0,0,.06)':isPast?'rgba(0,0,0,.2)':'var(--black2)';
+        const border=isOff?'1px solid rgba(0,0,0,.1)':isCurrent&&isToday?'1px solid rgba(204,0,0,.3)':'1px solid var(--border)';
+        const cellOpacity=isOff?'0.35':'1';
 
-        html+=`<div style="min-height:48px;padding:3px;background:${bg};border:${border};border-radius:4px;margin:1px 2px;">`;
+        html+=`<div style="min-height:48px;padding:3px;background:${bg};border:${border};border-radius:4px;margin:1px 2px;opacity:${cellOpacity};">`;
         if(cellTurnos.length){
           cellTurnos.forEach(t=>{
             const urgente=t.urgente||false;
