@@ -67,12 +67,9 @@ main{max-width:1200px;margin:0 auto;padding:22px 24px 80px;overflow:hidden;}
 .rc:hover{border-color:var(--border2);}
 .rc.open{border-color:var(--red);}
 .rc[data-estado="espera"]{border-left:3px solid var(--text3);}
-.rc[data-estado="proceso"]{border-left:3px solid var(--amber);}
-.rc[data-estado="listo"]{border-left:3px solid var(--green);}
-.rc[data-estado="entregado"]{border-left:3px solid var(--blue);}
-.rc[data-estado="proceso"]{background:rgba(245,158,11,.03);}
-.rc[data-estado="listo"]{background:rgba(34,197,94,.03);}
-.rc[data-estado="entregado"]{background:rgba(59,130,246,.03);}
+.rc[data-estado="proceso"]{border-left:3px solid var(--amber);background:rgba(245,158,11,.03);}
+.rc[data-estado="listo"]{border-left:3px solid var(--green);background:rgba(34,197,94,.03);}
+.rc[data-estado="entregado"]{border-left:3px solid var(--blue);background:rgba(59,130,246,.03);}
 .rch{display:flex;align-items:center;gap:12px;padding:13px 16px;cursor:pointer;}
 .rcn{font-family:var(--mono);font-size:11px;color:var(--text3);min-width:46px;flex-shrink:0;}
 .rcd{flex:1;min-width:0;}
@@ -94,6 +91,9 @@ main{max-width:1200px;margin:0 auto;padding:22px 24px 80px;overflow:hidden;}
 .sb-entregado .dot{background:var(--blue);}
 @keyframes pg{0%,100%{box-shadow:0 0 0 0 rgba(34,197,94,.45)}50%{box-shadow:0 0 0 4px rgba(34,197,94,0)}}
 @keyframes py{0%,100%{box-shadow:0 0 0 0 rgba(245,158,11,.45)}50%{box-shadow:0 0 0 4px rgba(245,158,11,0)}}
+@keyframes urgentePulse{0%,100%{background-color:rgba(245,158,11,0.04)}50%{background-color:rgba(245,158,11,0.12)}}
+.rc[data-urgente="true"]{animation:urgentePulse 2s ease-in-out infinite;border-left:3px solid var(--amber)!important;}
+.badge-urgente{display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:700;color:var(--amber);background:var(--amber-dim);border:1px solid rgba(245,158,11,.3);border-radius:4px;padding:2px 6px;font-family:var(--mono);animation:py 1.5s infinite;}
 .rcb{display:none;padding:0 16px 16px;border-top:1px solid var(--border);}
 .rc.open .rcb{display:block;}
 .bgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px;}
@@ -657,6 +657,8 @@ function renderList(){
   const q=(document.getElementById('srch').value||'').toLowerCase();
   let data=aR;
   if(fSt!=='todos') data=data.filter(r=>r.estado===fSt);
+  // hide entregado by default unless explicitly filtered or searching
+  else if(!q) data=data.filter(r=>r.estado!=='entregado');
   if(q) data=data.filter(r=>{
     const e=aE.find(x=>x.id===r.equipo_id)||{};
     const c=aC.find(x=>x.id===e.cliente_id)||{};
@@ -671,7 +673,9 @@ function renderList(){
     const tel=(c.telefono||'').replace(/\D/g,'');
     const wm=encodeURIComponent(`Hola ${(c.nombre||'').split(' ')[0]}, te escribimos de PCLAF. Tu ${e.nombre||'equipo'} (#${r.numero}) está ${LB[r.estado]||r.estado}.`);
     const descuentoActivo = c.descuento_resena;
-    return `<div class="rc" id="c-${r.id}" data-estado="${r.estado}">
+    const urgente = r.urgente || false;
+    return `<div class="rc" id="c-${r.id}" data-estado="${r.estado}"${urgente?' data-urgente="true"':''}>
+      ${urgente ? `<div style="background:rgba(245,158,11,0.1);border-bottom:1px solid rgba(245,158,11,0.25);padding:6px 16px;display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;color:var(--amber);">⚡ Urgente — en el día</div>` : ''}
       ${descuentoActivo ? `<div style="background:rgba(34,197,94,0.08);border-bottom:1px solid rgba(34,197,94,0.2);padding:7px 16px;display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;color:var(--green);">🎁 10% descuento por reseña Google — aplicar al cobrar</div>` : ''}
       <div class="rch" onclick="togC('${r.id}')">
         <div class="rcn">#${r.numero}</div>
@@ -1028,7 +1032,7 @@ let allTurnos=[], turnoFilter='todos';
 async function loadTurnos(){
   document.getElementById('turnosList').innerHTML='<div class="empty"><div class="spinner"></div>Cargando...</div>';
   try{
-    allTurnos=await db('GET','turnos','?order=fecha.asc,hora.asc');
+    allTurnos=await db('GET','turnos','?order=fecha.desc,hora.desc');
     renderTurnos();
   }catch(e){document.getElementById('turnosList').innerHTML='<div class="empty">Error cargando turnos</div>';}
 }
@@ -1043,18 +1047,22 @@ function filtTurno(f,btn){
 function renderTurnos(){
   const list=turnoFilter==='todos'?allTurnos:allTurnos.filter(t=>t.estado===turnoFilter);
   if(!list.length){document.getElementById('turnosList').innerHTML='<div class="empty">Sin turnos</div>';return;}
-  const estCol={pendiente:'var(--blue)',confirmado:'var(--green)',cancelado:'var(--red)'};
-  const estBg={pendiente:'var(--blue-dim)',confirmado:'var(--green-dim)',cancelado:'var(--red-dim)'};
-  const cardBg={pendiente:'rgba(59,130,246,.05)',confirmado:'rgba(34,197,94,.05)',cancelado:'rgba(204,0,0,.06)'};
-  const cardBorder={pendiente:'rgba(59,130,246,.3)',confirmado:'rgba(34,197,94,.3)',cancelado:'rgba(204,0,0,.35)'};
-  document.getElementById('turnosList').innerHTML=`<div style="display:flex;flex-direction:column;gap:8px">`+list.map(t=>`
-    <div style="background:${cardBg[t.estado]||'var(--black2)'};border:1px solid ${cardBorder[t.estado]||'var(--border)'};border-left:3px solid ${estCol[t.estado]||'var(--border)'};border-radius:10px;padding:14px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+  const estCol={pendiente:'var(--amber)',confirmado:'var(--green)',cancelado:'var(--text3)'};
+  const estBg={pendiente:'var(--amber-dim)',confirmado:'var(--green-dim)',cancelado:'var(--black3)'};
+  const cardBg={pendiente:'rgba(245,158,11,.04)',confirmado:'rgba(0,0,0,0)',cancelado:'rgba(0,0,0,0)'};
+  const cardBorder={pendiente:'rgba(245,158,11,.3)',confirmado:'var(--border)',cancelado:'var(--border)'};
+  const cardOpacity={pendiente:'1',confirmado:'0.55',cancelado:'0.4'};
+  document.getElementById('turnosList').innerHTML=`<div style="display:flex;flex-direction:column;gap:8px">`+list.map(t=>{
+    const urgente=t.urgente||t.servicio?.includes('URGENTE')||false;
+    const urgBorder=urgente?`border-left:3px solid var(--amber);`:''
+    return `
+    <div data-turno-id="${t.id}" style="background:${urgente?'rgba(245,158,11,.06)':cardBg[t.estado]||'var(--black2)'};border:1px solid ${urgente?'rgba(245,158,11,.35)':cardBorder[t.estado]||'var(--border)'};${urgBorder}border-radius:10px;padding:14px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;opacity:${cardOpacity[t.estado]||'1'};${urgente?'animation:urgentePulse 2s ease-in-out infinite;':''}">
       <div style="font-family:var(--mono);font-size:11px;color:var(--text3);min-width:80px">
         <div style="font-size:14px;color:#fff;font-weight:600">${t.fecha?new Date(t.fecha+'T12:00:00').toLocaleDateString('es-AR',{day:'numeric',month:'short'}):'–'}</div>
         <div>${t.hora||'–'}</div>
       </div>
       <div style="flex:1;min-width:160px">
-        <div style="font-size:14px;font-weight:600;color:#fff">${t.nombre||''} ${t.apellido||''}</div>
+        <div style="font-size:14px;font-weight:600;color:#fff">${t.nombre||''} ${t.apellido||''}${urgente?' <span class="badge-urgente">⚡ urgente</span>':''}</div>
         <div style="font-size:12px;color:var(--text2)">${t.telefono||''} · ${t.servicio||''}</div>
         ${t.nota?`<div style="font-size:11px;color:var(--text3);margin-top:2px">${t.nota}</div>`:''}
       </div>
@@ -1067,7 +1075,8 @@ function renderTurnos(){
           <option value="cancelado" ${t.estado==='cancelado'?'selected':''}>Cancelado</option>
         </select>
       </div>
-    </div>`).join('')+'</div>';
+    </div>`;
+  }).join('')+'</div>';
 }
 
 async function cambiarEstadoTurno(id,estado){
@@ -1075,6 +1084,18 @@ async function cambiarEstadoTurno(id,estado){
   const t=allTurnos.find(x=>x.id===id); if(t) t.estado=estado;
   renderTurnos();
   toast(`Turno → ${estado} ✓`);
+}
+
+function irATurno(id){
+  switchTab('turnos',document.querySelector('.tab[onclick*=turnos]'));
+  setTimeout(()=>{
+    const el=document.querySelector(`[data-turno-id="${id}"]`);
+    if(!el) return;
+    el.scrollIntoView({behavior:'smooth',block:'center'});
+    el.style.transition='box-shadow .2s';
+    el.style.boxShadow='0 0 0 2px var(--amber)';
+    setTimeout(()=>{ el.style.boxShadow=''; },2000);
+  },200);
 }
 
 // ── AGENDA ──
@@ -1158,9 +1179,11 @@ function renderAgenda(){
         html+=`<div style="min-height:48px;padding:3px;background:${bg};border:${border};border-radius:4px;margin:1px 2px;">`;
         if(cellTurnos.length){
           cellTurnos.forEach(t=>{
-            const estColor=t.estado==='confirmado'?'var(--green)':t.estado==='realizado'?'var(--blue)':'var(--amber)';
-            html+=`<div style="background:${estColor}18;border-left:2px solid ${estColor};border-radius:3px;padding:3px 5px;cursor:pointer;margin-bottom:2px;" title="${t.nombre} ${t.apellido||''} - ${t.servicio}" onclick="switchTab('turnos',document.querySelector('.tab[onclick*=turnos]'))">
-              <div style="font-size:10px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${t.nombre} ${(t.apellido||'').slice(0,1)}${t.apellido?'.':''}</div>
+            const urgente=t.urgente||false;
+            const estColor=urgente?'var(--amber)':t.estado==='confirmado'?'var(--green)':'var(--amber)';
+            const urgPulse=urgente?'animation:urgentePulse 2s ease-in-out infinite;':'';
+            html+=`<div style="background:${estColor}18;border-left:2px solid ${estColor};border-radius:3px;padding:3px 5px;cursor:pointer;margin-bottom:2px;${urgPulse}" title="${t.nombre} ${t.apellido||''} - ${t.servicio}" onclick="irATurno('${t.id}')">
+              <div style="font-size:10px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${urgente?'⚡ ':''}${t.nombre} ${(t.apellido||'').slice(0,1)}${t.apellido?'.':''}</div>
               <div style="font-size:9px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${t.servicio||''}</div>
             </div>`;
           });
