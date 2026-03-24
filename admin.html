@@ -504,6 +504,7 @@ tr:hover td{background:var(--black3);}
       </div>
       <div><label class="f-lbl">Problema</label><input class="f-in" id="mProb" placeholder="Ej: No enciende, pantalla rota..."/></div>
       <div><label class="f-lbl">Presupuesto</label><input class="f-in" id="mPres" placeholder="Ej: $85.000" style="font-family:var(--mono)"/></div>
+      <input type="hidden" id="mUrgente" value=""/>
       <div>
         <label class="f-lbl">Ícono del equipo</label>
         <select class="f-sel" id="mIco" style="margin-bottom:0">
@@ -889,24 +890,26 @@ async function openModal(){
   }catch(e){document.getElementById('mNum').value='';}
 }
 
-async function openModalFromTurno(nom, ape, tel, servicio){
+async function openModalFromTurno(nom, ape, tel, servicio, precio, urgente){
   await openModal();
   document.getElementById('mNom').value=nom||'';
   document.getElementById('mApe').value=ape||'';
   document.getElementById('mTel').value=tel||'';
-  // Pre-fill problem from servicio
   document.getElementById('mProb').value=servicio||'';
+  document.getElementById('mPres').value=precio||'';
+  // Store urgente flag for crearRep
+  document.getElementById('mUrgente').value=urgente?'1':'';
   // Try to find existing client by phone
   if(tel){
     try{
-      const res=await db('GET','clientes',`?telefono=eq.${tel.replace(/\D/g,'')}&limit=1`);
+      const telNum=tel.replace(/\D/g,'');
+      const res=await db('GET','clientes',`?telefono=eq.${telNum}&limit=1`);
       if(res?.length){
         document.getElementById('mCod').value=res[0].codigo||'';
         document.getElementById('mNom').value=res[0].nombre||nom||'';
       }
     }catch(e){}
   }
-  // Switch to reparaciones tab to see the modal
   switchTab('rep',document.querySelector('.tab[onclick*="rep"]'));
 }
 function closeModal(){document.getElementById('modal').classList.remove('open');}
@@ -929,6 +932,7 @@ async function crearRep(){
   const prob=document.getElementById('mProb').value.trim();
   const pres=document.getElementById('mPres').value.trim();
   const ico=document.getElementById('mIco').value;
+  const urgente=document.getElementById('mUrgente').value==='1';
   if(!cod||!nom||!eq||!num||!prob){toast('Completá los campos obligatorios',true);return;}
   try{
     let clArr=await db('GET','clientes',`?codigo=eq.${cod}`);
@@ -936,11 +940,11 @@ async function crearRep(){
     if(clArr?.length){cid=clArr[0].id;}
     else{const nv=await db('POST','clientes','',{codigo:cod,nombre:nom,apellido:ape,telefono:tel});cid=nv[0].id;}
     const er=await db('POST','equipos','',{cliente_id:cid,nombre:eq,modelo:mod,icono:ico});
-    const rr=await db('POST','reparaciones','',{equipo_id:er[0].id,numero:num,problema:prob,presupuesto:pres,estado:'espera'});
+    const rr=await db('POST','reparaciones','',{equipo_id:er[0].id,numero:num,problema:prob,presupuesto:pres,estado:'espera',urgente});
     const hoy=new Date().toLocaleDateString('es-AR',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
     await db('POST','pasos','',{reparacion_id:rr[0].id,orden:1,titulo:'Equipo ingresado',nota:`Comprobante #${num}. ${prob}`,estado:'done',fecha:hoy,icono:'check'});
     closeModal();
-    ['mCod','mNom','mApe','mTel','mEq','mMod','mProb','mPres'].forEach(id=>document.getElementById(id).value='');
+    ['mCod','mNom','mApe','mTel','mEq','mMod','mProb','mPres','mUrgente'].forEach(id=>document.getElementById(id).value='');
     await loadAll();
     if(tel){
       const msg=encodeURIComponent(
@@ -1086,7 +1090,7 @@ function renderTurnos(){
       <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
         <span style="font-size:10px;font-weight:600;padding:3px 9px;border-radius:20px;background:${estBg[t.estado]||'var(--black3)'};color:${estCol[t.estado]||'var(--text3)'};">${t.estado}</span>
         ${t.telefono?`<a href="https://wa.me/54${t.telefono.replace(/\D/g,'')}?text=${encodeURIComponent(`Hola ${t.nombre}! Confirmamos tu turno en PCLAF para el ${t.fecha} a las ${t.hora}. Campana 51, Floresta.`)}" target="_blank" style="background:#25d366;color:#fff;padding:5px 10px;border-radius:6px;font-size:11px;font-weight:700;text-decoration:none;">✓ Confirmar WA</a>`:''}
-        <button onclick="openModalFromTurno('${(t.nombre||'').replace(/'/g,"\\'")}','${(t.apellido||'').replace(/'/g,"\\'")}','${(t.telefono||'').replace(/'/g,"\\'")}','${(t.servicio||'').replace(/'/g,"\\'")}')" style="background:var(--red);border:none;border-radius:6px;padding:5px 10px;font-size:11px;font-weight:700;color:#fff;cursor:pointer;">+ Reparación</button>
+        <button onclick="openModalFromTurno('${(t.nombre||'').replace(/'/g,"\\'")}','${(t.apellido||'').replace(/'/g,"\\'")}','${(t.telefono||'').replace(/'/g,"\\'")}','${(t.servicio||'').replace(/'/g,"\\'")}','${(t.precio||'').replace(/'/g,"\\'")}',${!!t.urgente})" style="background:var(--red);border:none;border-radius:6px;padding:5px 10px;font-size:11px;font-weight:700;color:#fff;cursor:pointer;">+ Reparación</button>
         <select onchange="cambiarEstadoTurno('${t.id}',this.value)" style="background:var(--black3);border:1px solid var(--border2);border-radius:6px;padding:5px 8px;font-size:11px;color:var(--text2);cursor:pointer;outline:none;">
           <option value="pendiente" ${t.estado==='pendiente'?'selected':''}>Pendiente</option>
           <option value="confirmado" ${t.estado==='confirmado'?'selected':''}>Confirmado</option>
