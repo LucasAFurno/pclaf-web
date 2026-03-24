@@ -552,7 +552,7 @@ tr:hover td{background:var(--black3);}
 <script>
 const SUPA = 'https://bcmfzgjpqfjnudhgraan.supabase.co';
 const KEY  = 'sb_publishable_I1oJLpCSeneeIw2SghABAw_GXrdLLWs';
-const PASS = 'pclaf2026';
+const PASS_H = 'f873d7e0788b3122e74f8dfc037406503ecbbfeefb33bde24fdfc3f7ab8db45a'; // sha256
 const H = {apikey:KEY,Authorization:`Bearer ${KEY}`,'Content-Type':'application/json',Prefer:'return=representation'};
 
 async function db(m,t,q='',b=null){
@@ -561,20 +561,50 @@ async function db(m,t,q='',b=null){
 }
 
 // LOGIN
-function doLogin(){
-  const val = document.getElementById('loginPass').value;
-  if(val === PASS){
+let _loginAttempts=0, _loginLocked=false;
+async function hashStr(s){
+  const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+async function doLogin(){
+  if(_loginLocked){toast('Demasiados intentos. Espera 30 segundos.',true);return;}
+  const val=document.getElementById('loginPass').value.trim();
+  if(!val)return;
+  const h=await hashStr(val);
+  if(h===PASS_H){
+    _loginAttempts=0;
     sessionStorage.setItem('pclaf_a','1');
+    sessionStorage.setItem('pclaf_t',Date.now());
     document.getElementById('loginScreen').style.display='none';
     document.getElementById('app').style.display='block';
     loadAll();
+    startSessionTimer();
   } else {
-    const err = document.getElementById('loginErr');
+    _loginAttempts++;
+    const err=document.getElementById('loginErr');
     err.style.display='block';
-    err.textContent='Contraseña incorrecta';
-    document.getElementById('loginPass').value='';
-    document.getElementById('loginPass').focus();
+    if(_loginAttempts>=3){
+      _loginLocked=true;
+      err.textContent='Demasiados intentos. Bloqueado 30 segundos.';
+      setTimeout(()=>{_loginLocked=false;_loginAttempts=0;err.style.display='none';},30000);
+    } else {
+      err.textContent=`Contrasena incorrecta. Intento ${_loginAttempts}/3`;
+    }
   }
+}
+function startSessionTimer(){
+  clearInterval(window._sessionTimer);
+  window._sessionTimer=setInterval(()=>{
+    const t=parseInt(sessionStorage.getItem('pclaf_t')||0);
+    if(Date.now()-t > 2*60*60*1000){ // 2 horas
+      logout();
+      toast('Sesion expirada por inactividad',true);
+    }
+  },60000);
+  // Reset timer on any activity
+  ['click','keydown','mousemove'].forEach(ev=>
+    document.addEventListener(ev,()=>sessionStorage.setItem('pclaf_t',Date.now()),{passive:true})
+  );
 }
 function logout(){sessionStorage.removeItem('pclaf_a');location.reload();}
 if(sessionStorage.getItem('pclaf_a')){document.getElementById('loginScreen').style.display='none';document.getElementById('app').style.display='block';}
@@ -1028,7 +1058,7 @@ let agendaDate=new Date();
 function agendaNav(d){agendaDate.setDate(agendaDate.getDate()+d);renderAgenda();}
 function agendaHoy(){agendaDate=new Date();renderAgenda();}
 
-async function getMondayOf(date){
+function getMondayOf(date){
   const d=new Date(date);
   const day=d.getDay();
   const diff=day===0?-6:1-day;
