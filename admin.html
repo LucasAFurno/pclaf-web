@@ -117,7 +117,7 @@ main{max-width:1200px;margin:0 auto;padding:22px 24px 80px;overflow:hidden;}
 .smbtn:hover{background:var(--red-dark);}
 .smbtn.s{background:var(--black4);border:1px solid var(--border2);color:var(--text2);}
 .smbtn.s:hover{border-color:var(--border);color:var(--text);}
-.stl{display:flex;flex-direction:column;gap:5px;max-height:170px;overflow-y:auto;margin-bottom:9px;}
+.stl{display:flex;flex-direction:column;gap:5px;max-height:320px;overflow-y:auto;margin-bottom:9px;}
 .str{display:flex;align-items:center;gap:7px;background:var(--black4);border-radius:6px;padding:7px 10px;}
 .stt{font-size:12px;color:var(--text);flex:1;}
 .std{font-family:var(--mono);font-size:10px;color:var(--text3);}
@@ -692,7 +692,6 @@ function renderList(){
                 <button class="smbtn" style="padding:5px 9px;font-size:11px" onclick="savePr('${r.id}')">✓</button>
               </div>
             </div>
-            <!-- DESCUENTO RESEÑA -->
             <div class="descuento-banner" id="descBanner-${c.id}">
               <div>
                 <div style="font-size:12px;font-weight:700;color:var(--green);margin-bottom:2px">🎁 Descuento por reseña Google</div>
@@ -715,10 +714,6 @@ function renderList(){
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
               Generar presupuesto PDF
             </button>
-            <button class="pdf-btn" style="margin-top:4px" onclick="imprimirComprobante('${r.id}')">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-              Imprimir comprobante
-            </button>
             <button class="pdf-btn" onclick="subirReporte('${r.id}')" style="margin-top:4px;border-color:#3b82f6;color:#3b82f6">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
               Subir reporte de diagnóstico
@@ -736,18 +731,24 @@ function renderList(){
           </div>
           <div class="bsec">
             <h4>Cambiar estado</h4>
-            <div class="sgrid">
+            <div class="sgrid" style="margin-bottom:14px">
               ${['espera','proceso','listo','entregado'].map(s=>`<div class="so ${r.estado===s?'a'+s[0]:''}" onclick="chEst('${r.id}','${s}',this)">${IC[s]} ${s.charAt(0).toUpperCase()+s.slice(1)}</div>`).join('')}
             </div>
-          </div>
-          <div class="bsec" style="grid-column:1/-1">
-            <h4>📷 Fotos del proceso</h4>
-            <div id="fotos-${r.id}" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;min-height:40px;">
-              <div style="color:var(--text3);font-size:12px;padding:8px 0">Cargando...</div>
+            <h4 style="margin-bottom:8px">📋 Historial de pasos</h4>
+            <div class="stl" id="st-${r.id}"><div style="color:var(--text3);font-size:12px;text-align:center;padding:8px">Cargando...</div></div>
+            <div class="sf">
+              <div class="sr2"><input class="sin" id="sti-${r.id}" placeholder="Título del paso"/><select class="sse" id="ses-${r.id}"><option value="done">✅ Hecho</option><option value="active">🔧 En curso</option><option value="pending">⏳ Pendiente</option></select></div>
+              <div class="sr2"><input class="sin" id="sno-${r.id}" placeholder="Nota (opcional)"/><input class="sin" id="sfe-${r.id}" placeholder="Fecha" style="max-width:110px" value="${new Date().toLocaleDateString('es-AR',{day:'numeric',month:'short'})}"/><button class="smbtn" onclick="addPaso('${r.id}')">+ Paso</button></div>
             </div>
-            <div style="display:flex;gap:8px;align-items:center">
-              <label style="display:flex;align-items:center;gap:6px;cursor:pointer;background:var(--black4);border:1px solid var(--border2);border-radius:6px;padding:7px 12px;font-size:12px;color:var(--text2);transition:all .15s;" onmouseover="this.style.borderColor='var(--border)'" onmouseout="this.style.borderColor='var(--border2)'">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          </div>
+          <div class="bsec" style="grid-column:1/2">
+            <h4 style="margin-bottom:8px">📷 Fotos del proceso</h4>
+            <div id="fotos-${r.id}" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;min-height:32px;">
+              <div style="color:var(--text3);font-size:12px;padding:4px 0">Cargando...</div>
+            </div>
+            <div style="display:flex;gap:6px;align-items:center">
+              <label style="display:flex;align-items:center;gap:5px;cursor:pointer;background:var(--black4);border:1px solid var(--border2);border-radius:6px;padding:6px 10px;font-size:12px;color:var(--text2);">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
                 Subir foto
                 <input type="file" accept="image/*" style="display:none" onchange="subirFoto('${r.id}',this)"/>
               </label>
@@ -758,15 +759,9 @@ function renderList(){
               </select>
             </div>
           </div>
-          <div class="bsec" style="grid-column:1/-1" id="califSec-${r.id}">
-            <h4>⭐ Calificación del cliente</h4>
+          <div class="bsec" style="grid-column:2/3" id="califSec-${r.id}">
+            <h4 style="margin-bottom:8px">⭐ Calificación</h4>
             <div id="calif-${r.id}" style="color:var(--text3);font-size:12px">Cargando...</div>
-          </div>
-            <div class="stl" id="st-${r.id}"><div style="color:var(--text3);font-size:12px;text-align:center;padding:8px">Cargando...</div></div>
-            <div class="sf">
-              <div class="sr2"><input class="sin" id="sti-${r.id}" placeholder="Título del paso"/><select class="sse" id="ses-${r.id}"><option value="done">✅ Hecho</option><option value="active">🔧 En curso</option><option value="pending">⏳ Pendiente</option></select></div>
-              <div class="sr2"><input class="sin" id="sno-${r.id}" placeholder="Nota (opciónal)"/><input class="sin" id="sfe-${r.id}" placeholder="Fecha" style="max-width:110px" value="${new Date().toLocaleDateString('es-AR',{day:'numeric',month:'short'})}"/><button class="smbtn" onclick="addPaso('${r.id}')">+ Paso</button></div>
-            </div>
           </div>
         </div>
       </div>
@@ -892,6 +887,27 @@ async function openModal(){
     (reps||[]).forEach(r=>{const n=parseInt((r.numero||'').replace(/\D/g,''),10);if(!isNaN(n)&&n>max)max=n;});
     document.getElementById('mNum').value=String(max+1).padStart(4,'0');
   }catch(e){document.getElementById('mNum').value='';}
+}
+
+async function openModalFromTurno(nom, ape, tel, servicio){
+  await openModal();
+  document.getElementById('mNom').value=nom||'';
+  document.getElementById('mApe').value=ape||'';
+  document.getElementById('mTel').value=tel||'';
+  // Pre-fill problem from servicio
+  document.getElementById('mProb').value=servicio||'';
+  // Try to find existing client by phone
+  if(tel){
+    try{
+      const res=await db('GET','clientes',`?telefono=eq.${tel.replace(/\D/g,'')}&limit=1`);
+      if(res?.length){
+        document.getElementById('mCod').value=res[0].codigo||'';
+        document.getElementById('mNom').value=res[0].nombre||nom||'';
+      }
+    }catch(e){}
+  }
+  // Switch to reparaciones tab to see the modal
+  switchTab('rep',document.querySelector('.tab[onclick*="rep"]'));
 }
 function closeModal(){document.getElementById('modal').classList.remove('open');}
 
@@ -1070,6 +1086,7 @@ function renderTurnos(){
       <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
         <span style="font-size:10px;font-weight:600;padding:3px 9px;border-radius:20px;background:${estBg[t.estado]||'var(--black3)'};color:${estCol[t.estado]||'var(--text3)'};">${t.estado}</span>
         ${t.telefono?`<a href="https://wa.me/54${t.telefono.replace(/\D/g,'')}?text=${encodeURIComponent(`Hola ${t.nombre}! Confirmamos tu turno en PCLAF para el ${t.fecha} a las ${t.hora}. Campana 51, Floresta.`)}" target="_blank" style="background:#25d366;color:#fff;padding:5px 10px;border-radius:6px;font-size:11px;font-weight:700;text-decoration:none;">✓ Confirmar WA</a>`:''}
+        <button onclick="openModalFromTurno('${(t.nombre||'').replace(/'/g,"\\'")}','${(t.apellido||'').replace(/'/g,"\\'")}','${(t.telefono||'').replace(/'/g,"\\'")}','${(t.servicio||'').replace(/'/g,"\\'")}')" style="background:var(--red);border:none;border-radius:6px;padding:5px 10px;font-size:11px;font-weight:700;color:#fff;cursor:pointer;">+ Reparación</button>
         <select onchange="cambiarEstadoTurno('${t.id}',this.value)" style="background:var(--black3);border:1px solid var(--border2);border-radius:6px;padding:5px 8px;font-size:11px;color:var(--text2);cursor:pointer;outline:none;">
           <option value="pendiente" ${t.estado==='pendiente'?'selected':''}>Pendiente</option>
           <option value="confirmado" ${t.estado==='confirmado'?'selected':''}>Confirmado</option>
