@@ -66,6 +66,13 @@ main{max-width:1200px;margin:0 auto;padding:22px 24px 80px;overflow:hidden;}
 .rc{background:var(--black2);border:1.5px solid var(--border);border-radius:12px;overflow:hidden;transition:border-color .2s;}
 .rc:hover{border-color:var(--border2);}
 .rc.open{border-color:var(--red);}
+.rc[data-estado="espera"]{border-left:3px solid var(--text3);}
+.rc[data-estado="proceso"]{border-left:3px solid var(--amber);}
+.rc[data-estado="listo"]{border-left:3px solid var(--green);}
+.rc[data-estado="entregado"]{border-left:3px solid var(--blue);}
+.rc[data-estado="proceso"]{background:rgba(245,158,11,.03);}
+.rc[data-estado="listo"]{background:rgba(34,197,94,.03);}
+.rc[data-estado="entregado"]{background:rgba(59,130,246,.03);}
 .rch{display:flex;align-items:center;gap:12px;padding:13px 16px;cursor:pointer;}
 .rcn{font-family:var(--mono);font-size:11px;color:var(--text3);min-width:46px;flex-shrink:0;}
 .rcd{flex:1;min-width:0;}
@@ -664,7 +671,7 @@ function renderList(){
     const tel=(c.telefono||'').replace(/\D/g,'');
     const wm=encodeURIComponent(`Hola ${(c.nombre||'').split(' ')[0]}, te escribimos de PCLAF. Tu ${e.nombre||'equipo'} (#${r.numero}) está ${LB[r.estado]||r.estado}.`);
     const descuentoActivo = c.descuento_resena;
-    return `<div class="rc" id="c-${r.id}">
+    return `<div class="rc" id="c-${r.id}" data-estado="${r.estado}">
       ${descuentoActivo ? `<div style="background:rgba(34,197,94,0.08);border-bottom:1px solid rgba(34,197,94,0.2);padding:7px 16px;display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;color:var(--green);">🎁 10% descuento por reseña Google — aplicar al cobrar</div>` : ''}
       <div class="rch" onclick="togC('${r.id}')">
         <div class="rcn">#${r.numero}</div>
@@ -826,6 +833,8 @@ async function chEst(id,st,btn){
   updStats();
   btn.closest('.sgrid').querySelectorAll('.so').forEach(b=>b.className='so');
   btn.classList.add('a'+st[0]);
+  const card=document.getElementById(`c-${id}`);
+  if(card) card.setAttribute('data-estado',st);
   const b=document.querySelector(`#c-${id} .sb`);
   const LB={espera:'En espera',proceso:'En reparación',listo:'Listo para retirar',entregado:'Entregado'};
   if(b){b.className=`sb sb-${st}`;b.innerHTML=`<span class="dot"></span>${LB[st]}`;}
@@ -1034,10 +1043,12 @@ function filtTurno(f,btn){
 function renderTurnos(){
   const list=turnoFilter==='todos'?allTurnos:allTurnos.filter(t=>t.estado===turnoFilter);
   if(!list.length){document.getElementById('turnosList').innerHTML='<div class="empty">Sin turnos</div>';return;}
-  const estCol={pendiente:'var(--amber)',confirmado:'#ff6b6b',cancelado:'var(--text3)'};
-  const estBg={pendiente:'var(--amber-dim)',confirmado:'rgba(204,0,0,.18)',cancelado:'var(--black3)'};
+  const estCol={pendiente:'var(--blue)',confirmado:'var(--green)',cancelado:'var(--red)'};
+  const estBg={pendiente:'var(--blue-dim)',confirmado:'var(--green-dim)',cancelado:'var(--red-dim)'};
+  const cardBg={pendiente:'rgba(59,130,246,.05)',confirmado:'rgba(34,197,94,.05)',cancelado:'rgba(204,0,0,.06)'};
+  const cardBorder={pendiente:'rgba(59,130,246,.3)',confirmado:'rgba(34,197,94,.3)',cancelado:'rgba(204,0,0,.35)'};
   document.getElementById('turnosList').innerHTML=`<div style="display:flex;flex-direction:column;gap:8px">`+list.map(t=>`
-    <div style="background:${t.estado==='confirmado'?'rgba(204,0,0,.07)':'var(--black2)'};border:1px solid ${t.estado==='confirmado'?'rgba(204,0,0,.35)':'var(--border)'};border-radius:10px;padding:14px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+    <div style="background:${cardBg[t.estado]||'var(--black2)'};border:1px solid ${cardBorder[t.estado]||'var(--border)'};border-left:3px solid ${estCol[t.estado]||'var(--border)'};border-radius:10px;padding:14px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
       <div style="font-family:var(--mono);font-size:11px;color:var(--text3);min-width:80px">
         <div style="font-size:14px;color:#fff;font-weight:600">${t.fecha?new Date(t.fecha+'T12:00:00').toLocaleDateString('es-AR',{day:'numeric',month:'short'}):'–'}</div>
         <div>${t.hora||'–'}</div>
@@ -1147,7 +1158,7 @@ function renderAgenda(){
         html+=`<div style="min-height:48px;padding:3px;background:${bg};border:${border};border-radius:4px;margin:1px 2px;">`;
         if(cellTurnos.length){
           cellTurnos.forEach(t=>{
-            const estColor=t.estado==='confirmado'?'var(--green)':'var(--amber)';
+            const estColor=t.estado==='confirmado'?'var(--green)':t.estado==='realizado'?'var(--blue)':'var(--amber)';
             html+=`<div style="background:${estColor}18;border-left:2px solid ${estColor};border-radius:3px;padding:3px 5px;cursor:pointer;margin-bottom:2px;" title="${t.nombre} ${t.apellido||''} - ${t.servicio}" onclick="switchTab('turnos',document.querySelector('.tab[onclick*=turnos]'))">
               <div style="font-size:10px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${t.nombre} ${(t.apellido||'').slice(0,1)}${t.apellido?'.':''}</div>
               <div style="font-size:9px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${t.servicio||''}</div>
