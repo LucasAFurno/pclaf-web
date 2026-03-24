@@ -157,17 +157,7 @@ nav{
 .nav-wa:hover{background:var(--red-dark);}
 .nav-wa svg{width:14px;height:14px;}
 
-/* ── HAMBURGER MENU ── */
-.hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;padding:8px;border-radius:6px;background:var(--black3);border:1px solid var(--border);}
-.hamburger span{display:block;width:20px;height:2px;background:var(--white);border-radius:2px;transition:all .2s;}
-.mobile-menu{display:none;position:fixed;top:56px;left:0;right:0;background:rgba(8,8,8,.97);border-bottom:1px solid var(--border);padding:16px;z-index:99;flex-direction:column;gap:4px;}
-.mobile-menu a{color:var(--text2);text-decoration:none;padding:12px 16px;border-radius:8px;font-weight:600;font-size:14px;display:block;}
-.mobile-menu a:hover{background:var(--black3);color:var(--white);}
-.mobile-menu.open{display:flex;}
-@media(max-width:768px){
-  .hamburger{display:flex;}
-  .nav-links{display:none;}
-}
+
 
 /* ─── HERO ─── */
 .hero{
@@ -879,19 +869,10 @@ footer{
       </a>
     </div>
   </div>
-    <button class="hamburger" onclick="toggleMenu(this)" aria-label="Menu">
-        <span></span><span></span><span></span>
-      </button>
+
     </div>
   </div>
 </nav>
-<div class="mobile-menu" id="mobileMenu">
-  <a href="#servicios" onclick="closeMenu()">Servicios</a>
-  <a href="#precios" onclick="closeMenu()">Precios</a>
-  <a href="#nosotros" onclick="closeMenu()">Nosotros</a>
-  <a href="#contacto" onclick="closeMenu()">Contacto</a>
-  <a href="turnos.html" onclick="closeMenu()" style="color:var(--red);font-weight:800;">📅 Pedir turno</a>
-</div>
 
 <!-- ─── SEGUIMIENTO DESTACADO ─── -->
 <div style="background:var(--black2);border-bottom:1px solid var(--border);padding:28px 24px;">
@@ -1579,15 +1560,7 @@ window.addEventListener('scroll',()=>{
   document.querySelector('nav').style.borderBottomColor =
     window.scrollY > 20 ? 'var(--red)' : 'var(--border)';
 });
-function toggleMenu(btn){
-  const m=document.getElementById('mobileMenu');
-  m.classList.toggle('open');
-  const s=btn.querySelectorAll('span');
-  if(m.classList.contains('open')){s[0].style.transform='rotate(45deg) translate(5px,5px)';s[1].style.opacity='0';s[2].style.transform='rotate(-45deg) translate(5px,-5px)';}
-  else{s[0].style.transform='';s[1].style.opacity='';s[2].style.transform='';}
-}
-function closeMenu(){document.getElementById('mobileMenu').classList.remove('open');}
-document.addEventListener('click',e=>{const m=document.getElementById('mobileMenu');if(m&&m.classList.contains('open')&&!e.target.closest('nav')&&!e.target.closest('.mobile-menu'))closeMenu();});
+
 </script>
 </body>
 </html>
