@@ -644,32 +644,34 @@ let searchTimeout=null;
 // Stats counters (loaded separately)
 async function loadStats(){
   try{
-    const [total,proceso,listo,espera]=await Promise.all([
-      fetch(`${SB}/reparaciones?select=id`,{headers:H}).then(r=>r.json()),
-      fetch(`${SB}/reparaciones?select=id&estado=eq.proceso`,{headers:H}).then(r=>r.json()),
-      fetch(`${SB}/reparaciones?select=id&estado=eq.listo`,{headers:H}).then(r=>r.json()),
-      fetch(`${SB}/reparaciones?select=id&estado=eq.espera`,{headers:H}).then(r=>r.json()),
+    const [proceso,listo,espera,all]=await Promise.all([
+      db('GET','reparaciones','?select=id&estado=eq.proceso'),
+      db('GET','reparaciones','?select=id&estado=eq.listo'),
+      db('GET','reparaciones','?select=id&estado=eq.espera'),
+      db('GET','reparaciones','?select=id'),
     ]);
-    document.getElementById('sT').textContent=Array.isArray(total)?total.length:'–';
+    document.getElementById('sT').textContent=Array.isArray(all)?all.length:'–';
     document.getElementById('sP').textContent=Array.isArray(proceso)?proceso.length:'–';
     document.getElementById('sL').textContent=Array.isArray(listo)?listo.length:'–';
     document.getElementById('sE').textContent=Array.isArray(espera)?espera.length:'–';
-  }catch(e){}
+  }catch(e){console.error('loadStats error',e);}
 }
 
 async function loadPage(){
-  const q=(document.getElementById('srch').value||'').trim();
+  const q=(document.getElementById('srch')?.value||'').trim();
   const offset=currentPage*PAGE_SIZE;
 
   let filter=`order=numero.desc&limit=${PAGE_SIZE}&offset=${offset}`;
   if(fSt!=='todos') filter+=`&estado=eq.${fSt}`;
-  // Server-side search on numero
   if(q && q.match(/^\d+$/)) filter+=`&numero=eq.${q.padStart(4,'0')}`;
 
   const select=`select=id,numero,problema,presupuesto,estado,urgente,fecha_entrega,created_at,equipo_id,equipos(id,nombre,icono,modelo,cliente_id,clientes(id,codigo,nombre,apellido,telefono,descuento_resena))`;
 
   try{
-    const res=await fetch(`${SB}/reparaciones?${select}&${filter}`,{headers:{...H,'Prefer':'count=exact'}});
+    document.getElementById('rlist').innerHTML='<div class="empty"><div class="spinner"></div>Cargando...</div>';
+    const res=await fetch(`${SUPA}/rest/v1/reparaciones?${select}&${filter}`,{
+      headers:{...H,'Prefer':'count=exact'}
+    });
     const countHeader=res.headers.get('content-range');
     if(countHeader) totalCount=parseInt(countHeader.split('/')[1])||0;
     const data=await res.json();
@@ -678,16 +680,10 @@ async function loadPage(){
       document.getElementById('rlist').innerHTML='<div class="empty">Sin reparaciones</div>';
       return;
     }
-
-    // Map to the format renderCards expects
-    aR=data;
-    aE=data.map(r=>r.equipos||{});
-    aC=data.map(r=>(r.equipos||{}).clientes||{});
-
     renderCards(data);
   }catch(e){
     document.getElementById('rlist').innerHTML='<div class="empty">Error cargando datos</div>';
-    console.error(e);
+    console.error('loadPage error',e);
   }
 }
 
