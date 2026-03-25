@@ -1638,54 +1638,6 @@ function subirReporte(repId) {
 }
 
 // ── GENERAR VERSIÓN CLIENTE DEL REPORTE (sin datos sensibles) ──
-function generarReporteCliente(fullHtml) {
-  // Parse and remove sensitive sections
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(fullHtml, 'text/html');
-  
-  // Remove sensitive sections by heading text
-  const sensitiveSections = [
-    'Programas de Inicio',
-    'Eventos Críticos',
-    'Eventos Criticos',
-    'Top Procesos',
-    'Seguridad Basica',
-    'Seguridad Básica',
-    'Windows Update',
-    'TRIM SSD',
-  ];
-  
-  doc.querySelectorAll('section').forEach(sec => {
-    const h2 = sec.querySelector('h2');
-    if (h2 && sensitiveSections.some(s => h2.textContent.includes(s))) {
-      sec.remove();
-    }
-  });
-  
-  // Remove serial numbers from tables (replace with masked version)
-  doc.querySelectorAll('td').forEach(td => {
-    const text = td.textContent;
-    // Mask MAC addresses
-    if (/^([0-9A-Fa-f]{2}[-:]){5}[0-9A-Fa-f]{2}$/.test(text.trim())) {
-      td.textContent = '**:**:**:**:**:**';
-    }
-    // Mask Windows serial
-    if (/^\d{5}-\d{5}-\d{5}-[A-Z0-9]{5}$/.test(text.trim())) {
-      td.textContent = '•••••-•••••-•••••-•••••';
-    }
-  });
-  
-  // Add "Reporte para el cliente" header
-  const body = doc.querySelector('body');
-  if (body) {
-    const notice = doc.createElement('div');
-    notice.style.cssText = 'background:#1a1a2e;border:1px solid #333;border-radius:8px;padding:12px 16px;margin:16px;font-size:12px;color:#888;text-align:center;';
-    notice.textContent = 'Reporte de diagnóstico generado por PCLAF · Algunos datos técnicos han sido omitidos en esta versión';
-    body.insertBefore(notice, body.firstChild);
-  }
-  
-  return '<!DOCTYPE html>' + doc.documentElement.outerHTML;
-}
 
 async function procesarReporte(repId, input) {
   const file = input.files[0];
