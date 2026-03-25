@@ -644,16 +644,23 @@ let searchTimeout=null;
 // Stats counters (loaded separately)
 async function loadStats(){
   try{
-    const [proceso,listo,espera,all]=await Promise.all([
-      db('GET','reparaciones','?select=id&estado=eq.proceso'),
-      db('GET','reparaciones','?select=id&estado=eq.listo'),
-      db('GET','reparaciones','?select=id&estado=eq.espera'),
-      db('GET','reparaciones','?select=id'),
+    const countOf = async (filter='') => {
+      const r = await fetch(`${SUPA}/rest/v1/reparaciones?select=id${filter}&limit=1`,{
+        headers:{...H,'Prefer':'count=exact'}
+      });
+      const cr = r.headers.get('content-range');
+      return cr ? parseInt(cr.split('/')[1]) || 0 : 0;
+    };
+    const [all, proceso, listo, espera] = await Promise.all([
+      countOf(''),
+      countOf('&estado=eq.proceso'),
+      countOf('&estado=eq.listo'),
+      countOf('&estado=eq.espera'),
     ]);
-    document.getElementById('sT').textContent=Array.isArray(all)?all.length:'–';
-    document.getElementById('sP').textContent=Array.isArray(proceso)?proceso.length:'–';
-    document.getElementById('sL').textContent=Array.isArray(listo)?listo.length:'–';
-    document.getElementById('sE').textContent=Array.isArray(espera)?espera.length:'–';
+    document.getElementById('sT').textContent = all;
+    document.getElementById('sP').textContent = proceso;
+    document.getElementById('sL').textContent = listo;
+    document.getElementById('sE').textContent = espera;
   }catch(e){console.error('loadStats error',e);}
 }
 
