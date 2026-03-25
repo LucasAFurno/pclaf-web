@@ -705,8 +705,6 @@ function renderCards(data){
   const LB={espera:'En espera',proceso:'En reparación',listo:'Listo para retirar',entregado:'Entregado',cancelado:'Cancelado'};
   const IC={espera:'⏳',proceso:'🔧',listo:'✅',entregado:'📦',cancelado:'❌'};
 
-  const totalPages=Math.ceil(totalCount/PAGE_SIZE);
-
   const cards=data.map(r=>{
     const e=r.equipos||{};
     const c=e.clientes||{};
