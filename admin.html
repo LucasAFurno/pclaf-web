@@ -342,7 +342,7 @@ tr:hover td{background:var(--black3);}
         <button class="fbtn" onclick="setF('proceso',this)">Proceso</button>
         <button class="fbtn" onclick="setF('listo',this)">Listos</button>
         <button class="fbtn" onclick="setF('entregado',this)">Entregados</button>
-        <input class="srch" id="srch" placeholder="Buscar cliente, equipo, #número..." oninput="renderList()"/>
+        <input class="srch" id="srch" placeholder="Buscar cliente, equipo, #número..." oninput="currentPage=0;renderList()"/>
         <button class="abtn" onclick="openModal()">
           <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M8 2v12M2 8h12"/></svg>
           Nueva reparación
@@ -636,11 +636,18 @@ function switchTab(name,btn){
 let aR=[],aE=[],aC=[];
 let fSt='todos';
 let mCh={};
+let currentPage=0;
+const PAGE_SIZE=30;
 
 async function loadAll(){
   try{
-    [aR,aE,aC]=await Promise.all([db('GET','reparaciones','?order=created_at.desc'),db('GET','equipos',''),db('GET','clientes','')]);
-    updStats(); renderList();
+    // Load paginated reparaciones (newest first), all equipos and clientes for lookup
+    [aR,aE,aC]=await Promise.all([
+      db('GET','reparaciones','?order=numero.desc&limit=3300'),
+      db('GET','equipos','?select=id,nombre,icono,modelo,cliente_id'),
+      db('GET','clientes','?select=id,codigo,nombre,apellido,telefono,descuento_resena')
+    ]);
+    updStats(); currentPage=0; renderList();
   }catch(e){document.getElementById('rlist').innerHTML='<div class="empty">Error cargando datos</div>';}
 }
 
@@ -651,7 +658,7 @@ function updStats(){
   document.getElementById('sE').textContent=aR.filter(r=>r.estado==='espera').length;
 }
 
-function setF(f,btn){fSt=f;document.querySelectorAll('.fbtn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderList();}
+function setF(f,btn){fSt=f;currentPage=0;document.querySelectorAll('.fbtn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderList();}
 
 function renderList(){
   const q=(document.getElementById('srch').value||'').toLowerCase();
@@ -660,12 +667,17 @@ function renderList(){
   if(q) data=data.filter(r=>{
     const e=aE.find(x=>x.id===r.equipo_id)||{};
     const c=aC.find(x=>x.id===e.cliente_id)||{};
-    return (c.nombre||'').toLowerCase().includes(q)||(e.nombre||'').toLowerCase().includes(q)||(r.numero||'').includes(q)||(r.problema||'').toLowerCase().includes(q);
+    return (c.nombre||'').toLowerCase().includes(q)||(c.apellido||'').toLowerCase().includes(q)||(e.nombre||'').toLowerCase().includes(q)||(r.numero||'').includes(q)||(r.problema||'').toLowerCase().includes(q);
   });
   if(!data.length){document.getElementById('rlist').innerHTML='<div class="empty">Sin reparaciones</div>';return;}
+
+  const totalPages=Math.ceil(data.length/PAGE_SIZE);
+  if(currentPage>=totalPages) currentPage=totalPages-1;
+  const pageData=data.slice(currentPage*PAGE_SIZE,(currentPage+1)*PAGE_SIZE);
+
   const LB={espera:'En espera',proceso:'En reparación',listo:'Listo para retirar',entregado:'Entregado',cancelado:'Cancelado'};
   const IC={espera:'⏳',proceso:'🔧',listo:'✅',entregado:'📦',cancelado:'❌'};
-  document.getElementById('rlist').innerHTML=data.map(r=>{
+  const cards=pageData.map(r=>{
     const e=aE.find(x=>x.id===r.equipo_id)||{};
     const c=aC.find(x=>x.id===e.cliente_id)||{};
     const tel=(c.telefono||'').replace(/\D/g,'');
@@ -772,6 +784,22 @@ function renderList(){
       </div>
     </div>`;
   }).join('');
+
+  const paginacion=totalPages>1?`
+    <div style="display:flex;align-items:center;justify-content:center;gap:10px;padding:20px 0;border-top:1px solid var(--border);margin-top:8px;">
+      <button onclick="goPage(${currentPage-1})" ${currentPage===0?'disabled':''} style="background:var(--black3);border:1px solid var(--border2);border-radius:8px;padding:8px 16px;color:${currentPage===0?'var(--text3)':'var(--text)'};cursor:${currentPage===0?'default':'pointer'};font-size:13px;font-weight:600;">← Anterior</button>
+      <span style="font-family:var(--mono);font-size:12px;color:var(--text3)">Página <strong style="color:#fff">${currentPage+1}</strong> de <strong style="color:#fff">${totalPages}</strong> &nbsp;·&nbsp; ${data.length} total</span>
+      <button onclick="goPage(${currentPage+1})" ${currentPage===totalPages-1?'disabled':''} style="background:var(--black3);border:1px solid var(--border2);border-radius:8px;padding:8px 16px;color:${currentPage===totalPages-1?'var(--text3)':'var(--text)'};cursor:${currentPage===totalPages-1?'default':'pointer'};font-size:13px;font-weight:600;">Siguiente →</button>
+    </div>`:'';
+
+  document.getElementById('rlist').innerHTML=cards+paginacion;
+}
+
+function goPage(p){
+  if(p<0) return;
+  currentPage=p;
+  renderList();
+  window.scrollTo({top:0,behavior:'smooth'});
 }
 
 async function togC(id){
