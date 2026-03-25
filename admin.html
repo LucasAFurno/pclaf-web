@@ -66,10 +66,11 @@ main{max-width:1200px;margin:0 auto;padding:22px 24px 80px;overflow:hidden;}
 .rc{background:var(--black2);border:1.5px solid var(--border);border-radius:12px;overflow:hidden;transition:border-color .2s;}
 .rc:hover{border-color:var(--border2);}
 .rc.open{border-color:var(--red);}
-.rc[data-estado="espera"]{border-left:3px solid var(--text3);}
+.rc[data-estado="espera"]{border-left:3px solid var(--blue);background:rgba(59,130,246,.03);}
 .rc[data-estado="proceso"]{border-left:3px solid var(--amber);background:rgba(245,158,11,.03);}
 .rc[data-estado="listo"]{border-left:3px solid var(--green);background:rgba(34,197,94,.03);}
-.rc[data-estado="entregado"]{border-left:3px solid var(--blue);background:rgba(59,130,246,.03);}
+.rc[data-estado="entregado"]{border-left:3px solid var(--border2);background:transparent;opacity:.7;}
+.rc[data-estado="cancelado"]{border-left:3px solid var(--red);background:rgba(204,0,0,.03);opacity:.6;}
 .rch{display:flex;align-items:center;gap:12px;padding:13px 16px;cursor:pointer;}
 .rcn{font-family:var(--mono);font-size:11px;color:var(--text3);min-width:46px;flex-shrink:0;}
 .rcd{flex:1;min-width:0;}
@@ -81,14 +82,16 @@ main{max-width:1200px;margin:0 auto;padding:22px 24px 80px;overflow:hidden;}
 .rc.open .rcch{transform:rotate(180deg);}
 .sb{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:600;padding:3px 9px;border-radius:20px;font-family:var(--mono);white-space:nowrap;flex-shrink:0;}
 .sb .dot{width:5px;height:5px;border-radius:50%;}
-.sb-espera{background:var(--black3);color:var(--text3);border:1px solid var(--border);}
-.sb-espera .dot{background:var(--text3);}
+.sb-espera{background:var(--blue-dim);color:var(--blue);border:1px solid rgba(59,130,246,.2);}
+.sb-espera .dot{background:var(--blue);}
 .sb-proceso{background:var(--amber-dim);color:var(--amber);border:1px solid rgba(245,158,11,.2);}
 .sb-proceso .dot{background:var(--amber);animation:py 1.5s infinite;}
 .sb-listo{background:var(--green-dim);color:var(--green);border:1px solid rgba(34,197,94,.2);}
 .sb-listo .dot{background:var(--green);animation:pg 1.5s infinite;}
-.sb-entregado{background:var(--blue-dim);color:var(--blue);border:1px solid rgba(59,130,246,.2);}
-.sb-entregado .dot{background:var(--blue);}
+.sb-entregado{background:var(--black3);color:var(--text3);border:1px solid var(--border);}
+.sb-entregado .dot{background:var(--text3);}
+.sb-cancelado{background:rgba(204,0,0,.12);color:var(--red);border:1px solid rgba(204,0,0,.25);}
+.sb-cancelado .dot{background:var(--red);}
 @keyframes pg{0%,100%{box-shadow:0 0 0 0 rgba(34,197,94,.45)}50%{box-shadow:0 0 0 4px rgba(34,197,94,0)}}
 @keyframes py{0%,100%{box-shadow:0 0 0 0 rgba(245,158,11,.45)}50%{box-shadow:0 0 0 4px rgba(245,158,11,0)}}
 @keyframes urgentePulse{0%,100%{background-color:rgba(245,158,11,0.04)}50%{background-color:rgba(245,158,11,0.12)}}
@@ -107,10 +110,11 @@ main{max-width:1200px;margin:0 auto;padding:22px 24px 80px;overflow:hidden;}
 .sgrid{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
 .so{padding:8px;border-radius:7px;border:1.5px solid var(--border);background:var(--black4);font-size:12px;font-weight:600;color:var(--text2);cursor:pointer;transition:all .15s;text-align:center;font-family:var(--mono);}
 .so:hover{border-color:var(--border2);color:#fff;}
-.so.ae{border-color:var(--text3);color:var(--text);background:rgba(255,255,255,.05);}
+.so.ae{border-color:var(--blue);color:var(--blue);background:var(--blue-dim);}
 .so.ap{border-color:var(--amber);color:var(--amber);background:var(--amber-dim);}
 .so.al{border-color:var(--green);color:var(--green);background:var(--green-dim);}
-.so.ad{border-color:var(--blue);color:var(--blue);background:var(--blue-dim);}
+.so.ad{border-color:var(--border2);color:var(--text3);background:rgba(255,255,255,.04);}
+.so.ac{border-color:var(--red);color:var(--red);background:rgba(204,0,0,.1);}
 .prin{flex:1;background:var(--black4);border:1px solid var(--border2);border-radius:6px;padding:7px 10px;font-size:13px;color:var(--text);outline:none;font-family:var(--mono);}
 .prin:focus{border-color:var(--red);}
 .smbtn{background:var(--red);border:none;border-radius:6px;padding:7px 12px;font-size:12px;font-weight:700;color:#fff;cursor:pointer;white-space:nowrap;transition:background .15s;}
@@ -659,8 +663,8 @@ function renderList(){
     return (c.nombre||'').toLowerCase().includes(q)||(e.nombre||'').toLowerCase().includes(q)||(r.numero||'').includes(q)||(r.problema||'').toLowerCase().includes(q);
   });
   if(!data.length){document.getElementById('rlist').innerHTML='<div class="empty">Sin reparaciones</div>';return;}
-  const LB={espera:'En espera',proceso:'En reparación',listo:'Listo para retirar',entregado:'Entregado'};
-  const IC={espera:'⏳',proceso:'🔧',listo:'✅',entregado:'📦'};
+  const LB={espera:'En espera',proceso:'En reparación',listo:'Listo para retirar',entregado:'Entregado',cancelado:'Cancelado'};
+  const IC={espera:'⏳',proceso:'🔧',listo:'✅',entregado:'📦',cancelado:'❌'};
   document.getElementById('rlist').innerHTML=data.map(r=>{
     const e=aE.find(x=>x.id===r.equipo_id)||{};
     const c=aC.find(x=>x.id===e.cliente_id)||{};
@@ -733,7 +737,7 @@ function renderList(){
           <div class="bsec">
             <h4>Cambiar estado</h4>
             <div class="sgrid" style="margin-bottom:14px">
-              ${['espera','proceso','listo','entregado'].map(s=>`<div class="so ${r.estado===s?'a'+s[0]:''}" onclick="chEst('${r.id}','${s}',this)">${IC[s]} ${s.charAt(0).toUpperCase()+s.slice(1)}</div>`).join('')}
+              ${['espera','proceso','listo','entregado','cancelado'].map(s=>`<div class="so ${r.estado===s?'a'+s[0]:''}" onclick="chEst('${r.id}','${s}',this)">${IC[s]} ${s.charAt(0).toUpperCase()+s.slice(1)}</div>`).join('')}
             </div>
             <h4 style="margin-bottom:8px">📋 Historial de pasos</h4>
             <div class="stl" id="st-${r.id}"><div style="color:var(--text3);font-size:12px;text-align:center;padding:8px">Cargando...</div></div>
@@ -829,7 +833,7 @@ async function chEst(id,st,btn){
   const card=document.getElementById(`c-${id}`);
   if(card) card.setAttribute('data-estado',st);
   const b=document.querySelector(`#c-${id} .sb`);
-  const LB={espera:'En espera',proceso:'En reparación',listo:'Listo para retirar',entregado:'Entregado'};
+  const LB={espera:'En espera',proceso:'En reparación',listo:'Listo para retirar',entregado:'Entregado',cancelado:'Cancelado'};
   if(b){b.className=`sb sb-${st}`;b.innerHTML=`<span class="dot"></span>${LB[st]}`;}
 
   // WhatsApp automático según estado
@@ -1085,10 +1089,10 @@ function renderTurnos(){
     (t.nota||'').toLowerCase().includes(q)
   );
   if(!list.length){document.getElementById('turnosList').innerHTML='<div class="empty">Sin turnos</div>';return;}
-  const estCol={pendiente:'var(--amber)',confirmado:'var(--green)',cancelado:'var(--text3)'};
-  const estBg={pendiente:'var(--amber-dim)',confirmado:'var(--green-dim)',cancelado:'var(--black3)'};
-  const cardBg={pendiente:'rgba(245,158,11,.04)',confirmado:'rgba(0,0,0,0)',cancelado:'rgba(0,0,0,0)'};
-  const cardBorder={pendiente:'rgba(245,158,11,.3)',confirmado:'var(--border)',cancelado:'var(--border)'};
+  const estCol={pendiente:'var(--amber)',confirmado:'var(--green)',cancelado:'var(--red)'};
+  const estBg={pendiente:'var(--amber-dim)',confirmado:'var(--green-dim)',cancelado:'rgba(204,0,0,.12)'};
+  const cardBg={pendiente:'rgba(245,158,11,.04)',confirmado:'rgba(0,0,0,0)',cancelado:'rgba(204,0,0,.03)'};
+  const cardBorder={pendiente:'rgba(245,158,11,.3)',confirmado:'var(--border)',cancelado:'rgba(204,0,0,.3)'};
   const cardOpacity={pendiente:'1',confirmado:'0.55',cancelado:'0.4'};
   document.getElementById('turnosList').innerHTML=`<div style="display:flex;flex-direction:column;gap:8px">`+list.map(t=>{
     const urgente=t.urgente||t.servicio?.includes('URGENTE')||false;
@@ -1126,15 +1130,48 @@ async function cambiarEstadoTurno(id,estado){
 }
 
 function irATurno(id){
-  switchTab('turnos',document.querySelector('.tab[onclick*=turnos]'));
-  setTimeout(()=>{
-    const el=document.querySelector(`[data-turno-id="${id}"]`);
-    if(!el) return;
-    el.scrollIntoView({behavior:'smooth',block:'center'});
-    el.style.transition='box-shadow .2s';
-    el.style.boxShadow='0 0 0 2px var(--amber)';
-    setTimeout(()=>{ el.style.boxShadow=''; },2000);
-  },200);
+  // Find the turno
+  const t=allTurnos.find(x=>x.id===id);
+  if(!t){switchTab('turnos',document.querySelector('.tab[onclick*=turnos]'));return;}
+
+  // Try to find a matching reparacion by phone or name
+  const telNorm=(t.telefono||'').replace(/\D/g,'');
+  const nomBuscar=(t.nombre||'').toLowerCase();
+
+  // Search in loaded repairs
+  const match=aR.find(r=>{
+    const e=aE.find(x=>x.id===r.equipo_id)||{};
+    const c=aC.find(x=>x.id===e.cliente_id)||{};
+    const cTel=(c.telefono||'').replace(/\D/g,'');
+    const cNom=(c.nombre||'').toLowerCase();
+    return (telNorm&&cTel===telNorm)||(nomBuscar&&cNom.startsWith(nomBuscar.split(' ')[0]));
+  });
+
+  if(match){
+    // Go to reparaciones and open that card
+    switchTab('rep',document.querySelector('.tab[onclick*="rep"]'));
+    setTimeout(()=>{
+      const el=document.getElementById(`c-${match.id}`);
+      if(!el) return;
+      el.scrollIntoView({behavior:'smooth',block:'center'});
+      el.style.transition='box-shadow .3s';
+      el.style.boxShadow='0 0 0 2px var(--amber)';
+      setTimeout(()=>{ el.style.boxShadow=''; },2500);
+      // Open the card if not already open
+      if(!el.classList.contains('open')) togC(match.id);
+    },250);
+  } else {
+    // No repair found — go to turnos and highlight that turno
+    switchTab('turnos',document.querySelector('.tab[onclick*=turnos]'));
+    setTimeout(()=>{
+      const el=document.querySelector(`[data-turno-id="${id}"]`);
+      if(!el) return;
+      el.scrollIntoView({behavior:'smooth',block:'center'});
+      el.style.transition='box-shadow .2s';
+      el.style.boxShadow='0 0 0 2px var(--amber)';
+      setTimeout(()=>{ el.style.boxShadow=''; },2000);
+    },200);
+  }
 }
 
 // ── AGENDA ──
@@ -1496,8 +1533,8 @@ function buscarClientes(q){
 function filtrarPorCliente(clienteId){
   const eqs=aE.filter(e=>e.cliente_id===clienteId).map(e=>e.id);
   const reps=aR.filter(r=>eqs.includes(r.equipo_id));
-  const LB={espera:'En espera',proceso:'En reparación',listo:'Listo para retirar',entregado:'Entregado'};
-  const IC={espera:'⏳',proceso:'🔧',listo:'✅',entregado:'📦'};
+  const LB={espera:'En espera',proceso:'En reparación',listo:'Listo para retirar',entregado:'Entregado',cancelado:'Cancelado'};
+  const IC={espera:'⏳',proceso:'🔧',listo:'✅',entregado:'📦',cancelado:'❌'};
   if(!reps.length){document.getElementById('rlist').innerHTML='<div class="empty">Sin reparaciones para este cliente</div>';return;}
   document.getElementById('searchPanel').classList.remove('open');
   // Temporarily override renderList to show only this client
@@ -1559,7 +1596,7 @@ function cSv(reps){
 function mTbl(reps){
   document.getElementById('tblCnt').textContent=reps.length+' registros';
   if(!reps.length){document.getElementById('metTbl').innerHTML='<div class="empty">Sin datos</div>';return;}
-  const LB={espera:'En espera',proceso:'En reparación',listo:'Listo',entregado:'Entregado'};
+  const LB={espera:'En espera',proceso:'En reparación',listo:'Listo',entregado:'Entregado',cancelado:'Cancelado'};
   const rows=reps.slice(0,25).map(r=>{const e=aE.find(x=>x.id===r.equipo_id)||{};const c=aC.find(x=>x.id===e.cliente_id)||{};const f=r.created_at?new Date(r.created_at).toLocaleDateString('es-AR',{day:'numeric',month:'short',year:'2-digit'}):'–';return`<tr><td class="tdm">#${r.numero}</td><td>${c.nombre||'–'}${c.apellido?' '+c.apellido:''}</td><td>${(e.icono||'💻')+' '+(e.nombre||'–')}</td><td>${r.problema||'–'}</td><td class="tdm tdg">${r.presupuesto||'–'}</td><td><span class="sb sb-${r.estado}">${LB[r.estado]||r.estado}</span></td><td style="color:var(--text3)">${f}</td></tr>`;}).join('');
   document.getElementById('metTbl').innerHTML=`<div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table><thead><tr><th>#</th><th>Cliente</th><th>Equipo</th><th>Problema</th><th>Presupuesto</th><th>Estado</th><th>Fecha</th></tr></thead><tbody>${rows}</tbody></table></div>`;
 }
