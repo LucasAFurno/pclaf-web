@@ -180,7 +180,7 @@ footer a:hover{color:var(--red);}
     </svg>
     <h3>Código no encontrado</h3>
     <p>Verificá el código en el comprobante.<br>Si no lo tenés, escribinos por WhatsApp.</p>
-    <a class="wa-btn" href="https://wa.me/541141758129" target="_blank">
+    <a class="wa-btn" href="https://wa.me/541141758129" target="_blank" rel="noopener noreferrer">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
       Escribir a WhatsApp
     </a>
@@ -211,6 +211,57 @@ async function db(table, qs = '') {
   });
   if (!r.ok) throw new Error(r.status);
   return r.json();
+}
+
+function isSafeUrl(url) {
+  if (!url) return true;
+  const raw = String(url).trim().toLowerCase();
+  return !(raw.startsWith('javascript:') || raw.startsWith('vbscript:') || raw.startsWith('data:text/html'));
+}
+
+function sanitizeReportHtml(html) {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(String(html || ''), 'text/html');
+  ['script','iframe','object','embed','form','input','button','textarea','select','base'].forEach(tag => {
+    doc.querySelectorAll(tag).forEach(node => node.remove());
+  });
+  doc.querySelectorAll('*').forEach(el => {
+    [...el.attributes].forEach(attr => {
+      const name = attr.name.toLowerCase();
+      const value = attr.value || '';
+      if (name.startsWith('on')) {
+        el.removeAttribute(attr.name);
+        return;
+      }
+      if ((name === 'src' || name === 'href' || name === 'xlink:href' || name === 'action' || name === 'formaction') && !isSafeUrl(value)) {
+        el.removeAttribute(attr.name);
+        return;
+      }
+      if (name === 'style' && /expression|url\s*\(\s*['"]?\s*javascript:/i.test(value)) {
+        el.removeAttribute(attr.name);
+      }
+    });
+  });
+  doc.querySelectorAll('meta[http-equiv]').forEach(meta => {
+    if ((meta.getAttribute('http-equiv') || '').toLowerCase() === 'refresh') meta.remove();
+  });
+  return '<!DOCTYPE html>' + doc.documentElement.outerHTML;
+}
+
+function openSafeReport(html) {
+  const safeHtml = sanitizeReportHtml(html);
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(safeHtml, 'text/html');
+  const csp = doc.createElement('meta');
+  csp.setAttribute('http-equiv', 'Content-Security-Policy');
+  csp.setAttribute('content', "default-src 'self' data: https:; img-src 'self' data: https:; style-src 'unsafe-inline' https:; script-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'");
+  doc.head.prepend(csp);
+  const finalHtml = '<!DOCTYPE html>' + doc.documentElement.outerHTML;
+  const blob = new Blob([finalHtml], { type:'text/html;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const win = window.open(url, '_blank', 'noopener,noreferrer');
+  setTimeout(() => URL.revokeObjectURL(url), 60000);
+  return win;
 }
 
 const ICONS = {
@@ -421,9 +472,7 @@ let allReportes = {};
 async function verReporte(reporteId) {
   // If we have it cached, open it
   if (allReportes[reporteId]) {
-    const w = window.open('', '_blank');
-    w.document.write(allReportes[reporteId].html_content);
-    w.document.close();
+    openSafeReport(allReportes[reporteId].html_cliente || allReportes[reporteId].html_content);
     return;
   }
   // Fetch from DB
@@ -437,9 +486,7 @@ async function verReporte(reporteId) {
       allReportes[reporteId] = reporte;
       // Show client version if available, otherwise full report
       const content = reporte.html_cliente || reporte.html_content;
-      const w = window.open('', '_blank');
-      w.document.write(content);
-      w.document.close();
+      openSafeReport(content);
     }
   } catch(e) {
     alert('Error al cargar el reporte');
@@ -480,7 +527,7 @@ async function enviarCalif(repId) {
           <div style="font-size:28px;margin-bottom:8px">${'⭐'.repeat(puntaje)}</div>
           <div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:6px">¡Nos alegra mucho! 🙌</div>
           <div style="font-size:13px;color:var(--text2);margin-bottom:16px;line-height:1.6">Si tenés un minuto, dejarnos una reseña en Google nos ayuda un montón a que más gente del barrio nos encuentre.</div>
-          <a href="https://g.page/r/CebOQaDNkBJNEBM/review" target="_blank"
+          <a href="https://g.page/r/CebOQaDNkBJNEBM/review" target="_blank" rel="noopener noreferrer"
             style="display:inline-flex;align-items:center;gap:8px;background:#fff;color:#111;padding:12px 22px;border-radius:8px;font-size:14px;font-weight:700;text-decoration:none;transition:opacity .15s;"
             onmouseover="this.style.opacity='.88'" onmouseout="this.style.opacity='1'">
             <svg width="16" height="16" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
@@ -495,7 +542,7 @@ async function enviarCalif(repId) {
           <div style="font-size:24px;margin-bottom:8px">${'⭐'.repeat(puntaje)}${'☆'.repeat(5-puntaje)}</div>
           <div style="font-size:14px;font-weight:600;color:#fff;margin-bottom:6px">Gracias por tu opinión</div>
           <div style="font-size:13px;color:var(--text2);margin-bottom:14px;line-height:1.6">Lamentamos que no hayas quedado 100% conforme. Si querés contarnos qué pasó, escribinos por WhatsApp — lo vamos a resolver.</div>
-          <a href="https://wa.me/541141758129?text=Hola, quería comentarte sobre mi última reparación..." target="_blank"
+          <a href="https://wa.me/541141758129?text=Hola, quería comentarte sobre mi última reparación..." target="_blank" rel="noopener noreferrer"
             style="display:inline-flex;align-items:center;justify-content:center;gap:7px;background:#25d366;color:#fff;padding:11px 20px;border-radius:8px;font-size:13px;font-weight:700;text-decoration:none;width:100%">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
             Contarnos por WhatsApp

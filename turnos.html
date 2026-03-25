@@ -302,12 +302,12 @@ textarea.f-in{resize:none;height:80px;}
     <div class="section-title-sm">Tus datos</div>
     <div class="section-sub">Para confirmar el turno y avisarte por WhatsApp</div>
     <div class="f-row">
-      <div class="form-group"><label class="f-lbl">Nombre</label><input class="f-in" id="tNom" placeholder="Ej: Lucas"/></div>
-      <div class="form-group"><label class="f-lbl">Apellido</label><input class="f-in" id="tApe" placeholder="Ej: Méndez"/></div>
+      <div class="form-group"><label class="f-lbl">Nombre</label><input class="f-in" id="tNom" placeholder="Ej: Lucas" maxlength="60" autocomplete="given-name"/></div>
+      <div class="form-group"><label class="f-lbl">Apellido</label><input class="f-in" id="tApe" placeholder="Ej: Méndez" maxlength="60" autocomplete="family-name"/></div>
     </div>
-    <div class="form-group"><label class="f-lbl">WhatsApp</label><input class="f-in" id="tTel" placeholder="Ej: 11 5823-9201" type="tel"/></div>
-    <div class="form-group"><label class="f-lbl">Equipo</label><input class="f-in" id="tEq" placeholder="Ej: Notebook HP Pavilion 15"/></div>
-    <div class="form-group"><label class="f-lbl">Describí el problema (opciónal)</label><textarea class="f-in" id="tNota" placeholder="Ej: Se calienta mucho y se apaga sola, hace ruido el cooler..."></textarea></div>
+    <div class="form-group"><label class="f-lbl">WhatsApp</label><input class="f-in" id="tTel" placeholder="Ej: 11 5823-9201" type="tel" inputmode="tel" maxlength="20" autocomplete="tel"/></div>
+    <div class="form-group"><label class="f-lbl">Equipo</label><input class="f-in" id="tEq" placeholder="Ej: Notebook HP Pavilion 15" maxlength="80"/></div>
+    <div class="form-group"><label class="f-lbl">Describí el problema (opciónal)</label><textarea class="f-in" id="tNota" placeholder="Ej: Se calienta mucho y se apaga sola, hace ruido el cooler..." maxlength="300"></textarea></div>
     <div class="nav-btns">
       <button class="btn-sec" onclick="goTo(2)">← Volver</button>
       <button class="btn-primary" onclick="goTo(4)" style="flex:1">Revisar turno →</button>
@@ -352,6 +352,14 @@ async function db(m,t,q='',b=null){
 // ── STATE ──
 let state={servicio:'',precio:'',urgencia:false,fecha:null,hora:'',calOffset:0};
 
+function sanitizePlainText(value,maxLen=120){
+  return String(value||'').replace(/\s+/g,' ').replace(/[<>]/g,'').trim().slice(0,maxLen);
+}
+
+function normalizePhone(value){
+  return String(value||'').replace(/[^\d+()\-\s]/g,'').trim().slice(0,20);
+}
+
 // ── STEPS ──
 function goTo(n){
   if(n===3){
@@ -359,8 +367,8 @@ function goTo(n){
     if(!state.fecha||!state.hora) return;
   }
   if(n===4){
-    const nom=document.getElementById('tNom').value.trim();
-    const tel=document.getElementById('tTel').value.trim();
+    const nom=sanitizePlainText(document.getElementById('tNom').value,60);
+    const tel=normalizePhone(document.getElementById('tTel').value);
     if(!nom||!tel){alert('Completá nombre y WhatsApp');return;}
     buildResumen();
   }
@@ -517,11 +525,11 @@ function selHora(h,el){
 
 // ── RESUMEN ──
 function buildResumen(){
-  const nom=document.getElementById('tNom').value.trim();
-  const ape=document.getElementById('tApe').value.trim();
-  const tel=document.getElementById('tTel').value.trim();
-  const eq=document.getElementById('tEq').value.trim();
-  const nota=document.getElementById('tNota').value.trim();
+  const nom=sanitizePlainText(document.getElementById('tNom').value,60);
+  const ape=sanitizePlainText(document.getElementById('tApe').value,60);
+  const tel=normalizePhone(document.getElementById('tTel').value);
+  const eq=sanitizePlainText(document.getElementById('tEq').value,80);
+  const nota=sanitizePlainText(document.getElementById('tNota').value,300);
   const date=new Date(state.fecha+'T12:00:00');
   const fechaLabel=date.toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
   document.getElementById('resumenBox').innerHTML=`
@@ -539,11 +547,16 @@ function buildResumen(){
 async function confirmarTurno(){
   const btn=document.getElementById('btnConfirm');
   btn.disabled=true; btn.textContent='Enviando...';
-  const nom=document.getElementById('tNom').value.trim();
-  const ape=document.getElementById('tApe').value.trim();
-  const tel=document.getElementById('tTel').value.trim();
-  const eq=document.getElementById('tEq').value.trim();
-  const nota=document.getElementById('tNota').value.trim();
+  const nom=sanitizePlainText(document.getElementById('tNom').value,60);
+  const ape=sanitizePlainText(document.getElementById('tApe').value,60);
+  const tel=normalizePhone(document.getElementById('tTel').value);
+  const eq=sanitizePlainText(document.getElementById('tEq').value,80);
+  const nota=sanitizePlainText(document.getElementById('tNota').value,300);
+  if(!nom||!tel){
+    btn.disabled=false; btn.textContent='Confirmar turno';
+    alert('Completá nombre y WhatsApp');
+    return;
+  }
   try{
     const res=await db('POST','turnos','',{
       nombre:nom, apellido:ape, telefono:tel,

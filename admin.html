@@ -321,7 +321,7 @@ tr:hover td{background:var(--black3);}
       <div class="tab" onclick="switchTab('tools',this)">Herramientas</div>
     </div>
     <div class="tr">
-      <a class="ibtn" href="index.html" target="_blank">Web ↗</a>
+  <a class="ibtn" href="index.html" target="_blank" rel="noopener noreferrer">Web ↗</a>
       <button class="ibtn" onclick="enableNotifs()" title="Activar notificaciones" style="font-size:16px;">🔔</button>
       <button class="ibtn" onclick="logout()">Salir</button>
     </div>
@@ -567,6 +567,41 @@ async function db(m,t,q='',b=null){
   const txt=await r.text(); if(!r.ok) throw new Error(txt); return txt?JSON.parse(txt):null;
 }
 
+function isSafeUrl(url){
+  if(!url) return true;
+  const raw=String(url).trim().toLowerCase();
+  return !(raw.startsWith('javascript:') || raw.startsWith('vbscript:') || raw.startsWith('data:text/html'));
+}
+
+function sanitizeReportHtml(html){
+  const parser=new DOMParser();
+  const doc=parser.parseFromString(String(html||''),'text/html');
+  const blockedTags=['script','iframe','object','embed','form','input','button','textarea','select','base'];
+  blockedTags.forEach(tag=>doc.querySelectorAll(tag).forEach(node=>node.remove()));
+  doc.querySelectorAll('*').forEach(el=>{
+    [...el.attributes].forEach(attr=>{
+      const name=attr.name.toLowerCase();
+      const value=attr.value||'';
+      if(name.startsWith('on')){
+        el.removeAttribute(attr.name);
+        return;
+      }
+      if((name==='src' || name==='href' || name==='xlink:href' || name==='action' || name==='formaction') && !isSafeUrl(value)){
+        el.removeAttribute(attr.name);
+        return;
+      }
+      if(name==='style' && /expression|url\s*\(\s*['"]?\s*javascript:/i.test(value)){
+        el.removeAttribute(attr.name);
+      }
+    });
+  });
+  doc.querySelectorAll('meta[http-equiv]').forEach(meta=>{
+    const equiv=(meta.getAttribute('http-equiv')||'').toLowerCase();
+    if(equiv==='refresh') meta.remove();
+  });
+  return '<!DOCTYPE html>'+doc.documentElement.outerHTML;
+}
+
 // LOGIN
 let _loginAttempts=0, _loginLocked=false;
 async function hashStr(s){
@@ -613,7 +648,12 @@ function startSessionTimer(){
     document.addEventListener(ev,()=>sessionStorage.setItem('pclaf_t',Date.now()),{passive:true})
   );
 }
-function logout(){sessionStorage.removeItem('pclaf_a');location.reload();}
+function logout(){
+  clearInterval(window._sessionTimer);
+  sessionStorage.removeItem('pclaf_a');
+  sessionStorage.removeItem('pclaf_t');
+  location.reload();
+}
 if(sessionStorage.getItem('pclaf_a')){document.getElementById('loginScreen').style.display='none';document.getElementById('app').style.display='block';}
 document.getElementById('loginPass').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
 
@@ -755,7 +795,7 @@ function renderCards(data){
             <button class="pdf-btn" onclick="subirReporte('${r.id}')" style="margin-top:4px;border-color:#3b82f6;color:#3b82f6"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Subir reporte de diagnóstico<input type="file" accept=".html" style="display:none" id="reporteInput-${r.id}" onchange="procesarReporte('${r.id}',this)"/></button>
             <div id="reporteStatus-${r.id}" style="font-size:11px;color:var(--text3);margin-top:4px;display:none"></div>
             <button class="pdf-btn" onclick="editarRep('${r.id}')" style="margin-top:4px;border-color:var(--amber);color:var(--amber)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Editar reparación</button>
-            ${tel?`<a class="wab" href="https://wa.me/54${tel}?text=${wm}" target="_blank"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg> WhatsApp a ${(c.nombre||'').split(' ')[0]||'cliente'}</a>`:''}
+${tel?`<a class="wab" href="https://wa.me/54${tel}?text=${wm}" target="_blank" rel="noopener noreferrer"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg> WhatsApp a ${(c.nombre||'').split(' ')[0]||'cliente'}</a>`:''}
           </div>
           <div class="bsec">
             <h4>Cambiar estado</h4>
@@ -1146,7 +1186,7 @@ function renderTurnos(){
       </div>
       <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
         <span style="font-size:10px;font-weight:600;padding:3px 9px;border-radius:20px;background:${estBg[t.estado]||'var(--black3)'};color:${estCol[t.estado]||'var(--text3)'};">${t.estado}</span>
-        ${t.telefono?`<a href="https://wa.me/54${t.telefono.replace(/\D/g,'')}?text=${encodeURIComponent(`Hola ${t.nombre}! Confirmamos tu turno en PCLAF para el ${t.fecha} a las ${t.hora}. Campana 51, Floresta.`)}" target="_blank" style="background:#25d366;color:#fff;padding:5px 10px;border-radius:6px;font-size:11px;font-weight:700;text-decoration:none;">✓ Confirmar WA</a>`:''}
+      ${t.telefono?`<a href="https://wa.me/54${t.telefono.replace(/\D/g,'')}?text=${encodeURIComponent(`Hola ${t.nombre}! Confirmamos tu turno en PCLAF para el ${t.fecha} a las ${t.hora}. Campana 51, Floresta.`)}" target="_blank" rel="noopener noreferrer" style="background:#25d366;color:#fff;padding:5px 10px;border-radius:6px;font-size:11px;font-weight:700;text-decoration:none;">✓ Confirmar WA</a>`:''}
         <button onclick="openModalFromTurno('${(t.nombre||'').replace(/'/g,"\\'")}','${(t.apellido||'').replace(/'/g,"\\'")}','${(t.telefono||'').replace(/'/g,"\\'")}','${(t.servicio||'').replace(/'/g,"\\'")}','${(t.precio||'').replace(/'/g,"\\'")}',${!!t.urgente})" style="background:var(--red);border:none;border-radius:6px;padding:5px 10px;font-size:11px;font-weight:700;color:#fff;cursor:pointer;">+ Reparación</button>
         <select onchange="cambiarEstadoTurno('${t.id}',this.value)" style="background:var(--black3);border:1px solid var(--border2);border-radius:6px;padding:5px 8px;font-size:11px;color:var(--text2);cursor:pointer;outline:none;">
           <option value="pendiente" ${t.estado==='pendiente'?'selected':''}>Pendiente</option>
@@ -1658,6 +1698,7 @@ async function procesarReporte(repId, input) {
     // Clean null bytes, BOM and control characters
     htmlContent = htmlContent.replace(/\u0000/g,'').replace(/\uFEFF/g,'')
                              .replace(/\x00/g,'').replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g,'');
+    htmlContent = sanitizeReportHtml(htmlContent);
     
     // Generate simplified CLIENT version — remove sensitive sections
     const clientHtml = generarReporteCliente(htmlContent);
@@ -1731,11 +1772,11 @@ function generarReporteCliente(fullHtml) {
   if (hero) {
     const note = doc.createElement('div');
     note.style.cssText = 'background:rgba(204,0,0,0.1);border:1px solid rgba(204,0,0,0.3);border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:13px;color:#ff6b6b;';
-    note.innerHTML = '📋 <strong>Reporte para el cliente</strong> — Resumen técnico de tu equipo generado por PCLAF. Algunos datos técnicos sensibles han sido omitidos.';
+    note.textContent = 'Reporte para el cliente — Resumen técnico de tu equipo generado por PCLAF. Algunos datos técnicos sensibles han sido omitidos.';
     hero.prepend(note);
   }
   
-  return '<!DOCTYPE html>' + doc.documentElement.outerHTML;
+  return sanitizeReportHtml('<!DOCTYPE html>' + doc.documentElement.outerHTML);
 }
 
 function copiarCmd(elementId) {

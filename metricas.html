@@ -235,7 +235,7 @@ tr:hover td{background:var(--black3);}
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 const SUPABASE_URL      = 'https://bcmfzgjpqfjnudhgraan.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_I1oJLpCSeneeIw2SghABAw_GXrdLLWs';
-const ADMIN_PASSWORD    = 'pclaf2026';
+const PASS_H            = 'f873d7e0788b3122e74f8dfc037406503ecbbfeefb33bde24fdfc3f7ab8db45a';
 
 const H = { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` };
 async function db(table, qs='') {
@@ -245,23 +245,71 @@ async function db(table, qs='') {
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // LOGIN
-function doLogin() {
-  if (document.getElementById('loginPass').value === ADMIN_PASSWORD) {
-    sessionStorage.setItem('pclaf_metrics','1');
-    document.getElementById('loginScreen').style.display='none';
-    document.getElementById('app').style.display='block';
-    init();
-  } else {
-    document.getElementById('loginErr').style.display='block';
-    document.getElementById('loginPass').value='';
-  }
+let loginAttempts = 0;
+let loginLocked = false;
+
+async function hashStr(s) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
 }
-function logout(){ sessionStorage.removeItem('pclaf_metrics'); location.reload(); }
-if (sessionStorage.getItem('pclaf_metrics')) {
+
+function markLoggedIn() {
+  sessionStorage.setItem('pclaf_metrics', '1');
+  sessionStorage.setItem('pclaf_metrics_t', String(Date.now()));
   document.getElementById('loginScreen').style.display='none';
   document.getElementById('app').style.display='block';
 }
+
+function sessionAlive() {
+  const raw = parseInt(sessionStorage.getItem('pclaf_metrics_t') || '0', 10);
+  return raw && (Date.now() - raw) < 2 * 60 * 60 * 1000;
+}
+
+function refreshSession() {
+  if (sessionStorage.getItem('pclaf_metrics')) {
+    sessionStorage.setItem('pclaf_metrics_t', String(Date.now()));
+  }
+}
+
+async function doLogin() {
+  if (loginLocked) return;
+  const input = document.getElementById('loginPass');
+  const err = document.getElementById('loginErr');
+  const value = input.value.trim();
+  if (!value) return;
+
+  const hash = await hashStr(value);
+  if (hash === PASS_H) {
+    loginAttempts = 0;
+    err.style.display='none';
+    markLoggedIn();
+    init();
+  } else {
+    loginAttempts++;
+    err.style.display='block';
+    err.textContent = `Contraseña incorrecta. Intento ${loginAttempts}/3`;
+    input.value='';
+    if (loginAttempts >= 3) {
+      loginLocked = true;
+      err.textContent = 'Demasiados intentos. Esperá 30 segundos.';
+      setTimeout(() => {
+        loginLocked = false;
+        loginAttempts = 0;
+        err.style.display='none';
+      }, 30000);
+    }
+  }
+}
+function logout(){
+  sessionStorage.removeItem('pclaf_metrics');
+  sessionStorage.removeItem('pclaf_metrics_t');
+  location.reload();
+}
+if (sessionStorage.getItem('pclaf_metrics') && sessionAlive()) {
+  markLoggedIn();
+}
 document.getElementById('loginPass').addEventListener('keydown',e=>{ if(e.key==='Enter') doLogin(); });
+['click','keydown','mousemove'].forEach(ev => document.addEventListener(ev, refreshSession, { passive:true }));
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // PERIOD
@@ -569,7 +617,7 @@ function chartOpts(prefix='', money=false) {
 }
 
 // Init if already logged in
-if (sessionStorage.getItem('pclaf_metrics')) init();
+if (sessionStorage.getItem('pclaf_metrics') && sessionAlive()) init();
 </script>
 </body>
 </html>
