@@ -680,6 +680,7 @@ let currentPage=0;
 const PAGE_SIZE=30;
 let totalCount=0;
 let searchTimeout=null;
+let allDataPromise=null;
 
 // Stats counters (loaded separately)
 async function loadStats(){
@@ -734,9 +735,39 @@ async function loadPage(){
   }
 }
 
+async function loadAllData(force=false){
+  if(allDataPromise && !force) return allDataPromise;
+  const select='select=id,numero,problema,presupuesto,estado,urgente,fecha_entrega,created_at,equipo_id,equipos(id,nombre,icono,modelo,cliente_id,clientes(id,codigo,nombre,apellido,telefono,descuento_resena))&order=numero.desc&limit=5000';
+  allDataPromise=(async()=>{
+    const res=await fetch(`${SUPA}/rest/v1/reparaciones?${select}`,{headers:H});
+    if(!res.ok) throw new Error(await res.text());
+    const data=await res.json();
+    aR=Array.isArray(data)?data:[];
+
+    const equiposMap=new Map();
+    const clientesMap=new Map();
+    aR.forEach(r=>{
+      const e=r.equipos||null;
+      const c=e?.clientes||null;
+      if(e?.id && !equiposMap.has(e.id)) equiposMap.set(e.id,{...e});
+      if(c?.id && !clientesMap.has(c.id)) clientesMap.set(c.id,{...c});
+    });
+    aE=[...equiposMap.values()];
+    aC=[...clientesMap.values()];
+    return aR;
+  })();
+
+  try{
+    return await allDataPromise;
+  }catch(err){
+    allDataPromise=null;
+    throw err;
+  }
+}
+
 async function loadAll(){
   currentPage=0;
-  await Promise.all([loadPage(), loadStats()]);
+  await Promise.all([loadPage(), loadStats(), loadAllData()]);
 }
 
 function updStats(){} // now handled by loadStats
@@ -1633,17 +1664,31 @@ function getFrom(p){
   return from;
 }
 
-function renderMetrics(){
-  const from=getFrom(cPer);
-  const reps=aR.filter(r=>new Date(r.created_at)>=from);
-  const fact=reps.reduce((a,r)=>a+pm(r.presupuesto),0);
-  const entr=reps.filter(r=>r.estado==='entregado').length;
-  const prom=reps.length?fact/reps.length:0;
-  document.getElementById('kF').textContent=fact?'$'+fact.toLocaleString('es-AR'):'$0';
-  document.getElementById('kT').textContent=reps.length;
-  document.getElementById('kE').textContent=entr;
-  document.getElementById('kPr').textContent=prom?'$'+Math.round(prom).toLocaleString('es-AR'):'$0';
-  cI(reps);cE();cT(reps);cSv(reps);mTbl(reps);
+async function renderMetrics(){
+  try{
+    if(!aR.length) await loadAllData();
+    const from=getFrom(cPer);
+    const reps=aR.filter(r=>{
+      if(!r.created_at) return cPer==='todo';
+      const d=new Date(r.created_at);
+      return !Number.isNaN(d.getTime()) && d>=from;
+    });
+    const fact=reps.reduce((a,r)=>a+pm(r.presupuesto),0);
+    const entr=reps.filter(r=>r.estado==='entregado').length;
+    const prom=reps.length?fact/reps.length:0;
+    document.getElementById('kF').textContent=fact?'$'+fact.toLocaleString('es-AR'):'$0';
+    document.getElementById('kT').textContent=reps.length;
+    document.getElementById('kE').textContent=entr;
+    document.getElementById('kPr').textContent=prom?'$'+Math.round(prom).toLocaleString('es-AR'):'$0';
+    cI(reps);cE();cT(reps);cSv(reps);mTbl(reps);
+  }catch(e){
+    console.error('renderMetrics error',e);
+    document.getElementById('kF').textContent='$0';
+    document.getElementById('kT').textContent='0';
+    document.getElementById('kE').textContent='0';
+    document.getElementById('kPr').textContent='$0';
+    mTbl([]);
+  }
 }
 
 function dC(id){if(mCh[id]){mCh[id].destroy();delete mCh[id];}}
