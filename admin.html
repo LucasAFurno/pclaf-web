@@ -119,6 +119,14 @@ main{max-width:1200px;margin:0 auto;padding:22px 24px 80px;overflow:hidden;}
 .civ{font-size:13px;font-weight:600;color:#fff;font-family:var(--mono);text-align:right;}
 .spec-card{margin:10px 0 12px;padding:10px 12px;background:var(--black4);border:1px solid var(--border2);border-radius:10px;}
 .spec-title{font-size:11px;font-weight:700;color:#fff;margin-bottom:8px;}
+.spec-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;}
+.spec-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;}
+.spec-mini-btn{background:var(--black3);border:1px solid var(--border2);border-radius:6px;padding:5px 9px;font-size:10px;font-weight:700;color:var(--text2);cursor:pointer;font-family:var(--mono);}
+.spec-mini-btn:hover{border-color:var(--red);color:var(--red);}
+.spec-editor{margin-top:10px;padding-top:10px;border-top:1px solid var(--border);}
+.spec-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.spec-field{display:flex;flex-direction:column;gap:4px;}
+.spec-field label{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;}
 .spec-note{margin-top:8px;font-size:10px;color:var(--text3);line-height:1.45;}
 .wab{display:flex;align-items:center;justify-content:center;gap:7px;background:#25d366;color:#fff;text-decoration:none;padding:9px;border-radius:8px;font-size:13px;font-weight:700;margin-top:9px;width:100%;}
 .wab:hover{opacity:.88;}
@@ -975,7 +983,29 @@ function escapeSpecHtml(v=''){
     .replace(/"/g,'&quot;');
 }
 
+const equipmentManualKey='pclaf_equipment_manual_v1';
+
+function getEquipmentManualMap(){
+  try{return JSON.parse(localStorage.getItem(equipmentManualKey)||'{}')||{};}catch{return {};}
+}
+
+function getEquipmentManual(repId){
+  const map=getEquipmentManualMap();
+  return map[repId]||null;
+}
+
+function setEquipmentManual(repId,payload){
+  const map=getEquipmentManualMap();
+  if(payload && Object.values(payload).some(isMeaningfulSpecValue)){
+    map[repId]=payload;
+  }else{
+    delete map[repId];
+  }
+  localStorage.setItem(equipmentManualKey,JSON.stringify(map));
+}
+
 function inferEquipmentType(repair={}, specs={}){
+  if(isMeaningfulSpecValue(specs.tipo)) return specs.tipo;
   const source=[
     specs.tipo,
     specs.modelo,
@@ -993,25 +1023,101 @@ function inferEquipmentType(repair={}, specs={}){
 function renderEquipmentSnapshot(repId, specs=null, loading=false){
   const repair=pageRepairMap[repId] || aR.find(x=>x.id===repId) || {};
   const equipo=repair.equipos || {};
+  const manual=getEquipmentManual(repId);
+  const merged={...(specs||{}), ...(manual||{})};
+  const hasManual=!!manual;
   const rows=[
     ['ID equipo', shortEquipmentId(equipo.id)],
-    ['Tipo', inferEquipmentType(repair, specs||{})],
-    ['Modelo', specs?.modelo || equipo.modelo || 'Sin modelo'],
-    ['CPU', specs?.cpu || 'Pendiente'],
-    ['RAM', specs?.ram || 'Pendiente'],
-    ['GPU', specs?.gpu || 'Pendiente'],
+    ['Tipo', inferEquipmentType(repair, merged)],
+    ['Modelo', merged.modelo || equipo.modelo || 'Sin modelo'],
+    ['CPU', merged.cpu || 'Pendiente'],
+    ['RAM', merged.ram || 'Pendiente'],
+    ['GPU', merged.gpu || 'Pendiente'],
   ];
-  if(isMeaningfulSpecValue(specs?.serial)) rows.splice(3,0,['Serial', specs.serial]);
+  if(isMeaningfulSpecValue(merged.serial)) rows.splice(3,0,['Serial', merged.serial]);
   const hint=loading
     ? 'Leyendo reporte técnico...'
     : specs
       ? 'Datos tomados del último diagnóstico técnico subido.'
       : 'Subí un diagnóstico técnico para completar CPU, RAM, GPU y modelo por equipo.';
+  const finalHint=hasManual ? 'Usando correccion manual guardada en este navegador del admin.' : hint;
   return `<div class="spec-card">
-    <div class="spec-title">Ficha del equipo</div>
+    <div class="spec-head">
+      <div class="spec-title">Ficha del equipo</div>
+      <div class="spec-actions">
+        <button class="spec-mini-btn" onclick="toggleEquipmentEditor('${repId}')">Editar ficha</button>
+        ${hasManual?`<button class="spec-mini-btn" onclick="clearEquipmentManualEdit('${repId}')">Usar automatico</button>`:''}
+      </div>
+    </div>
     ${rows.map(([label,value])=>`<div class="cir"><span class="cil">${escapeSpecHtml(label)}</span><span class="civ">${escapeSpecHtml(value)}</span></div>`).join('')}
-    <div class="spec-note">${escapeSpecHtml(hint)}</div>
+    <div class="spec-editor" id="specEditor-${repId}" style="display:none">
+      <div class="spec-grid">
+        <div class="spec-field">
+          <label>Tipo</label>
+          <select class="sse" id="specTipo-${repId}">
+            <option value="">Automatico</option>
+            <option value="PC"${merged.tipo==='PC'?' selected':''}>PC</option>
+            <option value="Notebook"${merged.tipo==='Notebook'?' selected':''}>Notebook</option>
+            <option value="All in one"${merged.tipo==='All in one'?' selected':''}>All in one</option>
+            <option value="Mini PC"${merged.tipo==='Mini PC'?' selected':''}>Mini PC</option>
+            <option value="Servidor"${merged.tipo==='Servidor'?' selected':''}>Servidor</option>
+          </select>
+        </div>
+        <div class="spec-field">
+          <label>Modelo</label>
+          <input class="sin" id="specModelo-${repId}" value="${escapeSpecHtml(merged.modelo||'')}" placeholder="Modelo real"/>
+        </div>
+        <div class="spec-field">
+          <label>Serial</label>
+          <input class="sin" id="specSerial-${repId}" value="${escapeSpecHtml(merged.serial||'')}" placeholder="Serial"/>
+        </div>
+        <div class="spec-field">
+          <label>CPU</label>
+          <input class="sin" id="specCpu-${repId}" value="${escapeSpecHtml(merged.cpu||'')}" placeholder="Procesador"/>
+        </div>
+        <div class="spec-field">
+          <label>RAM</label>
+          <input class="sin" id="specRam-${repId}" value="${escapeSpecHtml(merged.ram||'')}" placeholder="RAM"/>
+        </div>
+        <div class="spec-field">
+          <label>GPU</label>
+          <input class="sin" id="specGpu-${repId}" value="${escapeSpecHtml(merged.gpu||'')}" placeholder="Video"/>
+        </div>
+      </div>
+      <div style="display:flex;gap:6px;justify-content:flex-end;margin-top:8px;flex-wrap:wrap">
+        <button class="spec-mini-btn" onclick="toggleEquipmentEditor('${repId}')">Cancelar</button>
+        <button class="spec-mini-btn" style="color:#fff;border-color:var(--green);background:rgba(34,197,94,.12)" onclick="saveEquipmentManualEdit('${repId}')">Guardar correccion</button>
+      </div>
+    </div>
+    <div class="spec-note">${escapeSpecHtml(finalHint)}</div>
   </div>`;
+}
+
+function toggleEquipmentEditor(repId){
+  const el=document.getElementById(`specEditor-${repId}`);
+  if(!el) return;
+  el.style.display=el.style.display==='none'?'block':'none';
+}
+
+function saveEquipmentManualEdit(repId){
+  const payload={
+    tipo:(document.getElementById(`specTipo-${repId}`)?.value||'').trim(),
+    modelo:(document.getElementById(`specModelo-${repId}`)?.value||'').trim(),
+    serial:(document.getElementById(`specSerial-${repId}`)?.value||'').trim(),
+    cpu:(document.getElementById(`specCpu-${repId}`)?.value||'').trim(),
+    ram:(document.getElementById(`specRam-${repId}`)?.value||'').trim(),
+    gpu:(document.getElementById(`specGpu-${repId}`)?.value||'').trim(),
+  };
+  Object.keys(payload).forEach(k=>{ if(!isMeaningfulSpecValue(payload[k])) payload[k]=''; });
+  setEquipmentManual(repId,payload);
+  loadEquipmentSpecs(repId,true).catch(()=>{});
+  toast('Ficha del equipo actualizada');
+}
+
+function clearEquipmentManualEdit(repId){
+  setEquipmentManual(repId,null);
+  loadEquipmentSpecs(repId,true).catch(()=>{});
+  toast('Ficha volvio al diagnostico automatico');
 }
 
 function parseReportTableMap(section){
