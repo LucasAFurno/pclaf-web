@@ -892,6 +892,7 @@ function renderCards(data){
             <button class="pdf-btn" onclick="generarPDF('${r.id}')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> Generar presupuesto PDF</button>
             <button class="pdf-btn" onclick="subirReporte('${r.id}')" style="margin-top:4px;border-color:#3b82f6;color:#3b82f6"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Subir reporte de diagnóstico<input type="file" accept=".html" style="display:none" id="reporteInput-${r.id}" onchange="procesarReporte('${r.id}',this)"/></button>
             <div id="reporteStatus-${r.id}" style="font-size:11px;color:var(--text3);margin-top:4px;display:none"></div>
+            <div id="reporteActions-${r.id}" style="display:grid;gap:4px;margin-top:6px"></div>
             <div style="display:grid;gap:4px;margin-top:6px">
               <button class="pdf-btn" onclick="descargarLauncherReporte('${r.id}','${r.numero}','cliente','antes')" style="border-color:var(--green);color:var(--green)">Auto reporte cliente antes</button>
               <button class="pdf-btn" onclick="descargarLauncherReporte('${r.id}','${r.numero}','tecnico','tecnico')" style="border-color:var(--red);color:var(--red)">Auto reporte tÃ©cnico</button>
@@ -960,6 +961,7 @@ async function togC(id){
   if(!was){
     c.classList.add('open');
     await loadPasos(id);
+    loadReportActions(id).catch(()=>{});
     loadFotos(id).catch(()=>{const c=document.getElementById(`fotos-${id}`);if(c)c.innerHTML='<div style="color:var(--text3);font-size:12px">Subí fotos una vez creada la tabla en Supabase</div>';});
     loadCalif(id).catch(()=>{const c=document.getElementById(`calif-${id}`);if(c)c.innerHTML='<div style="color:var(--text3);font-size:12px">Sin calificación todavía</div>';});
   }
@@ -1240,6 +1242,65 @@ async function loadCalif(repId){
 }
 
 // ── TURNOS ──
+function reportLabelFromFilename(filename='') {
+  const slot = inferReportSlot(filename);
+  if (slot === 'cliente_antes') return 'Cliente antes';
+  if (slot === 'cliente_despues') return 'Cliente despues';
+  if (slot === 'tecnico') return 'Tecnico';
+  return 'Manual';
+}
+
+function openSafeReport(html) {
+  if (!html) return;
+  const safeHtml = sanitizeReportHtml(html);
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(safeHtml, 'text/html');
+  const csp = doc.createElement('meta');
+  csp.setAttribute('http-equiv', 'Content-Security-Policy');
+  csp.setAttribute('content', "default-src 'self' data: https:; img-src 'self' data: https:; style-src 'unsafe-inline' https:; script-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'");
+  doc.head.prepend(csp);
+  const finalHtml = '<!DOCTYPE html>' + doc.documentElement.outerHTML;
+  const blob = new Blob([finalHtml], { type:'text/html;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  window.open(url, '_blank', 'noopener,noreferrer');
+  setTimeout(() => URL.revokeObjectURL(url), 60000);
+}
+
+async function verReporteAdmin(reportId){
+  try{
+    const rep = await db('GET','reportes',`?id=eq.${reportId}&select=id,html_content,html_cliente,filename&limit=1`);
+    const row = rep?.[0];
+    if(!row){ toast('Reporte no encontrado', true); return; }
+    const slot = inferReportSlot(row.filename);
+    const content = slot === 'tecnico' ? (row.html_content || row.html_cliente) : (row.html_cliente || row.html_content);
+    openSafeReport(content);
+  }catch(e){
+    toast('Error al abrir reporte', true);
+  }
+}
+
+async function loadReportActions(repId){
+  const cont=document.getElementById(`reporteActions-${repId}`);
+  if(!cont) return;
+  cont.innerHTML='<div style="color:var(--text3);font-size:11px">Consultando reportes...</div>';
+  try{
+    const reportes=await db('GET','reportes',`?reparacion_id=eq.${repId}&order=created_at.desc&select=id,filename,created_at`);
+    if(!reportes?.length){
+      cont.innerHTML='<div style="color:var(--text3);font-size:11px">Sin reportes subidos todavia</div>';
+      return;
+    }
+    cont.innerHTML=reportes.map(r=>`
+      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;background:var(--black4);border:1px solid var(--border2);border-radius:8px;padding:8px 10px">
+        <div style="font-size:11px;color:var(--text);font-weight:700;min-width:110px">${reportLabelFromFilename(r.filename)}</div>
+        <div style="font-size:10px;color:var(--text3);flex:1">${new Date(r.created_at).toLocaleDateString('es-AR',{day:'numeric',month:'short',year:'numeric'})}</div>
+        <button class="pdf-btn" onclick="verReporteAdmin('${r.id}')" style="margin:0;padding:6px 10px;font-size:11px">Ver</button>
+        <button class="pdf-btn" onclick="subirReporte('${repId}')" style="margin:0;padding:6px 10px;font-size:11px;border-color:#3b82f6;color:#3b82f6">Re-subir</button>
+      </div>`).join('');
+  }catch(e){
+    cont.innerHTML='<div style="color:var(--text3);font-size:11px">No se pudieron cargar los reportes</div>';
+  }
+}
+
 let allTurnos=[], turnoFilter='todos';
 
 async function loadTurnos(){
