@@ -682,6 +682,7 @@ let totalCount=0;
 let searchTimeout=null;
 let allDataPromise=null;
 let repairMetricDates=new Map();
+const ES_MONTHS={ene:0,enero:0,feb:1,febrero:1,mar:2,marzo:2,abr:3,abril:3,may:4,mayo:4,jun:5,junio:5,jul:6,julio:6,ago:7,agosto:7,sep:8,set:8,sept:8,septiembre:8,setiembre:8,oct:9,octubre:9,nov:10,noviembre:10,dic:11,diciembre:11};
 
 // Stats counters (loaded separately)
 async function loadStats(){
@@ -739,7 +740,7 @@ async function loadPage(){
 async function loadAllData(force=false){
   if(allDataPromise && !force) return allDataPromise;
   const select='select=id,numero,problema,presupuesto,estado,urgente,fecha_entrega,created_at,equipo_id,equipos(id,nombre,icono,modelo,cliente_id,clientes(id,codigo,nombre,apellido,telefono,descuento_resena))&order=numero.desc';
-  const pasosSelect='select=reparacion_id,created_at,orden';
+  const pasosSelect='select=reparacion_id,created_at,orden,fecha';
   const batchSize=1000;
   allDataPromise=(async()=>{
     const fetchPaged=async(query)=>{
@@ -766,8 +767,10 @@ async function loadAllData(force=false){
     repairMetricDates=new Map();
 
     pasosRows.forEach(p=>{
-      if(!p?.reparacion_id||!p?.created_at) return;
-      if(!repairMetricDates.has(p.reparacion_id)) repairMetricDates.set(p.reparacion_id,p.created_at);
+      if(!p?.reparacion_id) return;
+      const parsed=parseMetricPasoDate(p.fecha,p.created_at);
+      const fallback=p?.created_at||null;
+      if(!repairMetricDates.has(p.reparacion_id)) repairMetricDates.set(p.reparacion_id,parsed||fallback);
     });
 
     aR.forEach(r=>{
@@ -798,8 +801,35 @@ async function loadAllData(force=false){
 function getMetricDate(rep){
   const raw=repairMetricDates.get(rep.id)||rep.created_at||null;
   if(!raw) return null;
-  const d=new Date(raw);
+  const d=raw instanceof Date?raw:new Date(raw);
   return Number.isNaN(d.getTime())?null:d;
+}
+
+function parseMetricPasoDate(raw, fallbackYearSource=null){
+  if(!raw) return null;
+  const txt=String(raw).trim().toLowerCase();
+  const match=txt.match(/(\d{1,2})\s+([a-záéíóú]+)/i);
+  if(!match) return fallbackYearSource?new Date(fallbackYearSource):null;
+
+  const day=parseInt(match[1],10);
+  const monthKey=match[2]
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g,'')
+    .replace(/\.$/,'');
+  const month=ES_MONTHS[monthKey];
+  if(month===undefined) return fallbackYearSource?new Date(fallbackYearSource):null;
+
+  const timeMatch=txt.match(/(\d{1,2}):(\d{2})/);
+  const hour=timeMatch?parseInt(timeMatch[1],10):12;
+  const minute=timeMatch?parseInt(timeMatch[2],10):0;
+  const fallbackDate=fallbackYearSource?new Date(fallbackYearSource):new Date();
+  let year=fallbackDate.getFullYear();
+  let parsed=new Date(year,month,day,hour,minute,0,0);
+
+  if(parsed.getTime()-fallbackDate.getTime()>1000*60*60*24*45){
+    parsed=new Date(year-1,month,day,hour,minute,0,0);
+  }
+  return parsed;
 }
 
 async function loadAll(){
