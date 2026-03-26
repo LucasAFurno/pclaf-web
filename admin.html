@@ -782,6 +782,7 @@ function switchTab(name,btn){
 let aR=[],aE=[],aC=[];
 let pageRepairMap={};
 const equipmentSpecsCache={};
+const equipmentManualCache={};
 let fSt='todos';
 let mCh={};
 let currentPage=0;
@@ -966,7 +967,10 @@ function isMeaningfulSpecValue(v=''){
   const raw=String(v||'').trim();
   if(!raw) return false;
   const normalized=normalizeSpecText(raw).toLowerCase();
-  return !['n/d','nd','sin datos','no disponible','sin bateria','null','undefined','legacy'].includes(normalized);
+  if(['n/d','nd','sin datos','no disponible','sin bateria','null','undefined','legacy'].includes(normalized)) return false;
+  if(/to be filled by o\.?e\.?m\.?/.test(normalized)) return false;
+  if(/system manufacturer|system product name|default string|not applicable|not available/i.test(normalized)) return false;
+  return true;
 }
 
 function shortEquipmentId(id=''){
@@ -983,25 +987,56 @@ function escapeSpecHtml(v=''){
     .replace(/"/g,'&quot;');
 }
 
-const equipmentManualKey='pclaf_equipment_manual_v1';
-
-function getEquipmentManualMap(){
-  try{return JSON.parse(localStorage.getItem(equipmentManualKey)||'{}')||{};}catch{return {};}
-}
+const EQUIPMENT_SNAPSHOT_FILENAME='equipo_snapshot.json';
 
 function getEquipmentManual(repId){
-  const map=getEquipmentManualMap();
-  return map[repId]||null;
+  return equipmentManualCache[repId]||null;
 }
 
-function setEquipmentManual(repId,payload){
-  const map=getEquipmentManualMap();
-  if(payload && Object.values(payload).some(isMeaningfulSpecValue)){
-    map[repId]=payload;
-  }else{
-    delete map[repId];
+async function fetchEquipmentManual(repId, force=false){
+  if(!force && equipmentManualCache[repId]!==undefined) return equipmentManualCache[repId];
+  try{
+    const rows=await db('GET','reportes',`?reparacion_id=eq.${repId}&filename=eq.${encodeURIComponent(EQUIPMENT_SNAPSHOT_FILENAME)}&select=id,html_content,created_at&limit=1`);
+    const row=rows?.[0];
+    if(!row?.html_content){
+      equipmentManualCache[repId]=null;
+      return null;
+    }
+    const parsed=JSON.parse(row.html_content);
+    Object.keys(parsed||{}).forEach(k=>{ if(!isMeaningfulSpecValue(parsed[k])) parsed[k]=''; });
+    parsed._reportId=row.id;
+    equipmentManualCache[repId]=parsed;
+    return parsed;
+  }catch(e){
+    equipmentManualCache[repId]=null;
+    return null;
   }
-  localStorage.setItem(equipmentManualKey,JSON.stringify(map));
+}
+
+async function setEquipmentManual(repId,payload){
+  const cleaned={...(payload||{})};
+  Object.keys(cleaned).forEach(k=>{ if(!isMeaningfulSpecValue(cleaned[k])) cleaned[k]=''; });
+  const hasData=Object.values(cleaned).some(isMeaningfulSpecValue);
+  const existing=await fetchEquipmentManual(repId,true);
+  if(!hasData){
+    if(existing?._reportId) await db('DELETE','reportes',`?id=eq.${existing._reportId}`);
+    equipmentManualCache[repId]=null;
+    return;
+  }
+  const body={
+    reparacion_id:repId,
+    filename:EQUIPMENT_SNAPSHOT_FILENAME,
+    html_content:JSON.stringify(cleaned),
+    html_cliente:''
+  };
+  if(existing?._reportId){
+    await db('PATCH','reportes',`?id=eq.${existing._reportId}`,body);
+    equipmentManualCache[repId]={...cleaned,_reportId:existing._reportId};
+    return;
+  }
+  const created=await db('POST','reportes','',body);
+  const newId=created?.[0]?.id||null;
+  equipmentManualCache[repId]={...cleaned,_reportId:newId};
 }
 
 function inferEquipmentType(repair={}, specs={}){
@@ -1040,7 +1075,7 @@ function renderEquipmentSnapshot(repId, specs=null, loading=false){
     : specs
       ? 'Datos tomados del último diagnóstico técnico subido.'
       : 'Subí un diagnóstico técnico para completar CPU, RAM, GPU y modelo por equipo.';
-  const finalHint=hasManual ? 'Usando correccion manual guardada en este navegador del admin.' : hint;
+  const finalHint=hasManual ? 'Usando corrección manual compartida entre admins.' : hint;
   return `<div class="spec-card">
     <div class="spec-head">
       <div class="spec-title">Ficha del equipo</div>
@@ -1099,7 +1134,7 @@ function toggleEquipmentEditor(repId){
   el.style.display=el.style.display==='none'?'block':'none';
 }
 
-function saveEquipmentManualEdit(repId){
+async function saveEquipmentManualEdit(repId){
   const payload={
     tipo:(document.getElementById(`specTipo-${repId}`)?.value||'').trim(),
     modelo:(document.getElementById(`specModelo-${repId}`)?.value||'').trim(),
@@ -1109,15 +1144,25 @@ function saveEquipmentManualEdit(repId){
     gpu:(document.getElementById(`specGpu-${repId}`)?.value||'').trim(),
   };
   Object.keys(payload).forEach(k=>{ if(!isMeaningfulSpecValue(payload[k])) payload[k]=''; });
-  setEquipmentManual(repId,payload);
-  loadEquipmentSpecs(repId,true).catch(()=>{});
-  toast('Ficha del equipo actualizada');
+  try{
+    await setEquipmentManual(repId,payload);
+    loadEquipmentSpecs(repId,true).catch(()=>{});
+    toast('Ficha del equipo actualizada');
+    playSound('action');
+  }catch(e){
+    toast('No se pudo guardar la ficha', true);
+  }
 }
 
-function clearEquipmentManualEdit(repId){
-  setEquipmentManual(repId,null);
-  loadEquipmentSpecs(repId,true).catch(()=>{});
-  toast('Ficha volvio al diagnostico automatico');
+async function clearEquipmentManualEdit(repId){
+  try{
+    await setEquipmentManual(repId,null);
+    loadEquipmentSpecs(repId,true).catch(()=>{});
+    toast('Ficha volvió al diagnóstico automático');
+    playSound('action');
+  }catch(e){
+    toast('No se pudo limpiar la ficha', true);
+  }
 }
 
 function parseReportTableMap(section){
@@ -1182,6 +1227,7 @@ function extractEquipmentSpecsFromReport(html=''){
 async function loadEquipmentSpecs(repId, force=false){
   const container=document.getElementById(`equipoSpecs-${repId}`);
   if(!container) return;
+  const manual=await fetchEquipmentManual(repId, force);
   if(equipmentSpecsCache[repId] && !force){
     container.innerHTML=renderEquipmentSnapshot(repId,equipmentSpecsCache[repId],false);
     return;
@@ -1201,6 +1247,10 @@ async function loadEquipmentSpecs(repId, force=false){
     console.error('loadEquipmentSpecs error', e);
   }
   delete equipmentSpecsCache[repId];
+  if(manual){
+    container.innerHTML=renderEquipmentSnapshot(repId,{},false);
+    return;
+  }
   container.innerHTML=renderEquipmentSnapshot(repId,null,false);
 }
 
@@ -1230,6 +1280,7 @@ function renderCards(data){
         <div class="bgrid">
           <div class="bsec">
             <h4>Cliente y equipo</h4>
+            <div id="equipoSpecs-${r.id}">${renderEquipmentSnapshot(r.id)}</div>
             <div class="cir"><span class="cil">Nombre</span><span class="civ">${c.nombre||'–'}${c.apellido?' '+c.apellido:''}</span></div>
             <div class="cir"><span class="cil">Teléfono</span><span class="civ">${c.telefono||'–'}</span></div>
             <div class="cir"><span class="cil">Código</span><span class="civ">${c.codigo||'–'}</span></div>
@@ -1324,6 +1375,7 @@ async function togC(id){
   if(!was){
     c.classList.add('open');
     await loadPasos(id);
+    loadEquipmentSpecs(id).catch(()=>{});
     loadReportActions(id).catch(()=>{});
     loadFotos(id).catch(()=>{const c=document.getElementById(`fotos-${id}`);if(c)c.innerHTML='<div style="color:var(--text3);font-size:12px">Subí fotos una vez creada la tabla en Supabase</div>';});
     loadCalif(id).catch(()=>{const c=document.getElementById(`calif-${id}`);if(c)c.innerHTML='<div style="color:var(--text3);font-size:12px">Sin calificación todavía</div>';});
@@ -2361,6 +2413,7 @@ async function procesarReporte(repId, input) {
       toast('Reporte subido ✓');
       playSound('action');
       loadReportActions(repId).catch(()=>{});
+      loadEquipmentSpecs(repId, true).catch(()=>{});
     } catch(e) {
       status.textContent = 'Error: ' + e.message;
       status.style.color = 'var(--red)';
