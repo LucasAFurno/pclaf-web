@@ -24,13 +24,20 @@ body{background:var(--black);color:var(--text);font-family:var(--sans);min-heigh
 #loginScreen{min-height:100vh;display:flex;align-items:center;justify-content:center;}
 .login-box{background:var(--black2);border:1px solid var(--border);border-top:3px solid var(--red);border-radius:14px;padding:40px;width:100%;max-width:340px;}
 .f-lbl{font-size:12px;font-weight:600;color:var(--text3);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em;}
-.f-in{width:100%;background:var(--black3);border:1.5px solid var(--border2);border-radius:8px;padding:12px 16px;font-size:14px;color:var(--text);outline:none;transition:border-color .2s;margin-bottom:12px;}
+.f-in{width:100%;background:var(--black3);border:1.5px solid var(--border2);border-radius:8px;padding:12px 16px;font-size:14px;color:var(--text);outline:none;transition:border-color .2s, box-shadow .2s, background .2s;margin-bottom:12px;}
 .f-in:focus{border-color:var(--red);}
+.f-in.err{border-color:var(--red);background:rgba(204,0,0,.08);box-shadow:0 0 0 3px rgba(204,0,0,.12);}
 .f-in[readonly]{opacity:.6;cursor:default;}
 .f-sel{width:100%;background:var(--black3);border:1.5px solid var(--border2);border-radius:8px;padding:11px 14px;font-size:14px;color:var(--text);outline:none;cursor:pointer;margin-bottom:12px;}
 .login-btn{width:100%;background:var(--red);border:none;border-radius:8px;padding:13px;font-size:14px;font-weight:700;color:#fff;cursor:pointer;}
 .login-btn:hover{background:var(--red-dark);}
-.login-err{font-size:13px;color:var(--red);margin-top:8px;text-align:center;display:none;}
+.login-err{font-size:13px;color:#ffb4b4;margin-top:10px;text-align:center;display:none;background:rgba(204,0,0,.12);border:1px solid rgba(204,0,0,.28);border-radius:8px;padding:10px 12px;font-weight:700;line-height:1.35;}
+.login-err.show{display:block;animation:loginShake .22s ease-in-out 1;}
+@keyframes loginShake{
+  0%,100%{transform:translateX(0);}
+  25%{transform:translateX(-4px);}
+  75%{transform:translateX(4px);}
+}
 #app{display:none;}
 .topbar{background:var(--black2);border-bottom:1px solid var(--border);padding:0 24px;height:58px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:100;}
 .logo-wm{font-size:17px;font-weight:800;color:#fff;flex-shrink:0;}
@@ -610,11 +617,20 @@ async function hashStr(s){
 }
 async function doLogin(){
   if(_loginLocked){toast('Demasiados intentos. Espera 30 segundos.',true);return;}
+  const passInput=document.getElementById('loginPass');
+  const err=document.getElementById('loginErr');
   const val=document.getElementById('loginPass').value.trim();
-  if(!val)return;
+  if(!val){
+    err.textContent='Ingresa la contrasena para continuar.';
+    err.classList.add('show');
+    passInput.classList.add('err');
+    return;
+  }
   const h=await hashStr(val);
   if(h===PASS_H){
     _loginAttempts=0;
+    err.classList.remove('show');
+    passInput.classList.remove('err');
     sessionStorage.setItem('pclaf_a','1');
     sessionStorage.setItem('pclaf_t',Date.now());
     document.getElementById('loginScreen').style.display='none';
@@ -623,12 +639,17 @@ async function doLogin(){
     startSessionTimer();
   } else {
     _loginAttempts++;
-    const err=document.getElementById('loginErr');
-    err.style.display='block';
+    err.classList.add('show');
+    passInput.classList.add('err');
     if(_loginAttempts>=3){
       _loginLocked=true;
       err.textContent='Demasiados intentos. Bloqueado 30 segundos.';
-      setTimeout(()=>{_loginLocked=false;_loginAttempts=0;err.style.display='none';},30000);
+      setTimeout(()=>{
+        _loginLocked=false;
+        _loginAttempts=0;
+        err.classList.remove('show');
+        passInput.classList.remove('err');
+      },30000);
     } else {
       err.textContent=`Contrasena incorrecta. Intento ${_loginAttempts}/3`;
     }
@@ -656,6 +677,10 @@ function logout(){
 }
 if(sessionStorage.getItem('pclaf_a')){document.getElementById('loginScreen').style.display='none';document.getElementById('app').style.display='block';}
 document.getElementById('loginPass').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+document.getElementById('loginPass').addEventListener('input',()=>{
+  document.getElementById('loginErr').classList.remove('show');
+  document.getElementById('loginPass').classList.remove('err');
+});
 
 // TABS
 function switchTab(name,btn){
