@@ -892,6 +892,11 @@ function renderCards(data){
             <button class="pdf-btn" onclick="generarPDF('${r.id}')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> Generar presupuesto PDF</button>
             <button class="pdf-btn" onclick="subirReporte('${r.id}')" style="margin-top:4px;border-color:#3b82f6;color:#3b82f6"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Subir reporte de diagnóstico<input type="file" accept=".html" style="display:none" id="reporteInput-${r.id}" onchange="procesarReporte('${r.id}',this)"/></button>
             <div id="reporteStatus-${r.id}" style="font-size:11px;color:var(--text3);margin-top:4px;display:none"></div>
+            <div style="display:grid;gap:4px;margin-top:6px">
+              <button class="pdf-btn" onclick="descargarLauncherReporte('${r.id}','${r.numero}','cliente','antes')" style="border-color:var(--green);color:var(--green)">Auto reporte cliente antes</button>
+              <button class="pdf-btn" onclick="descargarLauncherReporte('${r.id}','${r.numero}','tecnico','tecnico')" style="border-color:var(--red);color:var(--red)">Auto reporte tÃ©cnico</button>
+              <button class="pdf-btn" onclick="descargarLauncherReporte('${r.id}','${r.numero}','cliente','despues')" style="border-color:var(--amber);color:var(--amber)">Auto reporte cliente despuÃ©s</button>
+            </div>
             <button class="pdf-btn" onclick="editarRep('${r.id}')" style="margin-top:4px;border-color:var(--amber);color:var(--amber)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Editar reparación</button>
 ${tel?`<a class="wab" href="https://wa.me/54${tel}?text=${wm}" target="_blank" rel="noopener noreferrer"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg> WhatsApp a ${(c.nombre||'').split(' ')[0]||'cliente'}</a>`:''}
           </div>
@@ -1827,6 +1832,24 @@ function subirReporte(repId) {
   document.getElementById(`reporteInput-${repId}`).click();
 }
 
+function inferReportSlot(filename='') {
+  const name = String(filename || '').toLowerCase();
+  if (name.includes('auto_tecnico') || name.includes('tecnico')) return 'tecnico';
+  if (name.includes('cliente_antes') || name.includes('antes')) return 'cliente_antes';
+  if (name.includes('cliente_despues') || name.includes('despues')) return 'cliente_despues';
+  return 'legacy';
+}
+
+function getReportSlotMeta(slot) {
+  const map = {
+    cliente_antes: { filename:'auto_cliente_antes.html', label:'Cliente antes' },
+    cliente_despues: { filename:'auto_cliente_despues.html', label:'Cliente despues' },
+    tecnico: { filename:'auto_tecnico.html', label:'Tecnico' },
+    legacy: { filename:null, label:'manual' },
+  };
+  return map[slot] || map.legacy;
+}
+
 // ── GENERAR VERSIÓN CLIENTE DEL REPORTE (sin datos sensibles) ──
 
 async function procesarReporte(repId, input) {
@@ -1847,14 +1870,18 @@ async function procesarReporte(repId, input) {
     
     // Generate simplified CLIENT version — remove sensitive sections
     const clientHtml = generarReporteCliente(htmlContent);
+    const slot = inferReportSlot(file.name);
+    const slotMeta = getReportSlotMeta(slot);
     
     try {
-      const existing = await db('GET','reportes',`?reparacion_id=eq.${repId}&limit=1`);
+      const existing = slotMeta.filename
+        ? await db('GET','reportes',`?reparacion_id=eq.${repId}&filename=eq.${encodeURIComponent(slotMeta.filename)}&limit=1`)
+        : await db('GET','reportes',`?reparacion_id=eq.${repId}&limit=1`);
       const payload = {
         reparacion_id: repId,
         html_content: htmlContent,        // full technical report (admin only)
         html_cliente: clientHtml,          // simplified client report
-        filename: file.name
+        filename: slotMeta.filename || file.name
       };
       if (existing?.length) {
         await db('PATCH','reportes',`?id=eq.${existing[0].id}`,payload);
@@ -1927,6 +1954,21 @@ function generarReporteCliente(fullHtml) {
   }
   
   return sanitizeReportHtml('<!DOCTYPE html>' + doc.documentElement.outerHTML);
+}
+
+async function purgeExpiredArtifacts() {
+  const key = 'pclaf_last_purge_v1';
+  const now = Date.now();
+  const last = parseInt(localStorage.getItem(key) || '0', 10);
+  if (last && (now - last) < 12 * 60 * 60 * 1000) return;
+  const cutoff = new Date(now - 30 * 24 * 60 * 60 * 1000).toISOString();
+  try {
+    await db('DELETE','reportes',`?created_at=lt.${encodeURIComponent(cutoff)}`);
+    await db('DELETE','fotos',`?created_at=lt.${encodeURIComponent(cutoff)}`);
+    localStorage.setItem(key, String(now));
+  } catch (e) {
+    console.warn('purgeExpiredArtifacts', e);
+  }
 }
 
 function copiarCmd(elementId) {
@@ -2051,6 +2093,52 @@ pause`;
   a.click();
   setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 500);
   toast(`${cfg.emoji} Descargando PCLAF_${cfg.label}.bat — abrilo como Administrador`);
+}
+
+function descargarLauncherReporte(repId, numero, modo, momento) {
+  const cfg = modo === 'tecnico'
+    ? { label:'TECNICO', emoji:'🔧' }
+    : { label: momento === 'antes' ? 'CLIENTE_ANTES' : 'CLIENTE_DESPUES', emoji:'👤' };
+
+  const bat = `@echo off
+chcp 65001 >nul
+title PCLAF - Reporte ${cfg.label} #${numero}
+color 0A
+echo.
+echo  ============================================================
+echo                      P C L A F
+echo       Reporte automatico ${cfg.label} para #${numero}
+echo  ============================================================
+echo.
+echo  [1/2] Descargando DiagnosticoPC.ps1...
+powershell -NoProfile -Command "[Net.ServicePointManager]::SecurityProtocol='Tls12'; Invoke-WebRequest -Uri '${TOOLS_BASE}/DiagnosticoPC.ps1' -OutFile '%TEMP%\\DiagnosticoPC_PCLAF.ps1' -UseBasicParsing" 2>nul
+if not exist "%TEMP%\\DiagnosticoPC_PCLAF.ps1" (
+  echo  ERROR: No se pudo descargar el script.
+  pause & exit /b 1
+)
+echo  [OK] Script descargado.
+echo.
+echo  [2/2] Ejecutando y subiendo reporte a PCLAF...
+powershell -NoProfile -ExecutionPolicy Bypass -File "%TEMP%\\DiagnosticoPC_PCLAF.ps1" -Modo ${modo} -ReparacionId "${repId}" -SupabaseUrl "${SUPA}" -SupabaseAnonKey "${KEY}" -MomentoReporte ${momento} -SubirASupabase
+echo.
+if %ERRORLEVEL% NEQ 0 (
+  echo  Algo salio mal durante la ejecucion o la subida.
+) else (
+  echo  [OK] Reporte generado y subido para la reparacion #${numero}.
+)
+echo.
+pause`;
+
+  const blob = new Blob([bat], { type:'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `PCLAF_AUTO_${numero}_${cfg.label}.bat`;
+  a.style.display = 'none';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 500);
+  toast(`${cfg.emoji} Descargando launcher automático para #${numero}`);
 }
 
 function lanzarMarca() {
@@ -2191,6 +2279,7 @@ async function checkNuevosTurnos(){
 document.addEventListener('DOMContentLoaded', () => {
   initNotifSound();
   requestNotifPermission();
+  purgeExpiredArtifacts();
   // Poll cada 60 segundos
   setInterval(checkNuevosTurnos, 60000);
   // Primera check a los 3 segundos (cuando ya cargo la data)
