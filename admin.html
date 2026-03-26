@@ -926,10 +926,10 @@ function renderCards(data){
               <div class="fest-row"><input class="fest-in" id="fe-${r.id}" value="${r.fecha_entrega||''}" placeholder="Ej: 25 mar"/><button class="smbtn" style="padding:5px 9px;font-size:11px;background:var(--green)" onclick="saveFechaEst('${r.id}')">✓</button></div>
             </div>
             <button class="pdf-btn" onclick="generarPDF('${r.id}')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> Generar presupuesto PDF</button>
-            <button class="pdf-btn" onclick="subirReporte('${r.id}')" style="margin-top:4px;border-color:#3b82f6;color:#3b82f6"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Subir reporte de diagnóstico<input type="file" accept=".html" style="display:none" id="reporteInput-${r.id}" onchange="procesarReporte('${r.id}',this)"/></button>
+            <input type="file" accept=".html" style="display:none" id="reporteInput-${r.id}" onchange="procesarReporte('${r.id}',this)"/>
             <div id="reporteStatus-${r.id}" style="font-size:11px;color:var(--text3);margin-top:4px;display:none"></div>
             <div id="reporteActions-${r.id}" style="display:grid;gap:4px;margin-top:6px"></div>
-            <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:6px">
+            <div style="display:none;gap:6px;align-items:center;flex-wrap:wrap;margin-top:6px">
               <select class="sse" id="reporteSlot-${r.id}"><option value="antes">📸 Antes</option><option value="tecnico">🔧 Técnico</option><option value="despues">✅ Después</option></select>
               <button class="pdf-btn" onclick="descargarLauncherReporte('${r.id}','${r.numero}')" style="margin:0;border-color:var(--amber);color:var(--amber)">Auto reporte</button>
             </div>
@@ -1325,17 +1325,38 @@ async function loadReportActions(repId){
   cont.innerHTML='<div style="color:var(--text3);font-size:11px">Consultando reportes...</div>';
   try{
     const reportes=await db('GET','reportes',`?reparacion_id=eq.${repId}&order=created_at.desc&select=id,filename,created_at`);
-    if(!reportes?.length){
-      cont.innerHTML='<div style="color:var(--text3);font-size:11px">Sin reportes subidos todavia</div>';
-      return;
-    }
-    cont.innerHTML=reportes.map(r=>`
-      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;background:var(--black4);border:1px solid var(--border2);border-radius:8px;padding:8px 10px">
-        <div style="font-size:11px;color:var(--text);font-weight:700;min-width:110px">${reportLabelFromFilename(r.filename)}</div>
-        <div style="font-size:10px;color:var(--text3);flex:1">${new Date(r.created_at).toLocaleDateString('es-AR',{day:'numeric',month:'short',year:'numeric'})}</div>
-        <button class="pdf-btn" onclick="verReporteAdmin('${r.id}')" style="margin:0;padding:6px 10px;font-size:11px">Ver</button>
-        <button class="pdf-btn" onclick="prepararResubidaReporte('${repId}','${inferReportSlot(r.filename)}')" style="margin:0;padding:6px 10px;font-size:11px;border-color:#3b82f6;color:#3b82f6">Re-subir</button>
-      </div>`).join('');
+    const bySlot={antes:null,despues:null,tecnico:null};
+    (reportes||[]).forEach(r=>{
+      const slot=inferReportSlot(r.filename);
+      if(slot!=='legacy'&&!bySlot[slot]) bySlot[slot]=r;
+    });
+    const formatDate=r=>r?new Date(r.created_at).toLocaleDateString('es-AR',{day:'numeric',month:'short',year:'numeric'}):'Sin subir';
+    const renderSlot=(slot,title,color,auto=false)=>{
+      const r=bySlot[slot];
+      return `<div style="background:var(--black4);border:1px solid var(--border2);border-radius:10px;padding:10px 12px">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px">
+          <div style="font-size:12px;font-weight:700;color:#fff">${title}</div>
+          <div style="font-size:10px;color:var(--text3)">${formatDate(r)}</div>
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          ${r?`<button class="pdf-btn" onclick="verReporteAdmin('${r.id}')" style="margin:0;padding:6px 10px;font-size:11px">Ver</button>`:''}
+          <button class="pdf-btn" onclick="prepararResubidaReporte('${repId}','${slot}')" style="margin:0;padding:6px 10px;font-size:11px;border-color:${color};color:${color}">${r?'Re-subir':'Subir'}</button>
+          ${auto?`<button class="pdf-btn" onclick="descargarLauncherReporte('${repId}','${aR.find(x=>x.id===repId)?.numero||''}','${slot}')" style="margin:0;padding:6px 10px;font-size:11px;border-color:var(--amber);color:var(--amber)">Auto</button>`:''}
+        </div>
+      </div>`;
+    };
+    cont.innerHTML=`
+      <div style="background:var(--black3);border:1px solid var(--border);border-radius:12px;padding:12px">
+        <div style="font-size:11px;font-weight:700;color:#fff;margin-bottom:10px">Técnico</div>
+        ${renderSlot('tecnico','Diagnóstico técnico','var(--red)',true)}
+      </div>
+      <div style="background:var(--black3);border:1px solid var(--border);border-radius:12px;padding:12px">
+        <div style="font-size:11px;font-weight:700;color:#fff;margin-bottom:10px">Cliente</div>
+        <div style="display:grid;gap:8px">
+          ${renderSlot('antes','Antes','var(--green)',true)}
+          ${renderSlot('despues','Después','var(--amber)',true)}
+        </div>
+      </div>`;
   }catch(e){
     cont.innerHTML='<div style="color:var(--text3);font-size:11px">No se pudieron cargar los reportes</div>';
   }
@@ -2207,8 +2228,8 @@ pause`;
   toast(`${cfg.emoji} Descargando PCLAF_${cfg.label}.bat — abrilo como Administrador`);
 }
 
-function descargarLauncherReporte(repId, numero) {
-  const slot = getSelectedReportSlot(repId);
+function descargarLauncherReporte(repId, numero, forcedSlot=null) {
+  const slot = forcedSlot || getSelectedReportSlot(repId);
   const slotMeta = getReportSlotMeta(slot);
   const modo = slotMeta.modo || 'cliente';
   const momento = slotMeta.momento || 'antes';
