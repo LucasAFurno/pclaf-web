@@ -114,9 +114,12 @@ main{max-width:1200px;margin:0 auto;padding:22px 24px 80px;overflow:hidden;}
 .bgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px;}
 .bsec{background:var(--black3);border:1px solid var(--border);border-radius:10px;padding:13px;}
 .bsec h4{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:9px;}
-.cir{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
+.cir{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;gap:8px;}
 .cil{font-size:12px;color:var(--text3);}
-.civ{font-size:13px;font-weight:600;color:#fff;font-family:var(--mono);}
+.civ{font-size:13px;font-weight:600;color:#fff;font-family:var(--mono);text-align:right;}
+.spec-card{margin:10px 0 12px;padding:10px 12px;background:var(--black4);border:1px solid var(--border2);border-radius:10px;}
+.spec-title{font-size:11px;font-weight:700;color:#fff;margin-bottom:8px;}
+.spec-note{margin-top:8px;font-size:10px;color:var(--text3);line-height:1.45;}
 .wab{display:flex;align-items:center;justify-content:center;gap:7px;background:#25d366;color:#fff;text-decoration:none;padding:9px;border-radius:8px;font-size:13px;font-weight:700;margin-top:9px;width:100%;}
 .wab:hover{opacity:.88;}
 .sgrid{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
@@ -710,6 +713,8 @@ function switchTab(name,btn){
 
 // DATA
 let aR=[],aE=[],aC=[];
+let pageRepairMap={};
+const equipmentSpecsCache={};
 let fSt='todos';
 let mCh={};
 let currentPage=0;
@@ -882,10 +887,163 @@ function setF(f,btn){
   loadPage();
 }
 
+function normalizeSpecText(v=''){
+  return String(v||'')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g,'')
+    .replace(/\s+/g,' ')
+    .trim();
+}
+
+function isMeaningfulSpecValue(v=''){
+  const raw=String(v||'').trim();
+  if(!raw) return false;
+  const normalized=normalizeSpecText(raw).toLowerCase();
+  return !['n/d','nd','sin datos','no disponible','sin bateria','null','undefined','legacy'].includes(normalized);
+}
+
+function shortEquipmentId(id=''){
+  const raw=String(id||'').trim();
+  if(!raw) return 'Sin ID';
+  return raw.length>10 ? raw.slice(0,8).toUpperCase() : raw;
+}
+
+function escapeSpecHtml(v=''){
+  return String(v||'')
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;');
+}
+
+function inferEquipmentType(repair={}, specs={}){
+  const source=[
+    specs.tipo,
+    specs.modelo,
+    specs.fabricante,
+    repair?.equipos?.nombre,
+    repair?.equipos?.modelo,
+  ].filter(Boolean).join(' ');
+  const hayBateria=isMeaningfulSpecValue(specs.bateria);
+  const normalized=normalizeSpecText(source).toLowerCase();
+  if(hayBateria || /notebook|laptop|ultrabook|macbook|thinkpad|ideapad|vivobook|zenbook|latitude|elitebook|aspire/.test(normalized)) return 'Notebook';
+  if(/all in one|all-in-one|\baio\b/.test(normalized)) return 'All in one';
+  return repair?.equipos?.nombre || 'PC';
+}
+
+function renderEquipmentSnapshot(repId, specs=null, loading=false){
+  const repair=pageRepairMap[repId] || aR.find(x=>x.id===repId) || {};
+  const equipo=repair.equipos || {};
+  const rows=[
+    ['ID equipo', shortEquipmentId(equipo.id)],
+    ['Tipo', inferEquipmentType(repair, specs||{})],
+    ['Modelo', specs?.modelo || equipo.modelo || 'Sin modelo'],
+    ['CPU', specs?.cpu || 'Pendiente'],
+    ['RAM', specs?.ram || 'Pendiente'],
+    ['GPU', specs?.gpu || 'Pendiente'],
+  ];
+  if(isMeaningfulSpecValue(specs?.serial)) rows.splice(3,0,['Serial', specs.serial]);
+  const hint=loading
+    ? 'Leyendo reporte técnico...'
+    : specs
+      ? 'Datos tomados del último diagnóstico técnico subido.'
+      : 'Subí un diagnóstico técnico para completar CPU, RAM, GPU y modelo por equipo.';
+  return `<div class="spec-card">
+    <div class="spec-title">Ficha del equipo</div>
+    ${rows.map(([label,value])=>`<div class="cir"><span class="cil">${escapeSpecHtml(label)}</span><span class="civ">${escapeSpecHtml(value)}</span></div>`).join('')}
+    <div class="spec-note">${escapeSpecHtml(hint)}</div>
+  </div>`;
+}
+
+function parseReportTableMap(section){
+  if(!section) return null;
+  const headers=[...section.querySelectorAll('thead th')].map(th=>normalizeSpecText(th.textContent).toLowerCase());
+  const cells=[...section.querySelectorAll('tbody tr:first-child td')].map(td=>td.textContent.trim());
+  if(!headers.length || !cells.length) return null;
+  const map={};
+  headers.forEach((key,idx)=>{ if(key) map[key]=cells[idx]||''; });
+  return map;
+}
+
+function findReportSection(doc, includesText=''){
+  const needle=normalizeSpecText(includesText).toLowerCase();
+  return [...doc.querySelectorAll('section')].find(section=>{
+    const title=normalizeSpecText(section.querySelector('h2')?.textContent || '').toLowerCase();
+    return title.includes(needle);
+  }) || null;
+}
+
+function readReportKpi(doc, includesText=''){
+  const needle=normalizeSpecText(includesText).toLowerCase();
+  const kpi=[...doc.querySelectorAll('.kpi')].find(node=>{
+    const label=normalizeSpecText(node.querySelector('.kpi-l')?.textContent || '').toLowerCase();
+    return label.includes(needle);
+  });
+  const value=normalizeSpecText(kpi?.querySelector('.kpi-v')?.textContent || '');
+  return isMeaningfulSpecValue(value) ? value : '';
+}
+
+function extractEquipmentSpecsFromReport(html=''){
+  if(!html) return null;
+  try{
+    const doc=new DOMParser().parseFromString(html,'text/html');
+    const hardwareMap=parseReportTableMap(findReportSection(doc,'Resumen de hardware')) || {};
+    const gpuMap=parseReportTableMap(findReportSection(doc,'Placas de video')) || {};
+    const batteryMap=parseReportTableMap(findReportSection(doc,'Bateria')) || {};
+    const model=hardwareMap['modelo'] || '';
+    const cpu=readReportKpi(doc,'Procesador') || hardwareMap['cpu'] || '';
+    const ramKpi=readReportKpi(doc,'Memoria RAM');
+    const ram=ramKpi || (hardwareMap['ram total gb'] ? `${hardwareMap['ram total gb']} GB` : '');
+    const gpu=gpuMap['gpu'] || '';
+    const serial=hardwareMap['nroserieequipo'] || hardwareMap['nro serie equipo'] || hardwareMap['serialequipo'] || '';
+    const fabricante=hardwareMap['fabricante'] || '';
+    const bateria=Object.values(batteryMap).find(isMeaningfulSpecValue) || '';
+    const specs={
+      modelo:isMeaningfulSpecValue(model)?model:'',
+      cpu:isMeaningfulSpecValue(cpu)?cpu:'',
+      ram:isMeaningfulSpecValue(ram)?ram:'',
+      gpu:isMeaningfulSpecValue(gpu)?gpu:'',
+      serial:isMeaningfulSpecValue(serial)?serial:'',
+      fabricante:isMeaningfulSpecValue(fabricante)?fabricante:'',
+      bateria:isMeaningfulSpecValue(bateria)?bateria:'',
+    };
+    return Object.values(specs).some(isMeaningfulSpecValue) ? specs : null;
+  }catch(e){
+    console.error('extractEquipmentSpecsFromReport error', e);
+    return null;
+  }
+}
+
+async function loadEquipmentSpecs(repId, force=false){
+  const container=document.getElementById(`equipoSpecs-${repId}`);
+  if(!container) return;
+  if(equipmentSpecsCache[repId] && !force){
+    container.innerHTML=renderEquipmentSnapshot(repId,equipmentSpecsCache[repId],false);
+    return;
+  }
+  container.innerHTML=renderEquipmentSnapshot(repId,null,true);
+  try{
+    const reportes=await db('GET','reportes',`?reparacion_id=eq.${repId}&order=created_at.desc&select=id,filename,html_content,created_at&limit=10`);
+    const tecnico=(reportes||[]).find(r=>inferReportSlot(r.filename)==='tecnico' && r.html_content);
+    const candidato=tecnico || (reportes||[]).find(r=>r.html_content);
+    const specs=extractEquipmentSpecsFromReport(candidato?.html_content || '');
+    if(specs){
+      equipmentSpecsCache[repId]=specs;
+      container.innerHTML=renderEquipmentSnapshot(repId,specs,false);
+      return;
+    }
+  }catch(e){
+    console.error('loadEquipmentSpecs error', e);
+  }
+  delete equipmentSpecsCache[repId];
+  container.innerHTML=renderEquipmentSnapshot(repId,null,false);
+}
+
 function renderCards(data){
   const LB={espera:'En espera',proceso:'En reparación',listo:'Listo para retirar',entregado:'Entregado',cancelado:'Cancelado'};
   const IC={espera:'⏳',proceso:'🔧',listo:'✅',entregado:'📦',cancelado:'❌'};
 
+  pageRepairMap=Object.fromEntries((data||[]).map(r=>[r.id,r]));
   const cards=data.map(r=>{
     const e=r.equipos||{};
     const c=e.clientes||{};
@@ -907,6 +1065,7 @@ function renderCards(data){
         <div class="bgrid">
           <div class="bsec">
             <h4>Cliente y equipo</h4>
+            <div id="equipoSpecs-${r.id}">${renderEquipmentSnapshot(r.id)}</div>
             <div class="cir"><span class="cil">Nombre</span><span class="civ">${c.nombre||'–'}${c.apellido?' '+c.apellido:''}</span></div>
             <div class="cir"><span class="cil">Teléfono</span><span class="civ">${c.telefono||'–'}</span></div>
             <div class="cir"><span class="cil">Código</span><span class="civ">${c.codigo||'–'}</span></div>
@@ -1001,6 +1160,7 @@ async function togC(id){
   if(!was){
     c.classList.add('open');
     await loadPasos(id);
+    loadEquipmentSpecs(id).catch(()=>{});
     loadReportActions(id).catch(()=>{});
     loadFotos(id).catch(()=>{const c=document.getElementById(`fotos-${id}`);if(c)c.innerHTML='<div style="color:var(--text3);font-size:12px">Subí fotos una vez creada la tabla en Supabase</div>';});
     loadCalif(id).catch(()=>{const c=document.getElementById(`calif-${id}`);if(c)c.innerHTML='<div style="color:var(--text3);font-size:12px">Sin calificación todavía</div>';});
@@ -2024,6 +2184,7 @@ async function procesarReporte(repId, input) {
       status.style.color = 'var(--green)';
       toast('Reporte subido ✓');
       loadReportActions(repId).catch(()=>{});
+      loadEquipmentSpecs(repId, true).catch(()=>{});
     } catch(e) {
       status.textContent = 'Error: ' + e.message;
       status.style.color = 'var(--red)';
