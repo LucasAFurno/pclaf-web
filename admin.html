@@ -1230,7 +1230,6 @@ function renderCards(data){
         <div class="bgrid">
           <div class="bsec">
             <h4>Cliente y equipo</h4>
-            <div id="equipoSpecs-${r.id}">${renderEquipmentSnapshot(r.id)}</div>
             <div class="cir"><span class="cil">Nombre</span><span class="civ">${c.nombre||'–'}${c.apellido?' '+c.apellido:''}</span></div>
             <div class="cir"><span class="cil">Teléfono</span><span class="civ">${c.telefono||'–'}</span></div>
             <div class="cir"><span class="cil">Código</span><span class="civ">${c.codigo||'–'}</span></div>
@@ -1325,7 +1324,6 @@ async function togC(id){
   if(!was){
     c.classList.add('open');
     await loadPasos(id);
-    loadEquipmentSpecs(id).catch(()=>{});
     loadReportActions(id).catch(()=>{});
     loadFotos(id).catch(()=>{const c=document.getElementById(`fotos-${id}`);if(c)c.innerHTML='<div style="color:var(--text3);font-size:12px">Subí fotos una vez creada la tabla en Supabase</div>';});
     loadCalif(id).catch(()=>{const c=document.getElementById(`calif-${id}`);if(c)c.innerHTML='<div style="color:var(--text3);font-size:12px">Sin calificación todavía</div>';});
@@ -2363,7 +2361,6 @@ async function procesarReporte(repId, input) {
       toast('Reporte subido ✓');
       playSound('action');
       loadReportActions(repId).catch(()=>{});
-      loadEquipmentSpecs(repId, true).catch(()=>{});
     } catch(e) {
       status.textContent = 'Error: ' + e.message;
       status.style.color = 'var(--red)';
