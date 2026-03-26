@@ -618,10 +618,36 @@ function sanitizeReportHtml(html){
 }
 
 // LOGIN
+const SESSION_IDLE_LIMIT_MS = 15*60*1000;
+const SESSION_HIDDEN_LIMIT_MS = 60*1000;
 let _loginAttempts=0, _loginLocked=false;
+let _sessionListenersBound=false;
 async function hashStr(s){
   const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));
   return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+function markSessionActivity(){
+  if(!sessionStorage.getItem('pclaf_a')) return;
+  sessionStorage.setItem('pclaf_t',Date.now());
+}
+function hasValidSession(){
+  if(sessionStorage.getItem('pclaf_a')!=='1') return false;
+  const t=parseInt(sessionStorage.getItem('pclaf_t')||'0',10);
+  if(!t || (Date.now()-t)>SESSION_IDLE_LIMIT_MS){
+    sessionStorage.removeItem('pclaf_a');
+    sessionStorage.removeItem('pclaf_t');
+    sessionStorage.removeItem('pclaf_hidden_at');
+    return false;
+  }
+  return true;
+}
+function showAdminApp(){
+  document.getElementById('loginScreen').style.display='none';
+  document.getElementById('app').style.display='block';
+}
+function showLoginScreen(){
+  document.getElementById('loginScreen').style.display='flex';
+  document.getElementById('app').style.display='none';
 }
 async function doLogin(){
   if(_loginLocked){toast('Demasiados intentos. Espera 30 segundos.',true);return;}
@@ -647,8 +673,8 @@ async function doLogin(){
     passInput.classList.remove('err');
     sessionStorage.setItem('pclaf_a','1');
     sessionStorage.setItem('pclaf_t',Date.now());
-    document.getElementById('loginScreen').style.display='none';
-    document.getElementById('app').style.display='block';
+    sessionStorage.removeItem('pclaf_hidden_at');
+    showAdminApp();
     loadAll();
     startSessionTimer();
   } else {
@@ -671,30 +697,63 @@ async function doLogin(){
 }
 function startSessionTimer(){
   clearInterval(window._sessionTimer);
+  if(!_sessionListenersBound){
+    ['click','keydown','mousemove','touchstart','scroll'].forEach(ev=>
+      document.addEventListener(ev,markSessionActivity,{passive:true})
+    );
+    window.addEventListener('focus',markSessionActivity,{passive:true});
+    document.addEventListener('visibilitychange',()=>{
+      if(!sessionStorage.getItem('pclaf_a')) return;
+      if(document.visibilityState==='hidden'){
+        sessionStorage.setItem('pclaf_hidden_at',Date.now());
+      }else{
+        const hiddenAt=parseInt(sessionStorage.getItem('pclaf_hidden_at')||'0',10);
+        sessionStorage.removeItem('pclaf_hidden_at');
+        if(hiddenAt && (Date.now()-hiddenAt)>SESSION_HIDDEN_LIMIT_MS){
+          logout('Sesion bloqueada por dejar el admin abierto');
+          return;
+        }
+        markSessionActivity();
+      }
+    });
+    _sessionListenersBound=true;
+  }
   window._sessionTimer=setInterval(()=>{
     const t=parseInt(sessionStorage.getItem('pclaf_t')||0);
-    if(Date.now()-t > 2*60*60*1000){ // 2 horas
-      logout();
-      toast('Sesion expirada por inactividad',true);
+    if(!t || Date.now()-t > SESSION_IDLE_LIMIT_MS){
+      logout('Sesion expirada por inactividad');
+      return;
+    }
+    const hiddenAt=parseInt(sessionStorage.getItem('pclaf_hidden_at')||'0',10);
+    if(hiddenAt && Date.now()-hiddenAt > SESSION_HIDDEN_LIMIT_MS){
+      logout('Sesion bloqueada por dejar el admin abierto');
     }
   },60000);
-  // Reset timer on any activity
-  ['click','keydown','mousemove'].forEach(ev=>
-    document.addEventListener(ev,()=>sessionStorage.setItem('pclaf_t',Date.now()),{passive:true})
-  );
 }
-function logout(){
+function logout(message=''){
   clearInterval(window._sessionTimer);
   sessionStorage.removeItem('pclaf_a');
   sessionStorage.removeItem('pclaf_t');
+  sessionStorage.removeItem('pclaf_hidden_at');
+  if(message) sessionStorage.setItem('pclaf_logout_reason',message);
   location.reload();
 }
-if(sessionStorage.getItem('pclaf_a')){document.getElementById('loginScreen').style.display='none';document.getElementById('app').style.display='block';}
+if(hasValidSession()){
+  showAdminApp();
+  startSessionTimer();
+}else{
+  showLoginScreen();
+}
 document.getElementById('loginPass').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
 document.getElementById('loginPass').addEventListener('input',()=>{
   document.getElementById('loginErr').classList.remove('show');
   document.getElementById('loginPass').classList.remove('err');
 });
+const _logoutReason=sessionStorage.getItem('pclaf_logout_reason');
+if(_logoutReason){
+  sessionStorage.removeItem('pclaf_logout_reason');
+  setTimeout(()=>toast(_logoutReason,true),120);
+}
 
 // TABS
 function switchTab(name,btn){
@@ -2501,7 +2560,7 @@ function abrirFoto(url, tipo){
   document.body.appendChild(overlay);
 }
 
-if(sessionStorage.getItem('pclaf_a')) loadAll();
+if(hasValidSession()) loadAll();
 
 // ── NOTIFICACIONES DE TURNOS ────────────────────────────────
 let lastTurnoCount = -1;
