@@ -737,12 +737,23 @@ async function loadPage(){
 
 async function loadAllData(force=false){
   if(allDataPromise && !force) return allDataPromise;
-  const select='select=id,numero,problema,presupuesto,estado,urgente,fecha_entrega,created_at,equipo_id,equipos(id,nombre,icono,modelo,cliente_id,clientes(id,codigo,nombre,apellido,telefono,descuento_resena))&order=numero.desc&limit=5000';
+  const select='select=id,numero,problema,presupuesto,estado,urgente,fecha_entrega,created_at,equipo_id,equipos(id,nombre,icono,modelo,cliente_id,clientes(id,codigo,nombre,apellido,telefono,descuento_resena))&order=numero.desc';
+  const batchSize=1000;
   allDataPromise=(async()=>{
-    const res=await fetch(`${SUPA}/rest/v1/reparaciones?${select}`,{headers:H});
-    if(!res.ok) throw new Error(await res.text());
-    const data=await res.json();
-    aR=Array.isArray(data)?data:[];
+    const allRows=[];
+    let offset=0;
+
+    while(true){
+      const res=await fetch(`${SUPA}/rest/v1/reparaciones?${select}&limit=${batchSize}&offset=${offset}`,{headers:H});
+      if(!res.ok) throw new Error(await res.text());
+      const data=await res.json();
+      const rows=Array.isArray(data)?data:[];
+      allRows.push(...rows);
+      if(rows.length<batchSize) break;
+      offset+=batchSize;
+    }
+
+    aR=allRows;
 
     const equiposMap=new Map();
     const clientesMap=new Map();
