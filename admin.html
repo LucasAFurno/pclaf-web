@@ -681,6 +681,7 @@ const PAGE_SIZE=30;
 let totalCount=0;
 let searchTimeout=null;
 let allDataPromise=null;
+let repairMetricDates=new Map();
 
 // Stats counters (loaded separately)
 async function loadStats(){
@@ -738,22 +739,40 @@ async function loadPage(){
 async function loadAllData(force=false){
   if(allDataPromise && !force) return allDataPromise;
   const select='select=id,numero,problema,presupuesto,estado,urgente,fecha_entrega,created_at,equipo_id,equipos(id,nombre,icono,modelo,cliente_id,clientes(id,codigo,nombre,apellido,telefono,descuento_resena))&order=numero.desc';
+  const pasosSelect='select=reparacion_id,created_at,orden';
   const batchSize=1000;
   allDataPromise=(async()=>{
-    const allRows=[];
-    let offset=0;
+    const fetchPaged=async(query)=>{
+      const allRows=[];
+      let offset=0;
+      while(true){
+        const res=await fetch(`${SUPA}/rest/v1/${query}&limit=${batchSize}&offset=${offset}`,{headers:H});
+        if(!res.ok) throw new Error(await res.text());
+        const data=await res.json();
+        const rows=Array.isArray(data)?data:[];
+        allRows.push(...rows);
+        if(rows.length<batchSize) break;
+        offset+=batchSize;
+      }
+      return allRows;
+    };
 
-    while(true){
-      const res=await fetch(`${SUPA}/rest/v1/reparaciones?${select}&limit=${batchSize}&offset=${offset}`,{headers:H});
-      if(!res.ok) throw new Error(await res.text());
-      const data=await res.json();
-      const rows=Array.isArray(data)?data:[];
-      allRows.push(...rows);
-      if(rows.length<batchSize) break;
-      offset+=batchSize;
-    }
+    const [allRows,pasosRows]=await Promise.all([
+      fetchPaged(`reparaciones?${select}`),
+      fetchPaged(`pasos?${pasosSelect}&order=reparacion_id.asc,orden.asc,created_at.asc`)
+    ]);
 
     aR=allRows;
+    repairMetricDates=new Map();
+
+    pasosRows.forEach(p=>{
+      if(!p?.reparacion_id||!p?.created_at) return;
+      if(!repairMetricDates.has(p.reparacion_id)) repairMetricDates.set(p.reparacion_id,p.created_at);
+    });
+
+    aR.forEach(r=>{
+      if(!repairMetricDates.has(r.id) && r.created_at) repairMetricDates.set(r.id,r.created_at);
+    });
 
     const equiposMap=new Map();
     const clientesMap=new Map();
@@ -774,6 +793,13 @@ async function loadAllData(force=false){
     allDataPromise=null;
     throw err;
   }
+}
+
+function getMetricDate(rep){
+  const raw=repairMetricDates.get(rep.id)||rep.created_at||null;
+  if(!raw) return null;
+  const d=new Date(raw);
+  return Number.isNaN(d.getTime())?null:d;
 }
 
 async function loadAll(){
@@ -1713,9 +1739,9 @@ async function renderMetrics(){
     if(!aR.length) await loadAllData();
     const from=getFrom(cPer);
     const reps=aR.filter(r=>{
-      if(!r.created_at) return cPer==='todo';
-      const d=new Date(r.created_at);
-      return !Number.isNaN(d.getTime()) && d>=from;
+      const d=getMetricDate(r);
+      if(!d) return cPer==='todo';
+      return d>=from;
     });
     const fact=reps.reduce((a,r)=>a+pm(r.presupuesto),0);
     const entr=reps.filter(r=>r.estado==='entregado').length;
@@ -1739,7 +1765,7 @@ function dC(id){if(mCh[id]){mCh[id].destroy();delete mCh[id];}}
 const co=(money=false)=>({responsive:true,plugins:{legend:{display:false},tooltip:{backgroundColor:'#1a1a1a',borderColor:'#333',borderWidth:1,titleColor:'#f0f0f0',bodyColor:'#999',callbacks:{label:c=>money?` $${Math.round(c.raw).toLocaleString('es-AR')}`:` ${c.raw}`}}},scales:{x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#555',font:{size:11}}},y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#555',font:{size:11},callback:v=>money?'$'+Math.round(v).toLocaleString('es-AR'):v}}}});
 
 function cI(reps){
-  const m={};reps.forEach(r=>{const d=new Date(r.created_at);const k=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;const l=d.toLocaleDateString('es-AR',{month:'short',year:'2-digit'});if(!m[k])m[k]={l,t:0};m[k].t+=pm(r.presupuesto);});
+  const m={};reps.forEach(r=>{const d=getMetricDate(r);if(!d) return;const k=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;const l=d.toLocaleDateString('es-AR',{month:'short',year:'2-digit'});if(!m[k])m[k]={l,t:0};m[k].t+=pm(r.presupuesto);});
   const s=Object.entries(m).sort(([a],[b])=>a.localeCompare(b));
   dC('i');mCh.i=new Chart(document.getElementById('cI').getContext('2d'),{type:'bar',data:{labels:s.map(([,v])=>v.l),datasets:[{data:s.map(([,v])=>v.t),backgroundColor:'rgba(204,0,0,0.75)',borderColor:'#CC0000',borderWidth:1.5,borderRadius:5}]},options:co(true)});
 }
@@ -1748,7 +1774,7 @@ function cE(){
   dC('e');mCh.e=new Chart(document.getElementById('cE').getContext('2d'),{type:'doughnut',data:{labels:['En espera','En proceso','Listo','Entregado'],datasets:[{data:[c.espera,c.proceso,c.listo,c.entregado],backgroundColor:['#333','#f59e0b','#22c55e','#3b82f6'],borderColor:'#111',borderWidth:3}]},options:{responsive:true,cutout:'65%',plugins:{legend:{position:'bottom',labels:{color:'#888',font:{size:11},padding:10,boxWidth:11}}}}});
 }
 function cT(reps){
-  const w={};reps.forEach(r=>{const d=new Date(r.created_at);const mn=new Date(d);mn.setDate(d.getDate()-d.getDay()+1);const k=mn.toISOString().slice(0,10);const l=mn.toLocaleDateString('es-AR',{day:'numeric',month:'short'});if(!w[k])w[k]={l,n:0};w[k].n++;});
+  const w={};reps.forEach(r=>{const d=getMetricDate(r);if(!d) return;const mn=new Date(d);mn.setDate(d.getDate()-d.getDay()+1);const k=mn.toISOString().slice(0,10);const l=mn.toLocaleDateString('es-AR',{day:'numeric',month:'short'});if(!w[k])w[k]={l,n:0};w[k].n++;});
   const s=Object.entries(w).sort(([a],[b])=>a.localeCompare(b)).slice(-12);
   dC('t');mCh.t=new Chart(document.getElementById('cT').getContext('2d'),{type:'line',data:{labels:s.map(([,v])=>v.l),datasets:[{data:s.map(([,v])=>v.n),borderColor:'#f59e0b',backgroundColor:'rgba(245,158,11,0.07)',borderWidth:2,pointBackgroundColor:'#f59e0b',pointRadius:4,tension:0.3,fill:true}]},options:co(false)});
 }
@@ -1762,7 +1788,7 @@ function mTbl(reps){
   document.getElementById('tblCnt').textContent=reps.length+' registros';
   if(!reps.length){document.getElementById('metTbl').innerHTML='<div class="empty">Sin datos</div>';return;}
   const LB={espera:'En espera',proceso:'En reparación',listo:'Listo',entregado:'Entregado',cancelado:'Cancelado'};
-  const rows=reps.slice(0,25).map(r=>{const e=aE.find(x=>x.id===r.equipo_id)||{};const c=aC.find(x=>x.id===e.cliente_id)||{};const f=r.created_at?new Date(r.created_at).toLocaleDateString('es-AR',{day:'numeric',month:'short',year:'2-digit'}):'–';return`<tr><td class="tdm">#${r.numero}</td><td>${c.nombre||'–'}${c.apellido?' '+c.apellido:''}</td><td>${(e.icono||'💻')+' '+(e.nombre||'–')}</td><td>${r.problema||'–'}</td><td class="tdm tdg">${r.presupuesto||'–'}</td><td><span class="sb sb-${r.estado}">${LB[r.estado]||r.estado}</span></td><td style="color:var(--text3)">${f}</td></tr>`;}).join('');
+  const rows=reps.slice(0,25).map(r=>{const e=aE.find(x=>x.id===r.equipo_id)||{};const c=aC.find(x=>x.id===e.cliente_id)||{};const md=getMetricDate(r);const f=md?md.toLocaleDateString('es-AR',{day:'numeric',month:'short',year:'2-digit'}):'–';return`<tr><td class="tdm">#${r.numero}</td><td>${c.nombre||'–'}${c.apellido?' '+c.apellido:''}</td><td>${(e.icono||'💻')+' '+(e.nombre||'–')}</td><td>${r.problema||'–'}</td><td class="tdm tdg">${r.presupuesto||'–'}</td><td><span class="sb sb-${r.estado}">${LB[r.estado]||r.estado}</span></td><td style="color:var(--text3)">${f}</td></tr>`;}).join('');
   document.getElementById('metTbl').innerHTML=`<div style="overflow-x:auto;-webkit-overflow-scrolling:touch"><table><thead><tr><th>#</th><th>Cliente</th><th>Equipo</th><th>Problema</th><th>Presupuesto</th><th>Estado</th><th>Fecha</th></tr></thead><tbody>${rows}</tbody></table></div>`;
 }
 
