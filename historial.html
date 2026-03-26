@@ -216,13 +216,13 @@ async function db(table, qs = '') {
 function inferReportSlot(filename='') {
   const name = String(filename || '').toLowerCase();
   if (name.includes('auto_tecnico') || name.includes('tecnico')) return 'tecnico';
-  if (name.includes('cliente_antes') || name.includes('antes')) return 'cliente_antes';
-  if (name.includes('cliente_despues') || name.includes('despues')) return 'cliente_despues';
+  if (name.includes('cliente_antes') || name.includes('reporte_antes') || name.includes('antes')) return 'antes';
+  if (name.includes('cliente_despues') || name.includes('reporte_despues') || name.includes('despues')) return 'despues';
   return 'legacy';
 }
 
 function pickClientReports(reportes=[]) {
-  const slots = { cliente_antes:null, cliente_despues:null, legacy:null };
+  const slots = { antes:null, despues:null, legacy:null };
   reportes.forEach(rep => {
     const slot = inferReportSlot(rep.filename);
     if (slot === 'tecnico') return;
@@ -423,9 +423,9 @@ async function showMachine(equipoId, evt) {
         <div style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">📊 Reporte de diagnóstico</div>
         <div style="font-size:12px;color:var(--text2);margin-bottom:10px">${new Date(repArr[0].created_at).toLocaleDateString('es-AR',{day:'numeric',month:'long',year:'numeric'})}</div>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
-          ${reportSlots.cliente_antes ? `<button onclick="verReporte('${reportSlots.cliente_antes.id}')" style="display:inline-flex;align-items:center;gap:7px;background:var(--black3);border:1.5px solid var(--border2);color:var(--text);padding:9px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s">Ver diagnóstico inicial</button>` : ''}
-          ${reportSlots.cliente_despues ? `<button onclick="verReporte('${reportSlots.cliente_despues.id}')" style="display:inline-flex;align-items:center;gap:7px;background:var(--black3);border:1.5px solid var(--border2);color:var(--text);padding:9px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s">Ver estado después del servicio</button>` : ''}
-          ${(!reportSlots.cliente_antes && !reportSlots.cliente_despues && reportSlots.legacy) ? `<button onclick="verReporte('${reportSlots.legacy.id}')" style="display:inline-flex;align-items:center;gap:7px;background:var(--black3);border:1.5px solid var(--border2);color:var(--text);padding:9px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s">Ver reporte completo</button>` : ''}
+          ${reportSlots.antes ? `<button onclick="verReporte('${reportSlots.antes.id}')" style="display:inline-flex;align-items:center;gap:7px;background:var(--black3);border:1.5px solid var(--border2);color:var(--text);padding:9px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s">Ver diagnóstico inicial</button>` : ''}
+          ${reportSlots.despues ? `<button onclick="verReporte('${reportSlots.despues.id}')" style="display:inline-flex;align-items:center;gap:7px;background:var(--black3);border:1.5px solid var(--border2);color:var(--text);padding:9px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s">Ver estado después del servicio</button>` : ''}
+          ${(!reportSlots.antes && !reportSlots.despues && reportSlots.legacy) ? `<button onclick="verReporte('${reportSlots.legacy.id}')" style="display:inline-flex;align-items:center;gap:7px;background:var(--black3);border:1.5px solid var(--border2);color:var(--text);padding:9px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s">Ver reporte completo</button>` : ''}
         </div>
       </div>` : '';
 

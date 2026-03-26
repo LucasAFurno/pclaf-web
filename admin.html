@@ -929,7 +929,11 @@ function renderCards(data){
             <button class="pdf-btn" onclick="subirReporte('${r.id}')" style="margin-top:4px;border-color:#3b82f6;color:#3b82f6"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Subir reporte de diagnóstico<input type="file" accept=".html" style="display:none" id="reporteInput-${r.id}" onchange="procesarReporte('${r.id}',this)"/></button>
             <div id="reporteStatus-${r.id}" style="font-size:11px;color:var(--text3);margin-top:4px;display:none"></div>
             <div id="reporteActions-${r.id}" style="display:grid;gap:4px;margin-top:6px"></div>
-            <div style="display:grid;gap:4px;margin-top:6px">
+            <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:6px">
+              <select class="sse" id="reporteSlot-${r.id}"><option value="antes">📸 Antes</option><option value="tecnico">🔧 Técnico</option><option value="despues">✅ Después</option></select>
+              <button class="pdf-btn" onclick="descargarLauncherReporte('${r.id}','${r.numero}')" style="margin:0;border-color:var(--amber);color:var(--amber)">Auto reporte</button>
+            </div>
+            <div style="display:none;gap:4px;margin-top:6px">
               <button class="pdf-btn" onclick="descargarLauncherReporte('${r.id}','${r.numero}','cliente','antes')" style="border-color:var(--green);color:var(--green)">Auto reporte cliente antes</button>
               <button class="pdf-btn" onclick="descargarLauncherReporte('${r.id}','${r.numero}','tecnico','tecnico')" style="border-color:var(--red);color:var(--red)">Auto reporte tÃ©cnico</button>
               <button class="pdf-btn" onclick="descargarLauncherReporte('${r.id}','${r.numero}','cliente','despues')" style="border-color:var(--amber);color:var(--amber)">Auto reporte cliente despuÃ©s</button>
@@ -1280,9 +1284,9 @@ async function loadCalif(repId){
 // ── TURNOS ──
 function reportLabelFromFilename(filename='') {
   const slot = inferReportSlot(filename);
-  if (slot === 'cliente_antes') return 'Cliente antes';
-  if (slot === 'cliente_despues') return 'Cliente despues';
-  if (slot === 'tecnico') return 'Tecnico';
+  if (slot === 'antes') return 'Antes';
+  if (slot === 'despues') return 'Después';
+  if (slot === 'tecnico') return 'Técnico';
   return 'Manual';
 }
 
@@ -1330,7 +1334,7 @@ async function loadReportActions(repId){
         <div style="font-size:11px;color:var(--text);font-weight:700;min-width:110px">${reportLabelFromFilename(r.filename)}</div>
         <div style="font-size:10px;color:var(--text3);flex:1">${new Date(r.created_at).toLocaleDateString('es-AR',{day:'numeric',month:'short',year:'numeric'})}</div>
         <button class="pdf-btn" onclick="verReporteAdmin('${r.id}')" style="margin:0;padding:6px 10px;font-size:11px">Ver</button>
-        <button class="pdf-btn" onclick="subirReporte('${repId}')" style="margin:0;padding:6px 10px;font-size:11px;border-color:#3b82f6;color:#3b82f6">Re-subir</button>
+        <button class="pdf-btn" onclick="prepararResubidaReporte('${repId}','${inferReportSlot(r.filename)}')" style="margin:0;padding:6px 10px;font-size:11px;border-color:#3b82f6;color:#3b82f6">Re-subir</button>
       </div>`).join('');
   }catch(e){
     cont.innerHTML='<div style="color:var(--text3);font-size:11px">No se pudieron cargar los reportes</div>';
@@ -1929,22 +1933,32 @@ function subirReporte(repId) {
   document.getElementById(`reporteInput-${repId}`).click();
 }
 
+function prepararResubidaReporte(repId, slot='antes'){
+  const sel=document.getElementById(`reporteSlot-${repId}`);
+  if(sel) sel.value = slot === 'legacy' ? 'antes' : slot;
+  subirReporte(repId);
+}
+
 function inferReportSlot(filename='') {
   const name = String(filename || '').toLowerCase();
-  if (name.includes('auto_tecnico') || name.includes('tecnico')) return 'tecnico';
-  if (name.includes('cliente_antes') || name.includes('antes')) return 'cliente_antes';
-  if (name.includes('cliente_despues') || name.includes('despues')) return 'cliente_despues';
+  if (name.includes('auto_tecnico') || name.includes('reporte_tecnico') || name.includes('tecnico')) return 'tecnico';
+  if (name.includes('cliente_antes') || name.includes('reporte_antes') || name.includes('antes')) return 'antes';
+  if (name.includes('cliente_despues') || name.includes('reporte_despues') || name.includes('despues')) return 'despues';
   return 'legacy';
 }
 
 function getReportSlotMeta(slot) {
   const map = {
-    cliente_antes: { filename:'auto_cliente_antes.html', label:'Cliente antes' },
-    cliente_despues: { filename:'auto_cliente_despues.html', label:'Cliente despues' },
-    tecnico: { filename:'auto_tecnico.html', label:'Tecnico' },
+    antes: { filename:'auto_cliente_antes.html', label:'Antes', modo:'cliente', momento:'antes' },
+    despues: { filename:'auto_cliente_despues.html', label:'Después', modo:'cliente', momento:'despues' },
+    tecnico: { filename:'auto_tecnico.html', label:'Técnico', modo:'tecnico', momento:'tecnico' },
     legacy: { filename:null, label:'manual' },
   };
   return map[slot] || map.legacy;
+}
+
+function getSelectedReportSlot(repId){
+  return document.getElementById(`reporteSlot-${repId}`)?.value || 'antes';
 }
 
 // ── GENERAR VERSIÓN CLIENTE DEL REPORTE (sin datos sensibles) ──
@@ -1967,7 +1981,7 @@ async function procesarReporte(repId, input) {
     
     // Generate simplified CLIENT version — remove sensitive sections
     const clientHtml = generarReporteCliente(htmlContent);
-    const slot = inferReportSlot(file.name);
+    const slot = getSelectedReportSlot(repId) || inferReportSlot(file.name);
     const slotMeta = getReportSlotMeta(slot);
     
     try {
@@ -1985,9 +1999,10 @@ async function procesarReporte(repId, input) {
       } else {
         await db('POST','reportes','',payload);
       }
-      status.textContent = '✓ Reporte subido (técnico + versión cliente)';
+      status.textContent = `✓ Reporte ${slotMeta.label} subido`;
       status.style.color = 'var(--green)';
       toast('Reporte subido ✓');
+      loadReportActions(repId).catch(()=>{});
     } catch(e) {
       status.textContent = 'Error: ' + e.message;
       status.style.color = 'var(--red)';
@@ -2192,7 +2207,11 @@ pause`;
   toast(`${cfg.emoji} Descargando PCLAF_${cfg.label}.bat — abrilo como Administrador`);
 }
 
-function descargarLauncherReporte(repId, numero, modo, momento) {
+function descargarLauncherReporte(repId, numero) {
+  const slot = getSelectedReportSlot(repId);
+  const slotMeta = getReportSlotMeta(slot);
+  const modo = slotMeta.modo || 'cliente';
+  const momento = slotMeta.momento || 'antes';
   const cfg = modo === 'tecnico'
     ? { label:'TECNICO', emoji:'🔧' }
     : { label: momento === 'antes' ? 'CLIENTE_ANTES' : 'CLIENTE_DESPUES', emoji:'👤' };
