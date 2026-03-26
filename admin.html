@@ -1362,13 +1362,15 @@ async function addPaso(id){
   if(cl.telefono && no){
     const msg=encodeURIComponent(`Hola ${cl.nombre?.split(' ')[0]||''}! Actualización de tu ${eq.nombre||'equipo'} (#${rep?.numero}): *${t}*${no?' — '+no:''}.`);
     toast('Paso agregado ✓');
+    playSound('action');
     abrirWA(cl.telefono, msg);
   } else {
     toast('Paso agregado ✓');
+    playSound('action');
   }
 }
 
-async function delPaso(pid,id){if(!confirm('¿Borrar?'))return;await db('DELETE','pasos',`?id=eq.${pid}`);await loadPasos(id);toast('Paso borrado');}
+async function delPaso(pid,id){if(!confirm('¿Borrar?'))return;await db('DELETE','pasos',`?id=eq.${pid}`);await loadPasos(id);toast('Paso borrado');playSound('action');}
 
 async function chEst(id,st,btn){
   await db('PATCH','reparaciones',`?id=eq.${id}`,{estado:st});
@@ -1398,9 +1400,11 @@ async function chEst(id,st,btn){
       espera:`Hola ${nombre}! ⏳ Tu ${equipo} (#${num}) está en espera. Te avisamos cuando arranquemos con la reparación.`,
     };
     toast(`Estado → "${LB[st]}" ✓`);
+    playSound(st==='entregado' ? 'success' : 'action');
     if(msgs[st]) abrirWA(cl.telefono, encodeURIComponent(msgs[st]));
   } else {
     toast(`Estado → "${LB[st]}" ✓`);
+    playSound(st==='entregado' ? 'success' : 'action');
   }
 }
 
@@ -1416,10 +1420,12 @@ async function savePr(id){
     if(!isNaN(num)){
       const desc=Math.round(num*0.9).toLocaleString('es-AR');
       toast(`Presupuesto guardado ✓ — con 10% descuento: $${desc}`);
+      playSound('action');
       return;
     }
   }
   toast('Presupuesto guardado ✓');
+  playSound('action');
 }
 
 // ── WhatsApp — abre directo sin toast intermedio ──
@@ -1529,8 +1535,9 @@ async function crearRep(){
         `Te avisamos cada novedad. ¡Gracias! 🙏`
       );
       toast(`Reparación #${num} creada ✓`);
+      playSound('success');
       abrirWA(tel,msg);
-    } else { toast(`Reparación #${num} creada ✓`); }
+    } else { toast(`Reparación #${num} creada ✓`); playSound('success'); }
   }catch(e){toast('Error: '+e.message,true);}
 }
 
@@ -1579,6 +1586,7 @@ async function subirFoto(repId, input){
     await db('POST','fotos','',{reparacion_id:repId,url,tipo});
     await loadFotos(repId);
     toast(`Foto subida ✓ (~${kb}KB)`);
+    playSound('action');
   }catch(e){toast('Error subiendo foto',true);}
   input.value='';
 }
@@ -1588,6 +1596,7 @@ async function borrarFoto(fotoId,repId){
   await db('DELETE','fotos',`?id=eq.${fotoId}`);
   await loadFotos(repId);
   toast('Foto borrada');
+  playSound('action');
 }
 
 // ── CALIFICACIONES ──
@@ -1753,6 +1762,7 @@ async function cambiarEstadoTurno(id,estado){
   const t=allTurnos.find(x=>x.id===id); if(t) t.estado=estado;
   renderTurnos();
   toast(`Turno → ${estado} ✓`);
+  playSound('action');
 }
 
 function irATurno(id){
@@ -1946,6 +1956,7 @@ async function toggleDescuento(clienteId, btn){
   lbl.textContent  = nuevo ? 'ACTIVO' : 'inactivo';
   lbl.style.color  = nuevo ? 'var(--green)' : 'var(--text3)';
   toast(nuevo ? '🎁 Descuento activado — 10% en próxima reparación ✓' : 'Descuento desactivado');
+  playSound('action');
 }
 
 // ── FECHA ESTIMADA ──
@@ -1954,6 +1965,7 @@ async function saveFechaEst(id){
   await db('PATCH','reparaciones',`?id=eq.${id}`,{fecha_entrega:v});
   const d=aR.find(r=>r.id===id);if(d) d.fecha_entrega=v;
   toast('Fecha estimada guardada ✓');
+  playSound('action');
 }
 
 // ── EDITAR REPARACIÓN ──
@@ -1987,6 +1999,7 @@ async function guardarEdicion(){
     closeEdit();
     await loadAll();
     toast('Cambios guardados ✓');
+    playSound('action');
   }catch(e){toast('Error: '+e.message,true);}
 }
 
@@ -2348,6 +2361,7 @@ async function procesarReporte(repId, input) {
       status.textContent = `✓ Reporte ${slotMeta.label} subido`;
       status.style.color = 'var(--green)';
       toast('Reporte subido ✓');
+      playSound('action');
       loadReportActions(repId).catch(()=>{});
       loadEquipmentSpecs(repId, true).catch(()=>{});
     } catch(e) {
@@ -2670,27 +2684,71 @@ if(hasValidSession()) loadAll();
 
 // ── NOTIFICACIONES DE TURNOS ────────────────────────────────
 let lastTurnoCount = -1;
-let notifSound = null;
+let notifCtx = null;
+let notifCtxReady = false;
+window._notifEnabled = true;
+
+function createTone(freq,start,duration,volume,type='sine'){
+  if(!notifCtx) return;
+  const o = notifCtx.createOscillator();
+  const g = notifCtx.createGain();
+  o.connect(g);
+  g.connect(notifCtx.destination);
+  o.type = type;
+  o.frequency.setValueAtTime(freq, start);
+  g.gain.setValueAtTime(0.0001, start);
+  g.gain.exponentialRampToValueAtTime(volume, start + 0.02);
+  g.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+  o.start(start);
+  o.stop(start + duration + 0.02);
+}
 
 function initNotifSound(){
-  // Generate a short beep using Web Audio API - no external files needed
   try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    notifSound = () => {
-      [440,550,660].forEach((freq,i) => {
-        const o = ctx.createOscillator();
-        const g = ctx.createGain();
-        o.connect(g); g.connect(ctx.destination);
-        o.frequency.value = freq;
-        o.type = 'sine';
-        g.gain.setValueAtTime(0, ctx.currentTime + i*0.12);
-        g.gain.linearRampToValueAtTime(0.3, ctx.currentTime + i*0.12 + 0.04);
-        g.gain.linearRampToValueAtTime(0, ctx.currentTime + i*0.12 + 0.18);
-        o.start(ctx.currentTime + i*0.12);
-        o.stop(ctx.currentTime + i*0.12 + 0.2);
-      });
-    };
+    if(!notifCtx) notifCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if(notifCtx.state === 'running') notifCtxReady = true;
   } catch(e){}
+}
+
+async function ensureNotifAudio(){
+  initNotifSound();
+  if(!notifCtx) return false;
+  try{
+    if(notifCtx.state !== 'running') await notifCtx.resume();
+    notifCtxReady = notifCtx.state === 'running';
+  }catch(e){
+    notifCtxReady = false;
+  }
+  return notifCtxReady;
+}
+
+function playSound(kind='action'){
+  if(!window._notifEnabled) return;
+  if(!notifCtx || !notifCtxReady) return;
+  const now = notifCtx.currentTime + 0.01;
+  try{
+    if(kind === 'action'){
+      createTone(660, now, 0.08, 0.024, 'sine');
+      createTone(880, now + 0.07, 0.06, 0.016, 'triangle');
+      return;
+    }
+    if(kind === 'success'){
+      createTone(523.25, now, 0.1, 0.03, 'sine');
+      createTone(659.25, now + 0.09, 0.1, 0.028, 'sine');
+      createTone(783.99, now + 0.18, 0.16, 0.024, 'triangle');
+      return;
+    }
+    if(kind === 'turno'){
+      createTone(587.33, now, 0.14, 0.03, 'triangle');
+      createTone(783.99, now + 0.14, 0.16, 0.03, 'triangle');
+      createTone(987.77, now + 0.3, 0.26, 0.028, 'sine');
+      return;
+    }
+    if(kind === 'error'){
+      createTone(320, now, 0.12, 0.026, 'sawtooth');
+      createTone(240, now + 0.1, 0.16, 0.02, 'sawtooth');
+    }
+  }catch(e){}
 }
 
 function requestNotifPermission(){
@@ -2700,8 +2758,7 @@ function requestNotifPermission(){
 }
 
 function showTurnoNotif(turno){
-  // Sound
-  try { if(notifSound) notifSound(); } catch(e){}
+  playSound('turno');
 
   // Browser notification
   if('Notification' in window && Notification.permission === 'granted'){
@@ -2743,18 +2800,20 @@ document.addEventListener('DOMContentLoaded', () => {
   initNotifSound();
   requestNotifPermission();
   purgeExpiredArtifacts();
+  setTimeout(() => { ensureNotifAudio().catch(()=>{}); }, 150);
+  document.addEventListener('pointerdown', () => { ensureNotifAudio().catch(()=>{}); }, { once:true, passive:true });
   // Poll cada 60 segundos
   setInterval(checkNuevosTurnos, 60000);
   // Primera check a los 3 segundos (cuando ya cargo la data)
   setTimeout(checkNuevosTurnos, 3000);
 });
 
-// Botón en la UI para activar notificaciones (el usuario debe hacer clic para activar audio)
-window._notifEnabled = false;
+// Botón en la UI para reactivar audio si el navegador lo bloquea
 function enableNotifs(){
-  initNotifSound();
-  requestNotifPermission();
   window._notifEnabled = true;
+  requestNotifPermission();
+  ensureNotifAudio().catch(()=>{});
+  playSound('success');
   toast('🔔 Notificaciones activadas', false);
 }
 </script>
