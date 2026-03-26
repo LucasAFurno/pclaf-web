@@ -1943,7 +1943,7 @@ function copiarCmd(elementId) {
 function renderTools() {}
 
 // ── HERRAMIENTAS — generar BAT launcher ──
-const TOOLS_BASE = 'https://raw.githubusercontent.com/LucasAFurno/pclaf-reporte/main';
+const TOOLS_BASE = new URL('./tools', window.location.href).href.replace(/\/$/, '');
 
 function lanzarScript(tipo) {
   const modos = {
@@ -2007,18 +2007,12 @@ echo       Modo: ${cfg.modo.toUpperCase()}
 echo  ============================================================
 echo.
 
-ping -n 1 raw.githubusercontent.com >nul 2>nul
-if %ERRORLEVEL% NEQ 0 (
-  echo  ERROR: Sin conexion a internet.
-  pause & exit /b 1
-)
-
 echo  [1/2] Descargando DiagnosticoPC.ps1...
 powershell -NoProfile -Command "[Net.ServicePointManager]::SecurityProtocol='Tls12'; Invoke-WebRequest -Uri '${TOOLS_BASE}/DiagnosticoPC.ps1' -OutFile '%TEMP%\DiagnosticoPC_PCLAF.ps1' -UseBasicParsing" 2>nul
 
 if not exist "%TEMP%\DiagnosticoPC_PCLAF.ps1" (
   echo  ERROR: No se pudo descargar el script.
-  echo  Verificar conexion o que el repo sea publico.
+  echo  Verificar conexion o disponibilidad del sitio de PCLAF.
   pause & exit /b 1
 )
 echo  [OK] Script descargado.
