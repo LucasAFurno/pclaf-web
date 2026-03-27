@@ -49,8 +49,9 @@ main{width:100%;max-width:720px;padding:28px 20px 80px;}
 .spinner{width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--red);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 14px;}
 @keyframes spin{to{transform:rotate(360deg)}}
 .loading p{font-size:14px;color:var(--text2);}
-.client-card{background:var(--black2);border:1px solid var(--border);border-top:3px solid var(--red);border-radius:14px;padding:20px 22px;margin-bottom:18px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
-.discount-card{background:linear-gradient(135deg,rgba(34,197,94,0.15),rgba(34,197,94,0.05));border:1.5px solid rgba(34,197,94,0.35);border-radius:12px;padding:14px 16px;margin:-4px 0 18px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;}
+.client-card{background:var(--black2);border:1px solid var(--border);border-top:3px solid var(--red);border-radius:14px;overflow:hidden;margin-bottom:18px;}
+.client-card-top{padding:20px 22px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+.discount-card{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:14px 16px;background:rgba(34,197,94,0.08);border-bottom:1px solid rgba(34,197,94,0.2);}
 .discount-card-title{font-size:13px;font-weight:700;color:var(--green);margin-bottom:3px;}
 .discount-card-sub{font-size:12px;color:var(--text2);line-height:1.5;}
 .discount-badge{display:inline-flex;align-items:center;gap:5px;background:var(--green-dim);color:var(--green);border:1px solid rgba(34,197,94,.3);border-radius:6px;padding:3px 9px;font-size:11px;font-weight:700;font-family:var(--mono);white-space:nowrap;}
@@ -363,21 +364,23 @@ function renderMachines(client, code) {
 
   document.getElementById('panelMachines').innerHTML = `
     <div class="client-card">
-      <div class="client-avatar">${initials}</div>
-      <div>
-        <div class="client-name">¡Bienvenido, ${client.nombre}${client.apellido?' '+client.apellido:''}!</div>
-        <div class="client-meta">${total} equipo${total!==1?'s':''} registrado${total!==1?'s':''}</div>
+      ${client.descuento_resena?`
+      <div class="discount-card">
+        <div>
+          <div class="discount-card-title">${discountTitle}</div>
+          <div class="discount-card-sub">${discountSub}</div>
+        </div>
+        <div class="discount-badge">10% OFF</div>
+      </div>`:''}
+      <div class="client-card-top">
+        <div class="client-avatar">${initials}</div>
+        <div>
+          <div class="client-name">¡Bienvenido, ${client.nombre}${client.apellido?' '+client.apellido:''}!</div>
+          <div class="client-meta">${total} equipo${total!==1?'s':''} registrado${total!==1?'s':''}</div>
+        </div>
       </div>
     </div>
     <div class="section-label">Tus equipos — elegí uno para ver su historial</div>
-    ${client.descuento_resena?`
-    <div class="discount-card">
-      <div>
-        <div class="discount-card-title">${discountTitle}</div>
-        <div class="discount-card-sub">${discountSub}</div>
-      </div>
-      <div class="discount-badge">10% OFF</div>
-    </div>`:''}
     <div class="machine-grid">
       ${client.machines.map(m=>`
         <div class="machine-card" onclick="showMachine('${m.id}',event)">
