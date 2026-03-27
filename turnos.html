@@ -307,6 +307,7 @@ textarea.f-in{resize:none;height:80px;}
     </div>
     <div class="form-group"><label class="f-lbl">WhatsApp</label><input class="f-in" id="tTel" placeholder="Ej: 11 5823-9201" type="tel" inputmode="tel" maxlength="20" autocomplete="tel"/></div>
     <div class="form-group"><label class="f-lbl">Usuario (opcional)</label><input class="f-in" id="tUser" placeholder="Ej: LUCAS01" maxlength="40" autocomplete="username"/></div>
+    <div class="form-group"><label class="f-lbl">Recomendado por (opcional)</label><input class="f-in" id="tRef" placeholder="Ej: Juan Pérez" maxlength="80" autocomplete="off"/></div>
     <div class="form-group"><label class="f-lbl">Equipo</label><input class="f-in" id="tEq" placeholder="Ej: Notebook HP Pavilion 15" maxlength="80"/></div>
     <div class="form-group"><label class="f-lbl">Describí el problema (opciónal)</label><textarea class="f-in" id="tNota" placeholder="Ej: Se calienta mucho y se apaga sola, hace ruido el cooler..." maxlength="300"></textarea></div>
     <div class="nav-btns">
@@ -534,6 +535,7 @@ function buildResumen(){
   const ape=sanitizePlainText(document.getElementById('tApe').value,60);
   const tel=normalizePhone(document.getElementById('tTel').value);
   const usuario=normalizeUser(document.getElementById('tUser').value);
+  const referido=sanitizePlainText(document.getElementById('tRef').value,80);
   const eq=sanitizePlainText(document.getElementById('tEq').value,80);
   const nota=sanitizePlainText(document.getElementById('tNota').value,300);
   const date=new Date(state.fecha+'T12:00:00');
@@ -546,6 +548,7 @@ function buildResumen(){
     <div class="res-row"><span class="res-lbl">Nombre</span><span class="res-val">${nom} ${ape}</span></div>
     <div class="res-row"><span class="res-lbl">WhatsApp</span><span class="res-val">${tel}</span></div>
     ${usuario?`<div class="res-row"><span class="res-lbl">Usuario</span><span class="res-val">${usuario}</span></div>`:''}
+    ${referido?`<div class="res-row"><span class="res-lbl">Recomendado por</span><span class="res-val">${referido}</span></div>`:''}
     ${eq?`<div class="res-row"><span class="res-lbl">Equipo</span><span class="res-val">${eq}</span></div>`:''}
     ${nota?`<div class="res-row"><span class="res-lbl">Problema</span><span class="res-val" style="font-size:13px;max-width:60%;text-align:right">${nota}</span></div>`:''}
     <div style="margin-top:12px;font-size:12px;color:var(--text3)">📍 Campana 51, Floresta, CABA · El turno queda pendiente hasta que PCLAF lo confirme por WhatsApp.</div>`;
@@ -558,6 +561,7 @@ async function confirmarTurno(){
   const ape=sanitizePlainText(document.getElementById('tApe').value,60);
   const tel=normalizePhone(document.getElementById('tTel').value);
   const usuario=normalizeUser(document.getElementById('tUser').value);
+  const referido=sanitizePlainText(document.getElementById('tRef').value,80);
   const eq=sanitizePlainText(document.getElementById('tEq').value,80);
   const nota=sanitizePlainText(document.getElementById('tNota').value,300);
   if(!nom||!tel){
@@ -568,6 +572,7 @@ async function confirmarTurno(){
   try{
     const notaParts=[];
     if(usuario) notaParts.push('Usuario: '+usuario);
+    if(referido) notaParts.push('Referido por: '+referido);
     if(eq) notaParts.push('Equipo: '+eq);
     if(nota) notaParts.push('Problema: '+nota);
     const res=await db('POST','turnos','',{
@@ -585,7 +590,7 @@ async function confirmarTurno(){
     document.getElementById('panelOK').classList.add('active');
     // Open WA to PCLAF (notify)
     setTimeout(()=>{
-      const msg=encodeURIComponent(`🗓️ *Nuevo turno solicitado*\n\n*${nom} ${ape}*\n📱 ${tel}\n${usuario?'👤 Usuario: '+usuario+'\n':''}🔧 ${state.servicio}${state.urgencia?' ⚡ URGENTE':''}\n💰 ${state.precio}\n📅 ${state.fecha} a las ${state.hora}hs\n💻 ${eq||'Sin especificar'}\n${nota?'📝 '+nota+'\n':''}\nRef: ${shortId}`);
+      const msg=encodeURIComponent(`🗓️ *Nuevo turno solicitado*\n\n*${nom} ${ape}*\n📱 ${tel}\n${usuario?'👤 Usuario: '+usuario+'\n':''}${referido?'🎁 Referido por: '+referido+'\n':''}🔧 ${state.servicio}${state.urgencia?' ⚡ URGENTE':''}\n💰 ${state.precio}\n📅 ${state.fecha} a las ${state.hora}hs\n💻 ${eq||'Sin especificar'}\n${nota?'📝 '+nota+'\n':''}\nRef: ${shortId}`);
       window.open(`https://wa.me/541141758129?text=${msg}`,'_blank');
     }, 800);
   }catch(e){

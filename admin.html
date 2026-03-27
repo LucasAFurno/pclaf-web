@@ -867,12 +867,15 @@ async function loadAllData(force=false){
       return allRows;
     };
 
-    const [allRows,pasosRows]=await Promise.all([
+    const turnosSelect='select=id,nombre,apellido,telefono,nota,fecha,hora,estado&order=fecha.desc,hora.desc';
+    const [allRows,pasosRows,turnosRows]=await Promise.all([
       fetchPaged(`reparaciones?${select}`),
-      fetchPaged(`pasos?${pasosSelect}&order=reparacion_id.asc,orden.asc,created_at.asc`)
+      fetchPaged(`pasos?${pasosSelect}&order=reparacion_id.asc,orden.asc,created_at.asc`),
+      fetchPaged(`turnos?${turnosSelect}`)
     ]);
 
     aR=allRows;
+    allTurnos=turnosRows;
     repairMetricDates=new Map();
 
     pasosRows.forEach(p=>{
@@ -1266,9 +1269,13 @@ function renderCards(data){
     const wm=encodeURIComponent(`Hola ${(c.nombre||'').split(' ')[0]}, te escribimos de PCLAF. Tu ${e.nombre||'equipo'} (#${r.numero}) está ${LB[r.estado]||r.estado}.`);
     const urgente=r.urgente||false;
     const descuentoActivo=c.descuento_resena;
+    const turnoMeta=getTurnoReferralForClient(c,e);
+    const referidoPor=turnoMeta?.referido||'';
+    const descuentoTexto=referidoPor?'10% descuento por recomendacion':'10% descuento';
     return `<div class="rc" id="c-${r.id}" data-estado="${r.estado}"${urgente?' data-urgente="true"':''}>
       ${urgente?`<div style="background:rgba(245,158,11,0.1);border-bottom:1px solid rgba(245,158,11,0.25);padding:6px 16px;display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;color:var(--amber);">⚡ Urgente — en el día</div>`:''}
       ${descuentoActivo?`<div style="background:rgba(34,197,94,0.08);border-bottom:1px solid rgba(34,197,94,0.2);padding:7px 16px;display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;color:var(--green);">🎁 10% descuento por reseña Google — aplicar al cobrar</div>`:''}
+      ${!descuentoActivo&&referidoPor?`<div style="background:rgba(34,197,94,0.06);border-bottom:1px solid rgba(34,197,94,0.16);padding:7px 16px;display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;color:var(--green);">Descuento sugerido: vino recomendado por ${referidoPor}. Podes activarle 10%.</div>`:''}
       <div class="rch" onclick="togC('${r.id}')">
         <div class="rcn">#${r.numero}</div>
         <div class="rcd"><div class="rcdn">${e.icono||'💻'} ${e.nombre||'–'}</div><div class="rcdc">${c.nombre||'–'}${c.apellido?' '+c.apellido:''} · ${c.codigo||''}</div></div>
@@ -1286,11 +1293,13 @@ function renderCards(data){
             <div class="cir"><span class="cil">Código</span><span class="civ">${c.codigo||'–'}</span></div>
             <div class="cir"><span class="cil">Equipo</span><span class="civ">${e.nombre||'–'}${e.modelo?' · '+e.modelo:''}</span></div>
             <div class="cir"><span class="cil">Problema</span><span class="civ" style="font-size:12px">${r.problema||'–'}</span></div>
+            ${referidoPor?`<div class="cir"><span class="cil">Recomendado por</span><span class="civ">${referidoPor}</span></div>`:''}
             <div class="cir"><span class="cil">Presupuesto</span>
               <div style="display:flex;gap:5px"><input class="prin" id="pr-${r.id}" value="${r.presupuesto||''}" placeholder="$0.000" style="width:95px"/><button class="smbtn" style="padding:5px 9px;font-size:11px" onclick="savePr('${r.id}')">✓</button></div>
             </div>
             <div class="descuento-banner" id="descBanner-${c.id||'x'}">
               <div><div style="font-size:12px;font-weight:700;color:var(--green);margin-bottom:2px">🎁 Descuento por reseña Google</div><div style="font-size:11px;color:var(--text3)">10% off en la próxima reparación</div></div>
+              ${referidoPor?`<div style="font-size:11px;color:var(--text3)">Referido por ${referidoPor}. Podes usar el mismo 10%.</div>`:''}
               <button class="descuento-toggle" onclick="toggleDescuento('${c.id||''}',this)">
                 <div class="toggle-track ${c.descuento_resena?'on':''}" id="dTrack-${c.id||'x'}"><div class="toggle-knob"></div></div>
                 <span style="font-size:11px;color:${c.descuento_resena?'var(--green)':'var(--text3)'};font-weight:600" id="dLbl-${c.id||'x'}">${c.descuento_resena?'ACTIVO':'inactivo'}</span>
@@ -1503,9 +1512,30 @@ function normalizeTurnoUser(value){
 function parseTurnoMeta(nota=''){
   const raw=String(nota||'');
   const usuario=(raw.match(/(?:^|\|)\s*Usuario:\s*([^|]+)/i)?.[1]||'').trim();
+  const referido=(raw.match(/(?:^|\|)\s*Referido por:\s*([^|]+)/i)?.[1]||'').trim();
   const equipo=(raw.match(/(?:^|\|)\s*Equipo:\s*([^|]+)/i)?.[1]||'').trim();
   const problema=(raw.match(/(?:^|\|)\s*Problema:\s*([^|]+)/i)?.[1]||'').trim();
-  return {usuario,equipo,problema};
+  return {usuario,referido,equipo,problema};
+}
+
+function getTurnoReferralForClient(cliente={}, equipo={}){
+  const clienteTel=(cliente.telefono||'').replace(/\D/g,'');
+  const clienteCod=normalizeTurnoUser(cliente.codigo);
+  const clienteNom=String(cliente.nombre||'').trim().toLowerCase();
+  const equipoNom=String(equipo.nombre||'').trim().toLowerCase();
+  const turno=(allTurnos||[]).find(t=>{
+    const meta=parseTurnoMeta(t.nota||'');
+    if(!meta.referido) return false;
+    const turnoTel=(t.telefono||'').replace(/\D/g,'');
+    const turnoUser=normalizeTurnoUser(meta.usuario);
+    const turnoNom=String(t.nombre||'').trim().toLowerCase();
+    const turnoEq=String(meta.equipo||'').trim().toLowerCase();
+    return (clienteTel && turnoTel===clienteTel)
+      || (clienteCod && turnoUser===clienteCod)
+      || (clienteNom && turnoNom===clienteNom)
+      || (equipoNom && turnoEq===equipoNom);
+  });
+  return turno?parseTurnoMeta(turno.nota||''):null;
 }
 
 async function openModalFromTurno(nom, ape, tel, servicio, nota, urgente){
@@ -2046,7 +2076,7 @@ async function toggleDescuento(clienteId, btn){
   track.classList.toggle('on', nuevo);
   lbl.textContent  = nuevo ? 'ACTIVO' : 'inactivo';
   lbl.style.color  = nuevo ? 'var(--green)' : 'var(--text3)';
-  toast(nuevo ? '🎁 Descuento activado — 10% en próxima reparación ✓' : 'Descuento desactivado');
+  toast(nuevo ? '🎁 Descuento manual activado — 10% en próxima reparación ✓' : 'Descuento desactivado');
   playSound('action');
 }
 
