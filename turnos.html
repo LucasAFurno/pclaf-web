@@ -317,7 +317,7 @@ textarea.f-in{resize:none;height:80px;}
       <label class="f-lbl">Usuario que te recomendó (opcional)</label>
       <input class="f-in" id="tRef" placeholder="Ej: LUCAS01" maxlength="40" autocomplete="off" onblur="lookupReferral()" oninput="resetReferralLookup()"/>
     </div>
-    <div class="f-help" id="tRefHelp">Ingresá el usuario real para validarlo en la base y activar su 10%.</div>
+    <div class="f-help" id="tRefHelp">Ingresa el usuario real para validarlo en la base y activar su 10%.</div>
     <div class="form-group"><label class="f-lbl">Equipo</label><input class="f-in" id="tEq" placeholder="Ej: Notebook HP Pavilion 15" maxlength="80"/></div>
     <div class="form-group"><label class="f-lbl">Describí el problema (opciónal)</label><textarea class="f-in" id="tNota" placeholder="Ej: Se calienta mucho y se apaga sola, hace ruido el cooler..." maxlength="300"></textarea></div>
     <div class="nav-btns">
@@ -384,10 +384,12 @@ function setUserDiscountCard(cliente=null,source=''){
     el.innerHTML='';
     return;
   }
-  const titulo=source==='referido'?'10% descuento por referido':'10% descuento por resena Google';
-  const detalle='Se aplica automaticamente en tu proximo service.';
-  el.innerHTML=`<div><div style="font-size:12px;font-weight:700;color:var(--green);margin-bottom:2px">${titulo}</div><div style="font-size:11px;color:var(--text2)">${detalle}</div></div><span class="referral-inline-badge">10% OFF</span>`;
-  el.className='referral-inline ok';
+  const title=source==='referido'?'10% descuento por referido':'10% descuento por resena Google';
+  const sub=source==='referido'
+    ? 'Se aplica automaticamente en tu proximo service por referido.'
+    : 'Se aplica automaticamente en tu proximo service por tu resena.';
+  el.innerHTML=`<div><div style="font-size:12px;font-weight:700;color:var(--green);margin-bottom:2px">${title}</div><div style="font-size:11px;color:var(--text2)">${sub}</div></div><span class="referral-inline-badge">10% OFF</span>`;
+  el.className='referral-inline';
   el.style.display='flex';
 }
 
