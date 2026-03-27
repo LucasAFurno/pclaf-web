@@ -321,6 +321,16 @@ async function cargar(code) {
     const [cliente] = await db('clientes', `?codigo=eq.${code}&limit=1`);
     if (!cliente) { hide('loading'); show('notFound'); return; }
 
+    let discountSource = '';
+    if (cliente.descuento_resena) {
+      try {
+        const refRows = await db('turnos', `?nota=ilike.${encodeURIComponent(`*Referido por: ${code}*`)}&select=id&limit=1`);
+        discountSource = refRows?.length ? 'referido' : 'resena';
+      } catch(_) {
+        discountSource = 'resena';
+      }
+    }
+
     const equipos = await db('equipos', `?cliente_id=eq.${cliente.id}&order=created_at.asc`);
 
     for (const eq of equipos) {
@@ -329,7 +339,7 @@ async function cargar(code) {
       eq.lastStatus = activa?.estado || 'ok';
     }
 
-    currentClient = { ...cliente, machines: equipos };
+    currentClient = { ...cliente, discountSource, machines: equipos };
     hide('loading');
     renderMachines(currentClient, code);
 
@@ -344,6 +354,12 @@ function renderMachines(client, code) {
   const fullName = (client.nombre+' '+(client.apellido||'')).trim(); const initials = fullName.split(' ').map(w=>w[0]).join('').slice(0,2);
   const total = client.machines.reduce((a,m)=>a+m.repairs.length, 0);
   const badgeMap = { proceso:BADGE.proceso, listo:BADGE.listo, espera:BADGE.espera, ok:`<span class="status-badge sb-entregado">Sin activas</span>` };
+  const discountTitle = client.discountSource === 'referido'
+    ? '10% descuento por referido activo'
+    : '10% descuento por resena Google activo';
+  const discountSub = client.discountSource === 'referido'
+    ? 'Se aplica automaticamente en tu proximo service por haber referido a un cliente.'
+    : 'Se aplica automaticamente en tu proximo service por tu resena.';
 
   document.getElementById('panelMachines').innerHTML = `
     <div class="client-card">
@@ -357,8 +373,8 @@ function renderMachines(client, code) {
     ${client.descuento_resena?`
     <div class="discount-card">
       <div>
-        <div class="discount-card-title">Tenes un 10% de descuento activo</div>
-        <div class="discount-card-sub">Se aplica automaticamente en tu proximo service.</div>
+        <div class="discount-card-title">${discountTitle}</div>
+        <div class="discount-card-sub">${discountSub}</div>
       </div>
       <div class="discount-badge">10% OFF</div>
     </div>`:''}
