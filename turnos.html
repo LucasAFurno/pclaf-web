@@ -88,6 +88,9 @@ nav{background:var(--black2);border-bottom:2px solid var(--red);padding:0 24px;h
 .f-lbl{font-size:12px;font-weight:600;color:var(--text3);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em;}
 .f-in{width:100%;background:var(--black3);border:1.5px solid var(--border2);border-radius:8px;padding:12px 16px;font-size:14px;color:var(--text);outline:none;transition:border-color .2s;font-family:var(--body);}
 .f-in:focus{border-color:var(--red);}
+.f-help{font-size:11px;color:var(--text3);margin-top:6px;line-height:1.45;}
+.f-help.ok{color:var(--green);}
+.f-help.err{color:var(--amber);}
 .f-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
 textarea.f-in{resize:none;height:80px;}
 
@@ -117,6 +120,8 @@ textarea.f-in{resize:none;height:80px;}
 .section-sub{font-size:13px;color:var(--text3);margin-bottom:18px;}
 .nav-btns{display:flex;gap:8px;margin-top:16px;}
 .notice{background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);border-radius:8px;padding:12px 16px;font-size:13px;color:var(--amber);margin-bottom:20px;}
+.referral-note{background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.22);border-radius:10px;padding:12px 14px;margin-bottom:14px;font-size:13px;color:var(--text);line-height:1.5;}
+.referral-note strong{color:var(--green);}
 .srv-card .srv-urgencia{display:none;font-family:var(--mono);font-size:11px;color:var(--amber);margin-top:2px;}
 .urgencia-toggle{display:flex;align-items:center;gap:14px;background:rgba(245,158,11,0.1);border:1.5px solid rgba(245,158,11,0.35);border-radius:12px;padding:16px 20px;margin-bottom:20px;}
 .ut-label{font-size:15px;color:var(--text);flex:1;line-height:1.5;}
@@ -301,13 +306,18 @@ textarea.f-in{resize:none;height:80px;}
   <div class="panel" id="panel3">
     <div class="section-title-sm">Tus datos</div>
     <div class="section-sub">Para confirmar el turno y avisarte por WhatsApp</div>
+    <div class="referral-note"><strong>¿Te recomendó un cliente de PCLAF?</strong> Si cargás su usuario real, le activamos un 10% de descuento para su próxima reparación.</div>
     <div class="f-row">
       <div class="form-group"><label class="f-lbl">Nombre</label><input class="f-in" id="tNom" placeholder="Ej: Lucas" maxlength="60" autocomplete="given-name"/></div>
       <div class="form-group"><label class="f-lbl">Apellido</label><input class="f-in" id="tApe" placeholder="Ej: Méndez" maxlength="60" autocomplete="family-name"/></div>
     </div>
     <div class="form-group"><label class="f-lbl">WhatsApp</label><input class="f-in" id="tTel" placeholder="Ej: 11 5823-9201" type="tel" inputmode="tel" maxlength="20" autocomplete="tel"/></div>
     <div class="form-group"><label class="f-lbl">Usuario (opcional)</label><input class="f-in" id="tUser" placeholder="Ej: LUCAS01" maxlength="40" autocomplete="username"/></div>
-    <div class="form-group"><label class="f-lbl">Recomendado por (opcional)</label><input class="f-in" id="tRef" placeholder="Ej: Juan Pérez" maxlength="80" autocomplete="off"/></div>
+    <div class="form-group">
+      <label class="f-lbl">Usuario que te recomendó (opcional)</label>
+      <input class="f-in" id="tRef" placeholder="Ej: LUCAS01" maxlength="40" autocomplete="off" onblur="lookupReferral()" oninput="resetReferralLookup()"/>
+      <div class="f-help" id="tRefHelp">Si lo cargás, validamos ese usuario real y le activamos 10%.</div>
+    </div>
     <div class="form-group"><label class="f-lbl">Equipo</label><input class="f-in" id="tEq" placeholder="Ej: Notebook HP Pavilion 15" maxlength="80"/></div>
     <div class="form-group"><label class="f-lbl">Describí el problema (opciónal)</label><textarea class="f-in" id="tNota" placeholder="Ej: Se calienta mucho y se apaga sola, hace ruido el cooler..." maxlength="300"></textarea></div>
     <div class="nav-btns">
@@ -352,7 +362,7 @@ async function db(m,t,q='',b=null){
 }
 
 // ── STATE ──
-let state={servicio:'',precio:'',urgencia:false,fecha:null,hora:'',calOffset:0};
+let state={servicio:'',precio:'',urgencia:false,fecha:null,hora:'',calOffset:0,refCliente:null};
 
 function sanitizePlainText(value,maxLen=120){
   return String(value||'').replace(/\s+/g,' ').replace(/[<>]/g,'').trim().slice(0,maxLen);
@@ -366,8 +376,50 @@ function normalizeUser(value){
   return String(value||'').replace(/\s+/g,'').replace(/[^a-zA-Z0-9_-]/g,'').toUpperCase().slice(0,40);
 }
 
+function setReferralHelp(text='',kind=''){
+  const el=document.getElementById('tRefHelp');
+  if(!el) return;
+  el.textContent=text||'';
+  el.className='f-help'+(kind?` ${kind}`:'');
+}
+
+function resetReferralLookup(){
+  state.refCliente=null;
+  const ref=normalizeUser(document.getElementById('tRef')?.value);
+  setReferralHelp(ref?'Vamos a validar ese usuario antes de confirmar.':'Si lo cargás, validamos ese usuario real y le activamos 10%.');
+}
+
+async function lookupReferral(strict=false){
+  const ref=normalizeUser(document.getElementById('tRef')?.value);
+  if(!ref){
+    state.refCliente=null;
+    setReferralHelp('Si lo cargás, validamos ese usuario real y le activamos 10%.');
+    return null;
+  }
+  try{
+    const res=await db('GET','clientes',`?codigo=eq.${encodeURIComponent(ref)}&select=id,codigo,nombre,apellido,descuento_resena&limit=1`);
+    const cliente=res?.[0]||null;
+    if(cliente){
+      state.refCliente=cliente;
+      const nombre=[cliente.nombre,cliente.apellido].filter(Boolean).join(' ').trim();
+      document.getElementById('tRef').value=cliente.codigo||ref;
+      setReferralHelp(`Usuario validado: ${nombre||cliente.codigo} (${cliente.codigo}). Se activa 10%.`,'ok');
+      return cliente;
+    }
+    state.refCliente=null;
+    setReferralHelp('No encontramos ese usuario en la base de datos.','err');
+    if(strict) alert('El usuario que te recomendó no existe en la base de datos.');
+    return null;
+  }catch(e){
+    state.refCliente=null;
+    setReferralHelp('No pudimos validar ese usuario ahora. Intentá de nuevo.','err');
+    if(strict) alert('No pudimos validar el usuario recomendado en este momento.');
+    return null;
+  }
+}
+
 // ── STEPS ──
-function goTo(n){
+async function goTo(n){
   if(n===3){
     // validate paso 2
     if(!state.fecha||!state.hora) return;
@@ -376,6 +428,11 @@ function goTo(n){
     const nom=sanitizePlainText(document.getElementById('tNom').value,60);
     const tel=normalizePhone(document.getElementById('tTel').value);
     if(!nom||!tel){alert('Completá nombre y WhatsApp');return;}
+    const ref=normalizeUser(document.getElementById('tRef').value);
+    if(ref){
+      const cliente=await lookupReferral(true);
+      if(!cliente) return;
+    }
     buildResumen();
   }
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
@@ -535,7 +592,7 @@ function buildResumen(){
   const ape=sanitizePlainText(document.getElementById('tApe').value,60);
   const tel=normalizePhone(document.getElementById('tTel').value);
   const usuario=normalizeUser(document.getElementById('tUser').value);
-  const referido=sanitizePlainText(document.getElementById('tRef').value,80);
+  const referido=state.refCliente?([state.refCliente.nombre,state.refCliente.apellido].filter(Boolean).join(' ').trim()||state.refCliente.codigo):'';
   const eq=sanitizePlainText(document.getElementById('tEq').value,80);
   const nota=sanitizePlainText(document.getElementById('tNota').value,300);
   const date=new Date(state.fecha+'T12:00:00');
@@ -548,7 +605,7 @@ function buildResumen(){
     <div class="res-row"><span class="res-lbl">Nombre</span><span class="res-val">${nom} ${ape}</span></div>
     <div class="res-row"><span class="res-lbl">WhatsApp</span><span class="res-val">${tel}</span></div>
     ${usuario?`<div class="res-row"><span class="res-lbl">Usuario</span><span class="res-val">${usuario}</span></div>`:''}
-    ${referido?`<div class="res-row"><span class="res-lbl">Recomendado por</span><span class="res-val">${referido}</span></div>`:''}
+    ${referido?`<div class="res-row"><span class="res-lbl">Recomendó</span><span class="res-val">${referido}${state.refCliente?.codigo?` (${state.refCliente.codigo})`:''}</span></div>`:''}
     ${eq?`<div class="res-row"><span class="res-lbl">Equipo</span><span class="res-val">${eq}</span></div>`:''}
     ${nota?`<div class="res-row"><span class="res-lbl">Problema</span><span class="res-val" style="font-size:13px;max-width:60%;text-align:right">${nota}</span></div>`:''}
     <div style="margin-top:12px;font-size:12px;color:var(--text3)">📍 Campana 51, Floresta, CABA · El turno queda pendiente hasta que PCLAF lo confirme por WhatsApp.</div>`;
@@ -561,7 +618,7 @@ async function confirmarTurno(){
   const ape=sanitizePlainText(document.getElementById('tApe').value,60);
   const tel=normalizePhone(document.getElementById('tTel').value);
   const usuario=normalizeUser(document.getElementById('tUser').value);
-  const referido=sanitizePlainText(document.getElementById('tRef').value,80);
+  const refIngresado=normalizeUser(document.getElementById('tRef').value);
   const eq=sanitizePlainText(document.getElementById('tEq').value,80);
   const nota=sanitizePlainText(document.getElementById('tNota').value,300);
   if(!nom||!tel){
@@ -570,9 +627,26 @@ async function confirmarTurno(){
     return;
   }
   try{
+    let refCliente=state.refCliente;
+    if(refIngresado){
+      refCliente=await lookupReferral(true);
+      if(!refCliente){
+        btn.disabled=false; btn.textContent='Confirmar turno';
+        return;
+      }
+      try{
+        await db('PATCH','clientes',`?id=eq.${refCliente.id}`,{descuento_resena:true});
+        refCliente.descuento_resena=true;
+        state.refCliente=refCliente;
+      }catch(e){
+        btn.disabled=false; btn.textContent='Confirmar turno';
+        alert('No pudimos activar el 10% del usuario recomendado. IntentÃ¡ de nuevo.');
+        return;
+      }
+    }
     const notaParts=[];
     if(usuario) notaParts.push('Usuario: '+usuario);
-    if(referido) notaParts.push('Referido por: '+referido);
+    if(refCliente?.codigo) notaParts.push('Referido por: '+refCliente.codigo);
     if(eq) notaParts.push('Equipo: '+eq);
     if(nota) notaParts.push('Problema: '+nota);
     const res=await db('POST','turnos','',{
@@ -590,7 +664,8 @@ async function confirmarTurno(){
     document.getElementById('panelOK').classList.add('active');
     // Open WA to PCLAF (notify)
     setTimeout(()=>{
-      const msg=encodeURIComponent(`🗓️ *Nuevo turno solicitado*\n\n*${nom} ${ape}*\n📱 ${tel}\n${usuario?'👤 Usuario: '+usuario+'\n':''}${referido?'🎁 Referido por: '+referido+'\n':''}🔧 ${state.servicio}${state.urgencia?' ⚡ URGENTE':''}\n💰 ${state.precio}\n📅 ${state.fecha} a las ${state.hora}hs\n💻 ${eq||'Sin especificar'}\n${nota?'📝 '+nota+'\n':''}\nRef: ${shortId}`);
+      const refNombre=refCliente?[refCliente.nombre,refCliente.apellido].filter(Boolean).join(' ').trim():'';
+      const msg=encodeURIComponent(`🗓️ *Nuevo turno solicitado*\n\n*${nom} ${ape}*\n📱 ${tel}\n${usuario?'👤 Usuario: '+usuario+'\n':''}${refCliente?.codigo?'🎁 Recomendo: '+(refNombre||refCliente.codigo)+' ('+refCliente.codigo+')\n🎁 10% activado para ese usuario\n':''}🔧 ${state.servicio}${state.urgencia?' ⚡ URGENTE':''}\n💰 ${state.precio}\n📅 ${state.fecha} a las ${state.hora}hs\n💻 ${eq||'Sin especificar'}\n${nota?'📝 '+nota+'\n':''}\nRef: ${shortId}`);
       window.open(`https://wa.me/541141758129?text=${msg}`,'_blank');
     }, 800);
   }catch(e){
