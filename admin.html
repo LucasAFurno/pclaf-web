@@ -1496,12 +1496,26 @@ async function openModal(){
   }catch(e){document.getElementById('mNum').value='';}
 }
 
-async function openModalFromTurno(nom, ape, tel, servicio, _unused, urgente){
+function normalizeTurnoUser(value){
+  return String(value||'').replace(/\s+/g,'').replace(/[^a-zA-Z0-9_-]/g,'').toUpperCase();
+}
+
+function parseTurnoMeta(nota=''){
+  const raw=String(nota||'');
+  const usuario=(raw.match(/(?:^|\|)\s*Usuario:\s*([^|]+)/i)?.[1]||'').trim();
+  const equipo=(raw.match(/(?:^|\|)\s*Equipo:\s*([^|]+)/i)?.[1]||'').trim();
+  const problema=(raw.match(/(?:^|\|)\s*Problema:\s*([^|]+)/i)?.[1]||'').trim();
+  return {usuario,equipo,problema};
+}
+
+async function openModalFromTurno(nom, ape, tel, servicio, nota, urgente){
   await openModal();
+  const meta=parseTurnoMeta(nota);
   document.getElementById('mNom').value=nom||'';
   document.getElementById('mApe').value=ape||'';
   document.getElementById('mTel').value=tel||'';
-  document.getElementById('mProb').value=servicio||'';
+  document.getElementById('mEq').value=meta.equipo||'';
+  document.getElementById('mProb').value=meta.problema||servicio||'';
   document.getElementById('mUrgente').value=urgente?'1':'';
 
   // Derive price from service name
@@ -1522,14 +1536,36 @@ async function openModalFromTurno(nom, ape, tel, servicio, _unused, urgente){
     document.getElementById('mPres').value=urgente&&p.urgente ? p.urgente : p.normal;
   }
 
-  // Try to find existing client by phone
-  if(tel){
+  let matchedClient=null;
+
+  if(meta.usuario){
+    const usuarioNorm=normalizeTurnoUser(meta.usuario);
+    matchedClient=aC.find(c=>normalizeTurnoUser(c.codigo)===usuarioNorm)
+      || aC.find(c=>normalizeTurnoUser(c.nombre)===usuarioNorm);
+    if(matchedClient){
+      document.getElementById('mCod').value=matchedClient.codigo||meta.usuario;
+      document.getElementById('mNom').value=matchedClient.nombre||nom||'';
+      document.getElementById('mApe').value=matchedClient.apellido||ape||'';
+      document.getElementById('mTel').value=matchedClient.telefono||tel||'';
+    }else{
+      document.getElementById('mCod').value=usuarioNorm;
+    }
+  }
+
+  // Try to find existing client by phone if username didn't resolve it
+  if(!matchedClient && tel){
     try{
       const telNum=tel.replace(/\D/g,'');
-      const res=await db('GET','clientes',`?telefono=eq.${telNum}&limit=1`);
+      matchedClient=aC.find(c=>(c.telefono||'').replace(/\D/g,'')===telNum) || null;
+      let res=matchedClient?[matchedClient]:null;
+      if(!res?.length){
+        res=await db('GET','clientes',`?telefono=eq.${telNum}&limit=1`);
+      }
       if(res?.length){
         document.getElementById('mCod').value=res[0].codigo||'';
         document.getElementById('mNom').value=res[0].nombre||nom||'';
+        document.getElementById('mApe').value=res[0].apellido||ape||'';
+        document.getElementById('mTel').value=res[0].telefono||tel||'';
       }
     }catch(e){}
   }
@@ -1796,7 +1832,7 @@ function renderTurnos(){
       <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
         <span style="font-size:10px;font-weight:600;padding:3px 9px;border-radius:20px;background:${estBg[t.estado]||'var(--black3)'};color:${estCol[t.estado]||'var(--text3)'};">${t.estado}</span>
       ${t.telefono?`<a href="https://wa.me/54${t.telefono.replace(/\D/g,'')}?text=${encodeURIComponent(`Hola ${t.nombre}! Confirmamos tu turno en PCLAF para el ${t.fecha} a las ${t.hora}. Campana 51, Floresta.`)}" target="_blank" rel="noopener noreferrer" style="background:#25d366;color:#fff;padding:5px 10px;border-radius:6px;font-size:11px;font-weight:700;text-decoration:none;">✓ Confirmar WA</a>`:''}
-        <button onclick="openModalFromTurno('${(t.nombre||'').replace(/'/g,"\\'")}','${(t.apellido||'').replace(/'/g,"\\'")}','${(t.telefono||'').replace(/'/g,"\\'")}','${(t.servicio||'').replace(/'/g,"\\'")}','${(t.precio||'').replace(/'/g,"\\'")}',${!!t.urgente})" style="background:var(--red);border:none;border-radius:6px;padding:5px 10px;font-size:11px;font-weight:700;color:#fff;cursor:pointer;">+ Reparación</button>
+        <button onclick="openModalFromTurno('${(t.nombre||'').replace(/'/g,"\\'")}','${(t.apellido||'').replace(/'/g,"\\'")}','${(t.telefono||'').replace(/'/g,"\\'")}','${(t.servicio||'').replace(/'/g,"\\'")}','${(t.nota||'').replace(/'/g,"\\'")}',${!!t.urgente})" style="background:var(--red);border:none;border-radius:6px;padding:5px 10px;font-size:11px;font-weight:700;color:#fff;cursor:pointer;">+ Reparación</button>
         <select onchange="cambiarEstadoTurno('${t.id}',this.value)" style="background:var(--black3);border:1px solid var(--border2);border-radius:6px;padding:5px 8px;font-size:11px;color:var(--text2);cursor:pointer;outline:none;">
           <option value="pendiente" ${t.estado==='pendiente'?'selected':''}>Pendiente</option>
           <option value="confirmado" ${t.estado==='confirmado'?'selected':''}>Confirmado</option>
@@ -1820,8 +1856,10 @@ function irATurno(id){
   const t=allTurnos.find(x=>x.id===id);
   if(!t){switchTab('turnos',document.querySelector('.tab[onclick*=turnos]'));return;}
 
-  // Try to find a matching reparacion by phone or name
+  // Try to find a matching reparacion by phone, username or name
   const telNorm=(t.telefono||'').replace(/\D/g,'');
+  const meta=parseTurnoMeta(t.nota||'');
+  const usuarioNorm=normalizeTurnoUser(meta.usuario);
   const nomBuscar=(t.nombre||'').toLowerCase();
 
   // Search in loaded repairs
@@ -1830,7 +1868,10 @@ function irATurno(id){
     const c=aC.find(x=>x.id===e.cliente_id)||{};
     const cTel=(c.telefono||'').replace(/\D/g,'');
     const cNom=(c.nombre||'').toLowerCase();
-    return (telNorm&&cTel===telNorm)||(nomBuscar&&cNom.startsWith(nomBuscar.split(' ')[0]));
+    const cUser=normalizeTurnoUser(c.codigo);
+    return (telNorm&&cTel===telNorm)
+      || (usuarioNorm&&cUser===usuarioNorm)
+      || (nomBuscar&&cNom.startsWith(nomBuscar.split(' ')[0]));
   });
 
   if(match){
