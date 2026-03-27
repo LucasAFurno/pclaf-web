@@ -311,8 +311,6 @@ textarea.f-in{resize:none;height:80px;}
       <div class="form-group"><label class="f-lbl">Apellido</label><input class="f-in" id="tApe" placeholder="Ej: Méndez" maxlength="60" autocomplete="family-name"/></div>
     </div>
     <div class="form-group"><label class="f-lbl">WhatsApp</label><input class="f-in" id="tTel" placeholder="Ej: 11 5823-9201" type="tel" inputmode="tel" maxlength="20" autocomplete="tel"/></div>
-    <div class="form-group"><label class="f-lbl">Usuario (opcional)</label><input class="f-in" id="tUser" placeholder="Ej: LUCAS01" maxlength="40" autocomplete="off" onblur="lookupUserDiscount()" oninput="resetUserLookup()"/></div>
-    <div class="referral-inline" id="tUserDiscount" style="display:none"></div>
     <div class="form-group">
       <label class="f-lbl">Usuario que te recomendó (opcional)</label>
       <input class="f-in" id="tRef" placeholder="Ej: LUCAS01" maxlength="40" autocomplete="off" onblur="lookupReferral()" oninput="resetReferralLookup()"/>
@@ -362,7 +360,7 @@ async function db(m,t,q='',b=null){
 }
 
 // ── STATE ──
-let state={servicio:'',precio:'',urgencia:false,fecha:null,hora:'',calOffset:0,refCliente:null,userCliente:null,userDiscountSource:''};
+let state={servicio:'',precio:'',urgencia:false,fecha:null,hora:'',calOffset:0,refCliente:null};
 
 function sanitizePlainText(value,maxLen=120){
   return String(value||'').replace(/\s+/g,' ').replace(/[<>]/g,'').trim().slice(0,maxLen);
@@ -374,68 +372,6 @@ function normalizePhone(value){
 
 function normalizeUser(value){
   return String(value||'').replace(/\s+/g,'').replace(/[^a-zA-Z0-9_-]/g,'').toUpperCase().slice(0,40);
-}
-
-function setUserDiscountCard(cliente=null,source=''){
-  const el=document.getElementById('tUserDiscount');
-  if(!el) return;
-  if(!cliente?.descuento_resena){
-    el.style.display='none';
-    el.innerHTML='';
-    return;
-  }
-  const title=source==='referido'?'10% descuento por referido':'10% descuento por resena Google';
-  const sub=source==='referido'
-    ? 'Se aplica automaticamente en tu proximo service por referido.'
-    : 'Se aplica automaticamente en tu proximo service por tu resena.';
-  el.innerHTML=`<div><div style="font-size:12px;font-weight:700;color:var(--green);margin-bottom:2px">${title}</div><div style="font-size:11px;color:var(--text2)">${sub}</div></div><span class="referral-inline-badge">10% OFF</span>`;
-  el.className='referral-inline';
-  el.style.display='flex';
-}
-
-async function detectDiscountSource(codigo){
-  const normalized=normalizeUser(codigo);
-  if(!normalized) return '';
-  try{
-    const rows=await db('GET','turnos',`?nota=ilike.${encodeURIComponent(`*Referido por: ${normalized}*`)}&select=id&limit=1`);
-    return rows?.length?'referido':'resena';
-  }catch(e){
-    return 'resena';
-  }
-}
-
-function resetUserLookup(){
-  state.userCliente=null;
-  state.userDiscountSource='';
-  setUserDiscountCard(null);
-}
-
-async function lookupUserDiscount(){
-  const raw=document.getElementById('tUser');
-  const codigo=normalizeUser(raw?.value);
-  if(raw) raw.value=codigo;
-  if(!codigo){
-    resetUserLookup();
-    return null;
-  }
-  try{
-    const res=await db('GET','clientes',`?codigo=eq.${encodeURIComponent(codigo)}&select=id,codigo,nombre,apellido,descuento_resena&limit=1`);
-    const cliente=res?.[0]||null;
-    state.userCliente=cliente;
-    if(raw && cliente?.codigo) raw.value=cliente.codigo;
-    if(cliente?.descuento_resena){
-      const source=await detectDiscountSource(cliente.codigo);
-      state.userDiscountSource=source;
-      setUserDiscountCard(cliente,source);
-    }else{
-      state.userDiscountSource='';
-      setUserDiscountCard(null);
-    }
-    return cliente;
-  }catch(e){
-    resetUserLookup();
-    return null;
-  }
 }
 
 function setReferralHelp(text='',kind=''){
