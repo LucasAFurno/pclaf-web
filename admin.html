@@ -1258,6 +1258,13 @@ async function loadEquipmentSpecs(repId, force=false){
   container.innerHTML=renderEquipmentSnapshot(repId,null,false);
 }
 
+function getDiscountBudgetLabel(value){
+  const amount=pm(value);
+  if(!amount) return '';
+  const discounted=Math.round(amount*0.9);
+  return `$${discounted.toLocaleString('es-AR')}`;
+}
+
 function renderCards(data){
   const LB={espera:'En espera',proceso:'En reparación',listo:'Listo para retirar',entregado:'Entregado',cancelado:'Cancelado'};
   const IC={espera:'⏳',proceso:'🔧',listo:'✅',entregado:'📦',cancelado:'❌'};
@@ -1308,7 +1315,10 @@ function renderCards(data){
             <div class="cir"><span class="cil">Problema</span><span class="civ" style="font-size:12px">${r.problema||'–'}</span></div>
             ${clienteReferido?`<div class="cir"><span class="cil">Cliente referido</span><span class="civ">${clienteReferido}</span></div>`:''}
             <div class="cir"><span class="cil">Presupuesto</span>
-              <div style="display:flex;gap:5px"><input class="prin" id="pr-${r.id}" value="${r.presupuesto||''}" placeholder="$0.000" style="width:95px"/><button class="smbtn" style="padding:5px 9px;font-size:11px" onclick="savePr('${r.id}')">✓</button></div>
+              <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end">
+                <div style="display:flex;gap:5px"><input class="prin" id="pr-${r.id}" value="${r.presupuesto||''}" placeholder="$0.000" style="width:95px"/><button class="smbtn" style="padding:5px 9px;font-size:11px" onclick="savePr('${r.id}')">✓</button></div>
+                ${descuentoActivo&&r.presupuesto?`<span style="font-size:11px;color:var(--green);font-weight:700;white-space:nowrap">con desc: ${getDiscountBudgetLabel(r.presupuesto)}</span>`:''}
+              </div>
             </div>
             <div class="descuento-banner" id="descBanner-${c.id||'x'}">
               <div><div style="font-size:12px;font-weight:700;color:var(--green);margin-bottom:2px">${descuentoBannerTitulo}</div><div style="font-size:11px;color:var(--text3)">${descuentoBannerDetalle}</div></div>
