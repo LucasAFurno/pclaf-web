@@ -120,7 +120,9 @@ textarea.f-in{resize:none;height:80px;}
 .section-sub{font-size:13px;color:var(--text3);margin-bottom:18px;}
 .nav-btns{display:flex;gap:8px;margin-top:16px;}
 .notice{background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);border-radius:8px;padding:12px 16px;font-size:13px;color:var(--amber);margin-bottom:20px;}
-.referral-inline{background:linear-gradient(135deg,rgba(34,197,94,0.15),rgba(34,197,94,0.05));border:1.5px solid rgba(34,197,94,0.35);border-radius:10px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.referral-inline{background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.2);border-radius:12px;padding:14px 16px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-top:8px;}
+.referral-inline.ok{background:rgba(34,197,94,0.12);border-color:rgba(34,197,94,0.32);}
+.referral-inline.err{background:rgba(245,158,11,0.08);border-color:rgba(245,158,11,0.22);}
 .referral-inline-badge{display:inline-flex;align-items:center;gap:5px;background:var(--green-dim);color:var(--green);border:1px solid rgba(34,197,94,.3);border-radius:6px;padding:3px 9px;font-size:11px;font-weight:700;font-family:var(--mono);white-space:nowrap;}
 .srv-card .srv-urgencia{display:none;font-family:var(--mono);font-size:11px;color:var(--amber);margin-top:2px;}
 .urgencia-toggle{display:flex;align-items:center;gap:14px;background:rgba(245,158,11,0.1);border:1.5px solid rgba(245,158,11,0.35);border-radius:12px;padding:16px 20px;margin-bottom:20px;}
@@ -312,10 +314,10 @@ textarea.f-in{resize:none;height:80px;}
     </div>
     <div class="form-group"><label class="f-lbl">WhatsApp</label><input class="f-in" id="tTel" placeholder="Ej: 11 5823-9201" type="tel" inputmode="tel" maxlength="20" autocomplete="tel"/></div>
     <div class="form-group">
-      <label class="f-lbl">Usuario que te recomendó (opcional)</label>
+      <label class="f-lbl">Referido (opcional)</label>
       <input class="f-in" id="tRef" placeholder="Ej: LUCAS01" maxlength="40" autocomplete="off" onblur="lookupReferral()" oninput="resetReferralLookup()"/>
     </div>
-    <div class="f-help" id="tRefHelp">Ingresa el usuario real para validarlo en la base y activar su 10%.</div>
+    <div class="referral-inline" id="tRefHelp"><span>Ingresá el usuario real para validarlo en la base y activar su 10%.</span><span class="referral-inline-badge">10% OFF</span></div>
     <div class="form-group"><label class="f-lbl">Equipo</label><input class="f-in" id="tEq" placeholder="Ej: Notebook HP Pavilion 15" maxlength="80"/></div>
     <div class="form-group"><label class="f-lbl">Describí el problema (opciónal)</label><textarea class="f-in" id="tNota" placeholder="Ej: Se calienta mucho y se apaga sola, hace ruido el cooler..." maxlength="300"></textarea></div>
     <div class="nav-btns">
@@ -377,8 +379,8 @@ function normalizeUser(value){
 function setReferralHelp(text='',kind=''){
   const el=document.getElementById('tRefHelp');
   if(!el) return;
-  el.textContent=text||'';
-  el.className='f-help'+(kind?` ${kind}`:'');
+  el.innerHTML=`<span>${text||''}</span><span class="referral-inline-badge">10% OFF</span>`;
+  el.className='referral-inline'+(kind?` ${kind}`:'');
 }
 
 function resetReferralLookup(){
