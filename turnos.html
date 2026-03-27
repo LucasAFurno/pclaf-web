@@ -311,7 +311,6 @@ textarea.f-in{resize:none;height:80px;}
       <div class="form-group"><label class="f-lbl">Apellido</label><input class="f-in" id="tApe" placeholder="Ej: Méndez" maxlength="60" autocomplete="family-name"/></div>
     </div>
     <div class="form-group"><label class="f-lbl">WhatsApp</label><input class="f-in" id="tTel" placeholder="Ej: 11 5823-9201" type="tel" inputmode="tel" maxlength="20" autocomplete="tel"/></div>
-    <div class="form-group"><label class="f-lbl">Usuario (opcional)</label><input class="f-in" id="tUser" placeholder="Ej: LUCAS01" maxlength="40" autocomplete="username"/></div>
     <div class="f-help referral-inline" id="tRefHelp"><span>Ingresá el usuario real para validarlo en la base y activar su 10%.</span><span class="referral-inline-badge">10% OFF</span></div>
     <div class="form-group">
       <label class="f-lbl">Usuario que te recomendó (opcional)</label>
@@ -590,7 +589,6 @@ function buildResumen(){
   const nom=sanitizePlainText(document.getElementById('tNom').value,60);
   const ape=sanitizePlainText(document.getElementById('tApe').value,60);
   const tel=normalizePhone(document.getElementById('tTel').value);
-  const usuario=normalizeUser(document.getElementById('tUser').value);
   const referido=state.refCliente?([state.refCliente.nombre,state.refCliente.apellido].filter(Boolean).join(' ').trim()||state.refCliente.codigo):'';
   const eq=sanitizePlainText(document.getElementById('tEq').value,80);
   const nota=sanitizePlainText(document.getElementById('tNota').value,300);
@@ -603,7 +601,6 @@ function buildResumen(){
     <div class="res-row"><span class="res-lbl">Horario</span><span class="res-val">${state.hora}hs</span></div>
     <div class="res-row"><span class="res-lbl">Nombre</span><span class="res-val">${nom} ${ape}</span></div>
     <div class="res-row"><span class="res-lbl">WhatsApp</span><span class="res-val">${tel}</span></div>
-    ${usuario?`<div class="res-row"><span class="res-lbl">Usuario</span><span class="res-val">${usuario}</span></div>`:''}
     ${referido?`<div class="res-row"><span class="res-lbl">Recomendó</span><span class="res-val">${referido}${state.refCliente?.codigo?` (${state.refCliente.codigo})`:''}</span></div>`:''}
     ${eq?`<div class="res-row"><span class="res-lbl">Equipo</span><span class="res-val">${eq}</span></div>`:''}
     ${nota?`<div class="res-row"><span class="res-lbl">Problema</span><span class="res-val" style="font-size:13px;max-width:60%;text-align:right">${nota}</span></div>`:''}
@@ -616,7 +613,6 @@ async function confirmarTurno(){
   const nom=sanitizePlainText(document.getElementById('tNom').value,60);
   const ape=sanitizePlainText(document.getElementById('tApe').value,60);
   const tel=normalizePhone(document.getElementById('tTel').value);
-  const usuario=normalizeUser(document.getElementById('tUser').value);
   const refIngresado=normalizeUser(document.getElementById('tRef').value);
   const eq=sanitizePlainText(document.getElementById('tEq').value,80);
   const nota=sanitizePlainText(document.getElementById('tNota').value,300);
@@ -644,7 +640,6 @@ async function confirmarTurno(){
       }
     }
     const notaParts=[];
-    if(usuario) notaParts.push('Usuario: '+usuario);
     if(refCliente?.codigo) notaParts.push('Referido por: '+refCliente.codigo);
     if(eq) notaParts.push('Equipo: '+eq);
     if(nota) notaParts.push('Problema: '+nota);
@@ -664,7 +659,7 @@ async function confirmarTurno(){
     // Open WA to PCLAF (notify)
     setTimeout(()=>{
       const refNombre=refCliente?[refCliente.nombre,refCliente.apellido].filter(Boolean).join(' ').trim():'';
-      const msg=encodeURIComponent(`🗓️ *Nuevo turno solicitado*\n\n*${nom} ${ape}*\n📱 ${tel}\n${usuario?'👤 Usuario: '+usuario+'\n':''}${refCliente?.codigo?'🎁 Recomendo: '+(refNombre||refCliente.codigo)+' ('+refCliente.codigo+')\n🎁 10% activado para ese usuario\n':''}🔧 ${state.servicio}${state.urgencia?' ⚡ URGENTE':''}\n💰 ${state.precio}\n📅 ${state.fecha} a las ${state.hora}hs\n💻 ${eq||'Sin especificar'}\n${nota?'📝 '+nota+'\n':''}\nRef: ${shortId}`);
+      const msg=encodeURIComponent(`🗓️ *Nuevo turno solicitado*\n\n*${nom} ${ape}*\n📱 ${tel}\n${refCliente?.codigo?'🎁 Recomendo: '+(refNombre||refCliente.codigo)+' ('+refCliente.codigo+')\n🎁 10% activado para ese usuario\n':''}🔧 ${state.servicio}${state.urgencia?' ⚡ URGENTE':''}\n💰 ${state.precio}\n📅 ${state.fecha} a las ${state.hora}hs\n💻 ${eq||'Sin especificar'}\n${nota?'📝 '+nota+'\n':''}\nRef: ${shortId}`);
       window.open(`https://wa.me/541141758129?text=${msg}`,'_blank');
     }, 800);
   }catch(e){
