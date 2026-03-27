@@ -1769,14 +1769,35 @@ function openSafeReport(html) {
 }
 
 async function verReporteAdmin(reportId){
+  const popup = window.open('about:blank', '_blank', 'noopener,noreferrer');
   try{
     const rep = await db('GET','reportes',`?id=eq.${reportId}&select=id,html_content,html_cliente,filename&limit=1`);
     const row = rep?.[0];
-    if(!row){ toast('Reporte no encontrado', true); return; }
+    if(!row){
+      if(popup) popup.close();
+      toast('Reporte no encontrado', true);
+      return;
+    }
     const slot = inferReportSlot(row.filename);
     const content = slot === 'tecnico' ? (row.html_content || row.html_cliente) : (row.html_cliente || row.html_content);
-    openSafeReport(content);
+    if(popup){
+      const safeHtml = content && String(content).trim()
+        ? String(content)
+        : '<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Reporte vacio</title></head><body style="font-family:system-ui;background:#111;color:#eee;padding:24px">No hay contenido disponible para este reporte.</body></html>';
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(safeHtml, 'text/html');
+      const csp = doc.createElement('meta');
+      csp.setAttribute('http-equiv', 'Content-Security-Policy');
+      csp.setAttribute('content', "default-src 'self' data: https:; img-src 'self' data: https:; style-src 'unsafe-inline' https:; script-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'");
+      doc.head.prepend(csp);
+      popup.document.open();
+      popup.document.write('<!DOCTYPE html>' + doc.documentElement.outerHTML);
+      popup.document.close();
+    }else{
+      openSafeReport(content);
+    }
   }catch(e){
+    if(popup) popup.close();
     toast('Error al abrir reporte', true);
   }
 }
@@ -2706,6 +2727,7 @@ function descargarLauncherReporte(repId, numero, forcedSlot=null) {
   const slotMeta = getReportSlotMeta(slot);
   const modo = slotMeta.modo || 'cliente';
   const momento = slotMeta.momento || 'antes';
+  const scriptUrl = `${TOOLS_BASE}/DiagnosticoPC.ps1?v=${Date.now()}`;
   const cfg = modo === 'tecnico'
     ? { label:'TECNICO', emoji:'🔧' }
     : { label: momento === 'antes' ? 'CLIENTE_ANTES' : 'CLIENTE_DESPUES', emoji:'👤' };
@@ -2721,7 +2743,7 @@ echo       Reporte automatico ${cfg.label} para #${numero}
 echo  ============================================================
 echo.
 echo  [1/2] Descargando DiagnosticoPC.ps1...
-powershell -NoProfile -Command "[Net.ServicePointManager]::SecurityProtocol='Tls12'; Invoke-WebRequest -Uri '${TOOLS_BASE}/DiagnosticoPC.ps1' -OutFile '%TEMP%\\DiagnosticoPC_PCLAF.ps1' -UseBasicParsing" 2>nul
+powershell -NoProfile -Command "[Net.ServicePointManager]::SecurityProtocol='Tls12'; Invoke-WebRequest -Uri '${scriptUrl}' -OutFile '%TEMP%\\DiagnosticoPC_PCLAF.ps1' -UseBasicParsing" 2>nul
 if not exist "%TEMP%\\DiagnosticoPC_PCLAF.ps1" (
   echo  ERROR: No se pudo descargar el script.
   pause & exit /b 1
