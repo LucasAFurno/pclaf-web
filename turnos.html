@@ -88,7 +88,7 @@ nav{background:var(--black2);border-bottom:2px solid var(--red);padding:0 24px;h
 .f-lbl{font-size:12px;font-weight:600;color:var(--text3);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em;}
 .f-in{width:100%;background:var(--black3);border:1.5px solid var(--border2);border-radius:8px;padding:12px 16px;font-size:14px;color:var(--text);outline:none;transition:border-color .2s;font-family:var(--body);}
 .f-in:focus{border-color:var(--red);}
-.f-help{font-size:11px;color:var(--text3);margin-top:6px;line-height:1.45;}
+.f-help{font-size:11px;color:var(--text3);margin-top:8px;line-height:1.45;}
 .f-help.ok{color:var(--green);}
 .f-help.err{color:var(--amber);}
 .f-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
@@ -120,8 +120,10 @@ textarea.f-in{resize:none;height:80px;}
 .section-sub{font-size:13px;color:var(--text3);margin-bottom:18px;}
 .nav-btns{display:flex;gap:8px;margin-top:16px;}
 .notice{background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);border-radius:8px;padding:12px 16px;font-size:13px;color:var(--amber);margin-bottom:20px;}
-.referral-note{background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.22);border-radius:10px;padding:12px 14px;margin-bottom:14px;font-size:13px;color:var(--text);line-height:1.5;}
-.referral-note strong{color:var(--green);}
+.referral-note{background:linear-gradient(135deg,rgba(34,197,94,0.15),rgba(34,197,94,0.05));border:1.5px solid rgba(34,197,94,0.35);border-radius:10px;padding:14px 16px;margin-bottom:14px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;}
+.referral-note-badge{display:inline-flex;align-items:center;gap:5px;background:var(--green-dim);color:var(--green);border:1px solid rgba(34,197,94,.3);border-radius:6px;padding:3px 9px;font-size:11px;font-weight:700;font-family:var(--mono);white-space:nowrap;}
+.referral-note-title{font-size:13px;font-weight:700;color:var(--green);margin-bottom:3px;}
+.referral-note-sub{font-size:12px;color:var(--text2);line-height:1.5;}
 .srv-card .srv-urgencia{display:none;font-family:var(--mono);font-size:11px;color:var(--amber);margin-top:2px;}
 .urgencia-toggle{display:flex;align-items:center;gap:14px;background:rgba(245,158,11,0.1);border:1.5px solid rgba(245,158,11,0.35);border-radius:12px;padding:16px 20px;margin-bottom:20px;}
 .ut-label{font-size:15px;color:var(--text);flex:1;line-height:1.5;}
@@ -306,7 +308,13 @@ textarea.f-in{resize:none;height:80px;}
   <div class="panel" id="panel3">
     <div class="section-title-sm">Tus datos</div>
     <div class="section-sub">Para confirmar el turno y avisarte por WhatsApp</div>
-    <div class="referral-note"><strong>¿Te recomendó un cliente de PCLAF?</strong> Si cargás su usuario real, le activamos un 10% de descuento para su próxima reparación.</div>
+    <div class="referral-note">
+      <div>
+        <div class="referral-note-title">¿Te recomendó un cliente de PCLAF?</div>
+        <div class="referral-note-sub">Ingresá su usuario real y le activamos un 10% para su próximo service.</div>
+      </div>
+      <div class="referral-note-badge">10% OFF</div>
+    </div>
     <div class="f-row">
       <div class="form-group"><label class="f-lbl">Nombre</label><input class="f-in" id="tNom" placeholder="Ej: Lucas" maxlength="60" autocomplete="given-name"/></div>
       <div class="form-group"><label class="f-lbl">Apellido</label><input class="f-in" id="tApe" placeholder="Ej: Méndez" maxlength="60" autocomplete="family-name"/></div>
@@ -316,7 +324,7 @@ textarea.f-in{resize:none;height:80px;}
     <div class="form-group">
       <label class="f-lbl">Usuario que te recomendó (opcional)</label>
       <input class="f-in" id="tRef" placeholder="Ej: LUCAS01" maxlength="40" autocomplete="off" onblur="lookupReferral()" oninput="resetReferralLookup()"/>
-      <div class="f-help" id="tRefHelp">Si lo cargás, validamos ese usuario real y le activamos 10%.</div>
+      <div class="f-help" id="tRefHelp">Ingresá el usuario real para validarlo en la base.</div>
     </div>
     <div class="form-group"><label class="f-lbl">Equipo</label><input class="f-in" id="tEq" placeholder="Ej: Notebook HP Pavilion 15" maxlength="80"/></div>
     <div class="form-group"><label class="f-lbl">Describí el problema (opciónal)</label><textarea class="f-in" id="tNota" placeholder="Ej: Se calienta mucho y se apaga sola, hace ruido el cooler..." maxlength="300"></textarea></div>
@@ -386,14 +394,14 @@ function setReferralHelp(text='',kind=''){
 function resetReferralLookup(){
   state.refCliente=null;
   const ref=normalizeUser(document.getElementById('tRef')?.value);
-  setReferralHelp(ref?'Vamos a validar ese usuario antes de confirmar.':'Si lo cargás, validamos ese usuario real y le activamos 10%.');
+  setReferralHelp(ref?'Vamos a validar ese usuario antes de confirmar.':'Ingresá el usuario real para validarlo en la base.');
 }
 
 async function lookupReferral(strict=false){
   const ref=normalizeUser(document.getElementById('tRef')?.value);
   if(!ref){
     state.refCliente=null;
-    setReferralHelp('Si lo cargás, validamos ese usuario real y le activamos 10%.');
+    setReferralHelp('Ingresá el usuario real para validarlo en la base.');
     return null;
   }
   try{
