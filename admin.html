@@ -947,6 +947,7 @@ function parseMetricPasoDate(raw, fallbackYearSource=null){
 async function loadAll(){
   currentPage=0;
   await Promise.all([loadPage(), loadStats(), loadAllData()]);
+  loadPage();
 }
 
 function updStats(){} // now handled by loadStats
@@ -1275,15 +1276,15 @@ function renderCards(data){
     const descuentoOrigen=descuentoActivo?(tieneReferido?'referido':'resena'):'';
     const descuentoStripTexto=descuentoOrigen==='referido'
       ? '10% descuento por referido - aplicar al cobrar'
-      : '10% descuento por resena Google - aplicar al cobrar';
-    const descuentoBannerTitulo=tieneReferido?'Descuento por referido':'Descuento por resena Google';
+      : '10% descuento por reseña Google - aplicar al cobrar';
+    const descuentoBannerTitulo=tieneReferido?'Descuento por referido':'Descuento por reseña Google';
     const descuentoBannerDetalle=tieneReferido
-      ? '10% off en la proxima reparacion por cliente referido'
-      : '10% off en la proxima reparacion';
+      ? '10% off en la próxima reparación por cliente referido'
+      : '10% off en la próxima reparación';
     const descuentoPendiente=tieneReferido&&!descuentoActivo;
     const descuentoPendienteTexto=clienteReferido
-      ? `Descuento sugerido: este cliente refirio a ${clienteReferido}. Podes activarle 10%.`
-      : 'Descuento sugerido: este cliente tiene un referido acreditado. Podes activarle 10%.';
+      ? `Descuento sugerido: este cliente refirió a ${clienteReferido}. Podés activarle 10%.`
+      : 'Descuento sugerido: este cliente tiene un referido acreditado. Podés activarle 10%.';
     return `<div class="rc" id="c-${r.id}" data-estado="${r.estado}"${urgente?' data-urgente="true"':''}>
       ${urgente?`<div style="background:rgba(245,158,11,0.1);border-bottom:1px solid rgba(245,158,11,0.25);padding:6px 16px;display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;color:var(--amber);">⚡ Urgente — en el día</div>`:''}
       ${descuentoActivo?`<div style="background:rgba(34,197,94,0.08);border-bottom:1px solid rgba(34,197,94,0.2);padding:7px 16px;display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;color:var(--green);">${descuentoStripTexto}</div>`:''}
@@ -1311,7 +1312,7 @@ function renderCards(data){
             </div>
             <div class="descuento-banner" id="descBanner-${c.id||'x'}">
               <div><div style="font-size:12px;font-weight:700;color:var(--green);margin-bottom:2px">${descuentoBannerTitulo}</div><div style="font-size:11px;color:var(--text3)">${descuentoBannerDetalle}</div></div>
-              ${descuentoPendiente&&clienteReferido?`<div style="font-size:11px;color:var(--text3)">Se acredito por ${clienteReferido}.</div>`:''}
+              ${descuentoPendiente&&clienteReferido?`<div style="font-size:11px;color:var(--text3)">Se acreditó por ${clienteReferido}.</div>`:''}
               <button class="descuento-toggle" onclick="toggleDescuento('${c.id||''}',this)">
                 <div class="toggle-track ${c.descuento_resena?'on':''}" id="dTrack-${c.id||'x'}"><div class="toggle-knob"></div></div>
                 <span style="font-size:11px;color:${c.descuento_resena?'var(--green)':'var(--text3)'};font-weight:600" id="dLbl-${c.id||'x'}">${c.descuento_resena?'ACTIVO':'inactivo'}</span>
