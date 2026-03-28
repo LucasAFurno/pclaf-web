@@ -2641,6 +2641,22 @@ const TOOLS_BASE = new URL('./tools', window.location.href).href.replace(/\/$/, 
 const DIAGNOSTICO_SCRIPT_API_URL = 'https://api.github.com/repos/LucasAFurno/pclaf-reporte/contents/DiagnosticoPC.ps1?ref=main';
 const DIAGNOSTICO_SCRIPT_URL = 'https://raw.githubusercontent.com/LucasAFurno/pclaf-reporte/main/DiagnosticoPC.ps1';
 const DIAGNOSTICO_SCRIPT_FALLBACK_URL = 'https://cdn.jsdelivr.net/gh/LucasAFurno/pclaf-reporte@main/DiagnosticoPC.ps1';
+const DIAGNOSTICO_SCRIPT_REPO = 'LucasAFurno/pclaf-reporte';
+let latestRepoCommits = { web:'', script:'' };
+
+function getLatestScriptUrls(){
+  const sha = latestRepoCommits.script || '';
+  if(sha){
+    return {
+      primary: `https://raw.githubusercontent.com/${DIAGNOSTICO_SCRIPT_REPO}/${sha}/DiagnosticoPC.ps1`,
+      fallback: `https://cdn.jsdelivr.net/gh/${DIAGNOSTICO_SCRIPT_REPO}@${sha}/DiagnosticoPC.ps1`
+    };
+  }
+  return {
+    primary: DIAGNOSTICO_SCRIPT_URL,
+    fallback: DIAGNOSTICO_SCRIPT_FALLBACK_URL
+  };
+}
 
 function lanzarScript(tipo) {
   const modos = {
@@ -2757,8 +2773,9 @@ function descargarLauncherReporte(repId, numero, forcedSlot=null) {
   const slotMeta = getReportSlotMeta(slot);
   const modo = slotMeta.modo || 'cliente';
   const momento = slotMeta.momento || 'antes';
-  const scriptUrl = DIAGNOSTICO_SCRIPT_URL;
-  const scriptFallbackUrl = DIAGNOSTICO_SCRIPT_FALLBACK_URL;
+  const scriptSources = getLatestScriptUrls();
+  const scriptUrl = scriptSources.primary;
+  const scriptFallbackUrl = scriptSources.fallback;
   const launcherVersion = `${new Date().toISOString().replace(/[-:TZ.]/g,'').slice(0,14)}_${Math.random().toString(36).slice(2,6)}`;
   const cfg = modo === 'tecnico'
     ? { label:'TECNICO', emoji:'🔧' }
@@ -3060,6 +3077,9 @@ async function loadRepoUpdateBadge(cfg){
     });
     if(!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
+    if(data?.sha){
+      latestRepoCommits[cfg.label] = data.sha;
+    }
     const commitDate = data?.commit?.committer?.date || data?.commit?.author?.date || '';
     const shortSha = (data?.sha || '').slice(0, 7);
     const author = data?.commit?.author?.name || data?.commit?.committer?.name || 'GitHub';
