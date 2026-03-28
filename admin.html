@@ -2745,22 +2745,25 @@ function descargarLauncherReporte(repId, numero, forcedSlot=null) {
   const modo = slotMeta.modo || 'cliente';
   const momento = slotMeta.momento || 'antes';
   const scriptUrl = `${DIAGNOSTICO_SCRIPT_URL}?v=${Date.now()}`;
+  const launcherVersion = `${new Date().toISOString().replace(/[-:TZ.]/g,'').slice(0,14)}_${Math.random().toString(36).slice(2,6)}`;
   const cfg = modo === 'tecnico'
     ? { label:'TECNICO', emoji:'🔧' }
     : { label: momento === 'antes' ? 'CLIENTE_ANTES' : 'CLIENTE_DESPUES', emoji:'👤' };
 
   const bat = `@echo off
 chcp 65001 >nul
-title PCLAF - Reporte ${cfg.label} #${numero}
+title PCLAF - Reporte ${cfg.label} #${numero} [${launcherVersion}]
 color 0A
 set "SCRIPT_TMP=%TEMP%\\DiagnosticoPC_PCLAF_%RANDOM%%RANDOM%.ps1"
 echo.
 echo  ============================================================
 echo                      P C L A F
 echo       Reporte automatico ${cfg.label} para #${numero}
+echo       Launcher: ${launcherVersion}
 echo  ============================================================
 echo.
 echo  [1/2] Descargando DiagnosticoPC.ps1...
+echo  Fuente: ${scriptUrl}
 powershell -NoProfile -Command "[Net.ServicePointManager]::SecurityProtocol='Tls12'; Invoke-WebRequest -Uri '${scriptUrl}' -OutFile '%SCRIPT_TMP%' -UseBasicParsing" 2>nul
 if %ERRORLEVEL% NEQ 0 (
   echo  ERROR: La descarga del script fallo.
@@ -2787,7 +2790,7 @@ pause`;
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `PCLAF_AUTO_${numero}_${cfg.label}.bat`;
+  a.download = `PCLAF_AUTO_${numero}_${cfg.label}_${launcherVersion}.bat`;
   a.style.display = 'none';
   document.body.appendChild(a);
   a.click();
