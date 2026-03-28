@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pagina no encontrada | PCLAF</title>
+<meta name="robots" content="noindex, follow">
+<meta name="description" content="La URL que intentaste abrir ya no existe. Te redirigimos a la seccion principal correspondiente de PCLAF para que puedas seguir navegando.">
+<link rel="canonical" href="https://www.pclaf.com.ar/">
+<style>
+  :root{--bg:#0b0b0b;--panel:#141414;--border:#2b2b2b;--text:#f3f3f3;--muted:#a0a0a0;--accent:#cc0000;--accent-dark:#a80000}
+  *{box-sizing:border-box}
+  body{margin:0;min-height:100vh;display:grid;place-items:center;padding:24px;font-family:Arial,sans-serif;background:radial-gradient(circle at top,#1a1a1a 0%,var(--bg) 55%);color:var(--text)}
+  main{width:min(100%,560px);background:var(--panel);border:1px solid var(--border);border-top:4px solid var(--accent);border-radius:18px;padding:32px 28px;text-align:center;box-shadow:0 18px 50px rgba(0,0,0,.35)}
+  h1{margin:0 0 10px;font-size:clamp(28px,5vw,38px)}
+  p{margin:0 0 12px;line-height:1.6;color:var(--muted)}
+  a{display:inline-block;margin-top:14px;padding:12px 18px;border-radius:10px;background:var(--accent);color:#fff;text-decoration:none;font-weight:700}
+  a:hover{background:var(--accent-dark)}
+</style>
+<script>
+  (function () {
+    var path = window.location.pathname.toLowerCase();
+    var destination = "https://www.pclaf.com.ar/";
+
+    if (path.indexOf("/productos/") === 0 || path.indexOf("/electronica/") === 0) {
+      destination = "https://www.pclaf.com.ar/precios.html";
+    } else if (path.indexOf("/turnos") === 0 || path.indexOf("/reservas") === 0) {
+      destination = "https://www.pclaf.com.ar/turnos.html";
+    }
+
+    window.location.replace(destination);
+  })();
+</script>
+</head>
+<body>
+<main>
+  <h1>Esta pagina ya no existe</h1>
+  <p>Es posible que hayas entrado desde un resultado viejo de Google o desde un enlace anterior.</p>
+  <p>Te redirigimos automaticamente a la seccion actual mas parecida dentro de PCLAF.</p>
+  <a href="https://www.pclaf.com.ar/">Ir a PCLAF</a>
+</main>
+</body>
+</html>
