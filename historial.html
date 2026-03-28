@@ -448,15 +448,17 @@ async function showMachine(equipoId, evt) {
       </div>` : '';
 
     // Reporte de diagnóstico
-    const reportSlots = pickClientReports(repArr || []);
-    const reporteHtml = repArr?.length ? `
+    const reportesCliente = (repArr || []).filter(rep => inferReportSlot(rep.filename) !== 'tecnico');
+    const reportSlots = pickClientReports(reportesCliente);
+    const latestClientReport = reportSlots.antes || reportSlots.despues || reportSlots.legacy;
+    const reporteHtml = latestClientReport ? `
       <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border)">
         <div style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">📊 Reporte de diagnóstico</div>
-        <div style="font-size:12px;color:var(--text2);margin-bottom:10px">${new Date(repArr[0].created_at).toLocaleDateString('es-AR',{day:'numeric',month:'long',year:'numeric'})}</div>
+        <div style="font-size:12px;color:var(--text2);margin-bottom:10px">${new Date(latestClientReport.created_at).toLocaleDateString('es-AR',{day:'numeric',month:'long',year:'numeric'})}</div>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
-          ${reportSlots.antes ? `<button onclick="verReporte('${reportSlots.antes.id}')" style="display:inline-flex;align-items:center;gap:7px;background:var(--black3);border:1.5px solid var(--border2);color:var(--text);padding:9px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s">Ver diagnóstico inicial</button>` : ''}
-          ${reportSlots.despues ? `<button onclick="verReporte('${reportSlots.despues.id}')" style="display:inline-flex;align-items:center;gap:7px;background:var(--black3);border:1.5px solid var(--border2);color:var(--text);padding:9px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s">Ver estado después del servicio</button>` : ''}
-          ${(!reportSlots.antes && !reportSlots.despues && reportSlots.legacy) ? `<button onclick="verReporte('${reportSlots.legacy.id}')" style="display:inline-flex;align-items:center;gap:7px;background:var(--black3);border:1.5px solid var(--border2);color:var(--text);padding:9px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s">Ver reporte completo</button>` : ''}
+          ${reportSlots.antes ? `<button onclick="verReporte('${reportSlots.antes.id}','${r.id}')" style="display:inline-flex;align-items:center;gap:7px;background:var(--black3);border:1.5px solid var(--border2);color:var(--text);padding:9px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s">Ver diagnóstico inicial</button>` : ''}
+          ${reportSlots.despues ? `<button onclick="verReporte('${reportSlots.despues.id}','${r.id}')" style="display:inline-flex;align-items:center;gap:7px;background:var(--black3);border:1.5px solid var(--border2);color:var(--text);padding:9px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s">Ver estado después del servicio</button>` : ''}
+          ${(!reportSlots.antes && !reportSlots.despues && reportSlots.legacy) ? `<button onclick="verReporte('${reportSlots.legacy.id}','${r.id}')" style="display:inline-flex;align-items:center;gap:7px;background:var(--black3);border:1.5px solid var(--border2);color:var(--text);padding:9px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s">Ver reporte completo</button>` : ''}
         </div>
       </div>` : '';
 
@@ -520,25 +522,38 @@ function volverMaquinas() { hide('panelHistory'); document.getElementById('panel
 
 // ── VER REPORTE ──
 let allReportes = {};
-async function verReporte(reporteId) {
-  // If we have it cached, open it
-  if (allReportes[reporteId]) {
-    openSafeReport(allReportes[reporteId].html_cliente || allReportes[reporteId].html_content);
+function getReportCacheKey(reporteId, reparacionId='') {
+  return `${reparacionId || 'sin-reparacion'}:${reporteId}`;
+}
+
+async function verReporte(reporteId, reparacionId='') {
+  const cacheKey = getReportCacheKey(reporteId, reparacionId);
+  if (allReportes[cacheKey]) {
+    openSafeReport(allReportes[cacheKey].html_cliente || '');
     return;
   }
-  // Fetch from DB
   try {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/reportes?id=eq.${reporteId}&select=id,html_cliente,html_content`, {
+    const repFilter = reparacionId ? `&reparacion_id=eq.${reparacionId}` : '';
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/reportes?id=eq.${reporteId}${repFilter}&select=id,reparacion_id,html_cliente,filename&limit=1`, {
       headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` }
     });
     const data = await res.json();
     const reporte = data?.[0];
     if (reporte) {
-      allReportes[reporteId] = reporte;
-      // Show client version if available, otherwise full report
-      const content = reporte.html_cliente || reporte.html_content;
+      if (inferReportSlot(reporte.filename) === 'tecnico') {
+        alert('Este reporte técnico no está disponible en el historial del cliente.');
+        return;
+      }
+      const content = reporte.html_cliente || '';
+      if (!String(content).trim()) {
+        alert('Este reporte todavía no tiene una versión visible para el cliente.');
+        return;
+      }
+      allReportes[cacheKey] = reporte;
       openSafeReport(content);
+      return;
     }
+    alert('No se encontró el reporte para esta reparación.');
   } catch(e) {
     alert('Error al cargar el reporte');
   }

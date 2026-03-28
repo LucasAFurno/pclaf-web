@@ -1768,10 +1768,11 @@ function openSafeReport(html) {
   setTimeout(() => URL.revokeObjectURL(url), 60000);
 }
 
-async function verReporteAdmin(reportId){
+async function verReporteAdmin(reportId, repId=''){
   const popup = window.open('about:blank', '_blank', 'noopener,noreferrer');
   try{
-    const rep = await db('GET','reportes',`?id=eq.${reportId}&select=id,html_content,html_cliente,filename&limit=1`);
+    const repairFilter = repId ? `&reparacion_id=eq.${repId}` : '';
+    const rep = await db('GET','reportes',`?id=eq.${reportId}${repairFilter}&select=id,reparacion_id,html_content,html_cliente,filename&limit=1`);
     const row = rep?.[0];
     if(!row){
       if(popup) popup.close();
@@ -1816,7 +1817,7 @@ async function loadReportActions(repId){
           <div style="font-size:10px;color:var(--text3)">${formatDate(r)}</div>
         </div>
         <div style="display:flex;gap:6px;flex-wrap:wrap">
-          ${r?`<button class="pdf-btn" onclick="verReporteAdmin('${r.id}')" style="margin:0;padding:6px 10px;font-size:11px">Ver</button>`:''}
+          ${r?`<button class="pdf-btn" onclick="verReporteAdmin('${r.id}','${repId}')" style="margin:0;padding:6px 10px;font-size:11px">Ver</button>`:''}
           <button class="pdf-btn" onclick="prepararResubidaReporte('${repId}','${slot}')" style="margin:0;padding:6px 10px;font-size:11px;border-color:${color};color:${color}">${r?'Re-subir':'Subir'}</button>
           ${auto?`<button class="pdf-btn" onclick="descargarLauncherReporte('${repId}','${aR.find(x=>x.id===repId)?.numero||''}','${slot}')" style="margin:0;padding:6px 10px;font-size:11px;border-color:var(--amber);color:var(--amber)">Auto</button>`:''}
         </div>
