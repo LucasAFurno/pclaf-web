@@ -2630,6 +2630,7 @@ function renderTools() {}
 // ── HERRAMIENTAS — generar BAT launcher ──
 const TOOLS_BASE = new URL('./tools', window.location.href).href.replace(/\/$/, '');
 const DIAGNOSTICO_SCRIPT_URL = 'https://raw.githubusercontent.com/LucasAFurno/pclaf-reporte/main/DiagnosticoPC.ps1';
+const DIAGNOSTICO_SCRIPT_FALLBACK_URL = 'https://cdn.jsdelivr.net/gh/LucasAFurno/pclaf-reporte@main/DiagnosticoPC.ps1';
 
 function lanzarScript(tipo) {
   const modos = {
@@ -2695,10 +2696,12 @@ echo  ============================================================
 echo.
 
 echo  [1/2] Descargando DiagnosticoPC.ps1...
-powershell -NoProfile -Command "[Net.ServicePointManager]::SecurityProtocol='Tls12'; Invoke-WebRequest -Uri '${DIAGNOSTICO_SCRIPT_URL}' -OutFile '%SCRIPT_TMP%' -UseBasicParsing" 2>nul
+echo  Fuente primaria: ${DIAGNOSTICO_SCRIPT_URL}
+echo  Fuente alterna : ${DIAGNOSTICO_SCRIPT_FALLBACK_URL}
+powershell -NoProfile -Command "$ProgressPreference='SilentlyContinue'; [Net.ServicePointManager]::SecurityProtocol='Tls12'; $urls=@('${DIAGNOSTICO_SCRIPT_URL}','${DIAGNOSTICO_SCRIPT_FALLBACK_URL}'); $ok=$false; foreach($u in $urls){ try { Invoke-WebRequest -Uri $u -OutFile '%SCRIPT_TMP%' -UseBasicParsing; if((Test-Path '%SCRIPT_TMP%') -and ((Get-Item '%SCRIPT_TMP%').Length -gt 0)){ Write-Host ('DESCARGADO: ' + $u); $ok=$true; break } } catch { Write-Host ('FALLO: ' + $u + ' :: ' + $_.Exception.Message) } }; if(-not $ok){ exit 1 }" 2>nul
 
 if %ERRORLEVEL% NEQ 0 (
-  echo  ERROR: La descarga del script fallo.
+  echo  ERROR: La descarga del script fallo en todas las fuentes.
   pause & exit /b 1
 )
 if not exist "%SCRIPT_TMP%" (
@@ -2745,6 +2748,7 @@ function descargarLauncherReporte(repId, numero, forcedSlot=null) {
   const modo = slotMeta.modo || 'cliente';
   const momento = slotMeta.momento || 'antes';
   const scriptUrl = `${DIAGNOSTICO_SCRIPT_URL}?v=${Date.now()}`;
+  const scriptFallbackUrl = `${DIAGNOSTICO_SCRIPT_FALLBACK_URL}?v=${Date.now()}`;
   const launcherVersion = `${new Date().toISOString().replace(/[-:TZ.]/g,'').slice(0,14)}_${Math.random().toString(36).slice(2,6)}`;
   const cfg = modo === 'tecnico'
     ? { label:'TECNICO', emoji:'🔧' }
@@ -2763,10 +2767,11 @@ echo       Launcher: ${launcherVersion}
 echo  ============================================================
 echo.
 echo  [1/2] Descargando DiagnosticoPC.ps1...
-echo  Fuente: ${scriptUrl}
-powershell -NoProfile -Command "[Net.ServicePointManager]::SecurityProtocol='Tls12'; Invoke-WebRequest -Uri '${scriptUrl}' -OutFile '%SCRIPT_TMP%' -UseBasicParsing" 2>nul
+echo  Fuente primaria: ${scriptUrl}
+echo  Fuente alterna : ${scriptFallbackUrl}
+powershell -NoProfile -Command "$ProgressPreference='SilentlyContinue'; [Net.ServicePointManager]::SecurityProtocol='Tls12'; $urls=@('${scriptUrl}','${scriptFallbackUrl}'); $ok=$false; foreach($u in $urls){ try { Invoke-WebRequest -Uri $u -OutFile '%SCRIPT_TMP%' -UseBasicParsing; if((Test-Path '%SCRIPT_TMP%') -and ((Get-Item '%SCRIPT_TMP%').Length -gt 0)){ Write-Host ('DESCARGADO: ' + $u); $ok=$true; break } } catch { Write-Host ('FALLO: ' + $u + ' :: ' + $_.Exception.Message) } }; if(-not $ok){ exit 1 }" 2>nul
 if %ERRORLEVEL% NEQ 0 (
-  echo  ERROR: La descarga del script fallo.
+  echo  ERROR: La descarga del script fallo en todas las fuentes.
   pause & exit /b 1
 )
 if not exist "%SCRIPT_TMP%" (
