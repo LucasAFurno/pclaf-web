@@ -2508,8 +2508,8 @@ async function procesarReporte(repId, input) {
     
     try {
       const existing = slotMeta.filename
-        ? await db('GET','reportes',`?reparacion_id=eq.${repId}&filename=eq.${encodeURIComponent(slotMeta.filename)}&limit=1`)
-        : await db('GET','reportes',`?reparacion_id=eq.${repId}&limit=1`);
+        ? await db('GET','reportes',`?reparacion_id=eq.${repId}&filename=eq.${encodeURIComponent(slotMeta.filename)}&select=id`)
+        : await db('GET','reportes',`?reparacion_id=eq.${repId}&select=id`);
       const payload = {
         reparacion_id: repId,
         html_content: htmlContent,        // full technical report (admin only)
@@ -2517,10 +2517,12 @@ async function procesarReporte(repId, input) {
         filename: slotMeta.filename || file.name
       };
       if (existing?.length) {
-        await db('PATCH','reportes',`?id=eq.${existing[0].id}`,payload);
-      } else {
-        await db('POST','reportes','',payload);
+        const deleteQuery = slotMeta.filename
+          ? `?reparacion_id=eq.${repId}&filename=eq.${encodeURIComponent(slotMeta.filename)}`
+          : `?reparacion_id=eq.${repId}`;
+        await db('DELETE','reportes',deleteQuery);
       }
+      await db('POST','reportes','',payload);
       status.textContent = `✓ Reporte ${slotMeta.label} subido`;
       status.style.color = 'var(--green)';
       toast('Reporte subido ✓');
