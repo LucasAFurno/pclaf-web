@@ -48,6 +48,10 @@ body{background:var(--black);color:var(--text);font-family:var(--sans);min-heigh
 .logo-wm{font-size:17px;font-weight:800;color:#fff;flex-shrink:0;}
 .logo-wm em{color:var(--red);font-style:normal;}
 .abadge{font-family:var(--mono);font-size:10px;background:var(--red-dim);color:var(--red);border:1px solid rgba(204,0,0,.3);border-radius:4px;padding:3px 8px;flex-shrink:0;}
+.deploy-meta{display:flex;align-items:center;gap:6px;flex-wrap:wrap;flex-shrink:0;}
+.deploy-chip{font-family:var(--mono);font-size:10px;background:var(--black3);color:var(--text2);border:1px solid var(--border2);border-radius:4px;padding:3px 8px;white-space:nowrap;}
+.deploy-chip strong{color:#fff;font-weight:700;}
+.deploy-chip.loading{opacity:.7;}
 .tabs{display:flex;gap:2px;margin-left:16px;}
 .tab{font-size:13px;font-weight:600;color:var(--text3);padding:6px 16px;border-radius:7px;cursor:pointer;transition:all .15s;border:1px solid transparent;user-select:none;}
 .tab:hover{color:var(--text2);}
@@ -257,7 +261,7 @@ tr:hover td{background:var(--black3);}
 @media(max-width:650px){
   /* Header */
   .topbar{height:auto;flex-wrap:wrap;padding:8px 12px;gap:6px;}
-  .logo-wm,.abadge{display:none;}
+  .logo-wm,.abadge,.deploy-meta{display:none;}
   /* Tabs -> bottom nav bar */
   .tabs{
     position:fixed;bottom:0;left:0;right:0;z-index:999;
@@ -336,6 +340,10 @@ tr:hover td{background:var(--black3);}
     </svg>
     <div class="logo-wm">PC<em>LAF</em></div>
     <div class="abadge">ADMIN</div>
+    <div class="deploy-meta" id="deployMeta">
+      <div class="deploy-chip loading" id="deployWeb">web: cargando...</div>
+      <div class="deploy-chip loading" id="deployScript">script: cargando...</div>
+    </div>
     <div class="tabs">
       <div class="tab active" onclick="switchTab('rep',this)">Reparaciones</div>
       <div class="tab" onclick="switchTab('turnos',this)">Turnos</div>
@@ -2986,6 +2994,7 @@ async function checkNuevosTurnos(){
 document.addEventListener('DOMContentLoaded', () => {
   initNotifSound();
   requestNotifPermission();
+  loadRepoUpdateBadges();
   purgeExpiredArtifacts();
   setTimeout(() => { ensureNotifAudio().catch(()=>{}); }, 150);
   document.addEventListener('pointerdown', () => { ensureNotifAudio().catch(()=>{}); }, { once:true, passive:true });
@@ -3006,6 +3015,68 @@ function enableNotifs(){
   ensureNotifAudio().catch(()=>{});
   playSound('success');
   toast('🔔 Notificaciones activadas', false);
+}
+
+const REPO_UPDATE_SOURCES = {
+  web: {
+    label: 'web',
+    url: 'https://api.github.com/repos/LucasAFurno/pclaf-web/commits/main',
+    targetId: 'deployWeb'
+  },
+  script: {
+    label: 'script',
+    url: 'https://api.github.com/repos/LucasAFurno/pclaf-reporte/commits/main',
+    targetId: 'deployScript'
+  }
+};
+
+function formatRepoUpdateDate(dateValue){
+  if(!dateValue) return 'sin fecha';
+  const date = new Date(dateValue);
+  if(Number.isNaN(date.getTime())) return 'sin fecha';
+  return new Intl.DateTimeFormat('es-AR', {
+    timeZone: 'America/Argentina/Buenos_Aires',
+    day: '2-digit',
+    month: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false
+  }).format(date).replace(',', '');
+}
+
+function setRepoUpdateChip(targetId, label, text, extraTitle=''){
+  const el = document.getElementById(targetId);
+  if(!el) return;
+  el.classList.remove('loading');
+  el.innerHTML = `<strong>${label}</strong>: ${text}`;
+  if(extraTitle) el.title = extraTitle;
+}
+
+async function loadRepoUpdateBadge(cfg){
+  try{
+    const res = await fetch(cfg.url, {
+      headers: { 'Accept': 'application/vnd.github+json' },
+      cache: 'no-store'
+    });
+    if(!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    const commitDate = data?.commit?.committer?.date || data?.commit?.author?.date || '';
+    const shortSha = (data?.sha || '').slice(0, 7);
+    const author = data?.commit?.author?.name || data?.commit?.committer?.name || 'GitHub';
+    const formatted = formatRepoUpdateDate(commitDate);
+    const title = shortSha
+      ? `${cfg.label} main ${formatted} · ${shortSha} · ${author}`
+      : `${cfg.label} main ${formatted}`;
+    setRepoUpdateChip(cfg.targetId, cfg.label, formatted, title);
+  }catch(err){
+    setRepoUpdateChip(cfg.targetId, cfg.label, 'sin datos', `${cfg.label} main sin datos`);
+  }
+}
+
+function loadRepoUpdateBadges(){
+  Object.values(REPO_UPDATE_SOURCES).forEach(cfg => {
+    loadRepoUpdateBadge(cfg).catch(()=>{});
+  });
 }
 </script>
 </body>
