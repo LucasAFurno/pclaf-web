@@ -1839,6 +1839,20 @@ async function loadReportActions(repId){
   }
 }
 
+let reportActionsRefreshTimer = null;
+
+function refreshVisibleReportActions(){
+  const ids = Array.from(document.querySelectorAll('[id^="reporteActions-"]'))
+    .map(el => (el.id || '').replace('reporteActions-',''))
+    .filter(Boolean);
+  ids.forEach(id => loadReportActions(id).catch(()=>{}));
+}
+
+function scheduleRefreshVisibleReportActions(delay=600){
+  clearTimeout(reportActionsRefreshTimer);
+  reportActionsRefreshTimer = setTimeout(refreshVisibleReportActions, delay);
+}
+
 let allTurnos=[], turnoFilter='todos';
 
 async function loadTurnos(){
@@ -2951,6 +2965,10 @@ document.addEventListener('DOMContentLoaded', () => {
   purgeExpiredArtifacts();
   setTimeout(() => { ensureNotifAudio().catch(()=>{}); }, 150);
   document.addEventListener('pointerdown', () => { ensureNotifAudio().catch(()=>{}); }, { once:true, passive:true });
+  window.addEventListener('focus', () => scheduleRefreshVisibleReportActions(250));
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') scheduleRefreshVisibleReportActions(250);
+  });
   // Poll cada 60 segundos
   setInterval(checkNuevosTurnos, 60000);
   // Primera check a los 3 segundos (cuando ya cargo la data)
