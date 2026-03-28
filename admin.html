@@ -2516,13 +2516,14 @@ async function procesarReporte(repId, input) {
         html_cliente: clientHtml,          // simplified client report
         filename: slotMeta.filename || file.name
       };
+      const created = await db('POST','reportes','',payload);
+      const newId = created?.[0]?.id || null;
       if (existing?.length) {
-        const deleteQuery = slotMeta.filename
-          ? `?reparacion_id=eq.${repId}&filename=eq.${encodeURIComponent(slotMeta.filename)}`
-          : `?reparacion_id=eq.${repId}`;
-        await db('DELETE','reportes',deleteQuery);
+        const idsToDelete = existing.map(row => row.id).filter(id => id && id !== newId);
+        if (idsToDelete.length) {
+          await db('DELETE','reportes',`?or=(${idsToDelete.map(id => `id.eq.${id}`).join(',')})`);
+        }
       }
-      await db('POST','reportes','',payload);
       status.textContent = `✓ Reporte ${slotMeta.label} subido`;
       status.style.color = 'var(--green)';
       toast('Reporte subido ✓');
@@ -2629,6 +2630,7 @@ function renderTools() {}
 
 // ── HERRAMIENTAS — generar BAT launcher ──
 const TOOLS_BASE = new URL('./tools', window.location.href).href.replace(/\/$/, '');
+const DIAGNOSTICO_SCRIPT_API_URL = 'https://api.github.com/repos/LucasAFurno/pclaf-reporte/contents/DiagnosticoPC.ps1?ref=main';
 const DIAGNOSTICO_SCRIPT_URL = 'https://raw.githubusercontent.com/LucasAFurno/pclaf-reporte/main/DiagnosticoPC.ps1';
 const DIAGNOSTICO_SCRIPT_FALLBACK_URL = 'https://cdn.jsdelivr.net/gh/LucasAFurno/pclaf-reporte@main/DiagnosticoPC.ps1';
 
