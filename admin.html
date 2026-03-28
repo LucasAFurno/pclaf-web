@@ -2627,6 +2627,7 @@ function renderTools() {}
 
 // ── HERRAMIENTAS — generar BAT launcher ──
 const TOOLS_BASE = new URL('./tools', window.location.href).href.replace(/\/$/, '');
+const DIAGNOSTICO_SCRIPT_URL = 'https://raw.githubusercontent.com/LucasAFurno/pclaf-reporte/main/DiagnosticoPC.ps1';
 
 function lanzarScript(tipo) {
   const modos = {
@@ -2691,7 +2692,7 @@ echo  ============================================================
 echo.
 
 echo  [1/2] Descargando DiagnosticoPC.ps1...
-powershell -NoProfile -Command "[Net.ServicePointManager]::SecurityProtocol='Tls12'; Invoke-WebRequest -Uri '${TOOLS_BASE}/DiagnosticoPC.ps1' -OutFile '%TEMP%\DiagnosticoPC_PCLAF.ps1' -UseBasicParsing" 2>nul
+powershell -NoProfile -Command "[Net.ServicePointManager]::SecurityProtocol='Tls12'; Invoke-WebRequest -Uri '${DIAGNOSTICO_SCRIPT_URL}' -OutFile '%TEMP%\DiagnosticoPC_PCLAF.ps1' -UseBasicParsing" 2>nul
 
 if not exist "%TEMP%\DiagnosticoPC_PCLAF.ps1" (
   echo  ERROR: No se pudo descargar el script.
@@ -2736,7 +2737,7 @@ function descargarLauncherReporte(repId, numero, forcedSlot=null) {
   const slotMeta = getReportSlotMeta(slot);
   const modo = slotMeta.modo || 'cliente';
   const momento = slotMeta.momento || 'antes';
-  const scriptUrl = `${TOOLS_BASE}/DiagnosticoPC.ps1?v=${Date.now()}`;
+  const scriptUrl = `${DIAGNOSTICO_SCRIPT_URL}?v=${Date.now()}`;
   const cfg = modo === 'tecnico'
     ? { label:'TECNICO', emoji:'🔧' }
     : { label: momento === 'antes' ? 'CLIENTE_ANTES' : 'CLIENTE_DESPUES', emoji:'👤' };
