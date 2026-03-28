@@ -1784,14 +1784,8 @@ async function verReporteAdmin(reportId){
       const safeHtml = content && String(content).trim()
         ? String(content)
         : '<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Reporte vacio</title></head><body style="font-family:system-ui;background:#111;color:#eee;padding:24px">No hay contenido disponible para este reporte.</body></html>';
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(safeHtml, 'text/html');
-      const csp = doc.createElement('meta');
-      csp.setAttribute('http-equiv', 'Content-Security-Policy');
-      csp.setAttribute('content', "default-src 'self' data: https:; img-src 'self' data: https:; style-src 'unsafe-inline' https:; script-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'");
-      doc.head.prepend(csp);
       popup.document.open();
-      popup.document.write('<!DOCTYPE html>' + doc.documentElement.outerHTML);
+      popup.document.write(safeHtml);
       popup.document.close();
     }else{
       openSafeReport(content);
