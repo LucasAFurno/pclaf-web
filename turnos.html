@@ -701,7 +701,7 @@ async function confirmarTurno(){
     setTimeout(()=>{
       const refNombre=refCliente?[refCliente.nombre,refCliente.apellido].filter(Boolean).join(' ').trim():'';
       const msg=encodeURIComponent(`🗓️ *Nuevo turno solicitado*\n\n*${nom} ${ape}*\n📱 ${tel}\n${refCliente?.codigo?'🎁 Recomendo: '+(refNombre||refCliente.codigo)+' ('+refCliente.codigo+')\n🎁 10% activado para ese usuario\n':''}🔧 ${state.servicio}${state.urgencia?' ⚡ URGENTE':''}\n💰 ${state.precio}\n📅 ${state.fecha} a las ${state.hora}hs\n💻 ${eq||'Sin especificar'}\n${nota?'📝 '+nota+'\n':''}\nRef: ${shortId}`);
-      window.open(`https://wa.me/541141758129?text=${msg}`,'_blank');
+      window.open(`https://wa.me/5491135708345?text=${msg}`,'_blank');
     }, 800);
   }catch(e){
     btn.disabled=false; btn.textContent='Confirmar turno';
