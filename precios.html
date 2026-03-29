@@ -115,6 +115,30 @@ nav{background:var(--black2);border-bottom:2px solid var(--red);padding:0 24px;h
 .faq-item.open .faq-icon svg{transform:rotate(180deg);}
 .faq-a{display:none;padding:0 20px 16px;font-size:14px;color:var(--text2);line-height:1.7;}
 .faq-item.open .faq-a{display:block;}
+.hero-links{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin-top:22px;}
+.hero-mini-btn{display:inline-flex;align-items:center;justify-content:center;padding:11px 18px;border-radius:8px;text-decoration:none;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--border2);background:var(--black3);color:var(--text);}
+.hero-mini-btn:hover{border-color:var(--red);color:#fff;}
+.hero-mini-btn.primary{background:var(--red);border-color:var(--red);color:#fff;}
+.hero-mini-btn.primary:hover{background:var(--red-dark);}
+.intro-grid{display:grid;grid-template-columns:1.2fr .8fr;gap:18px;margin-top:10px;}
+.panel{background:var(--black2);border:1px solid var(--border);border-radius:14px;padding:22px;}
+.panel h3{font-family:var(--display);font-size:28px;line-height:1;letter-spacing:-.03em;margin-bottom:12px;}
+.panel h3 span{color:var(--red);}
+.panel p{font-size:15px;color:var(--text2);line-height:1.7;margin-bottom:14px;}
+.service-list,.trust-strip,.quick-links{list-style:none;}
+.service-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 16px;}
+.service-list li{position:relative;padding-left:16px;font-size:13px;color:var(--text2);line-height:1.5;}
+.service-list li::before{content:'';position:absolute;left:0;top:8px;width:6px;height:6px;border-radius:999px;background:var(--red);}
+.trust-strip{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:18px;}
+.trust-item{background:var(--black3);border:1px solid var(--border);border-radius:12px;padding:16px;}
+.trust-kicker{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:8px;}
+.trust-item strong{display:block;font-size:14px;color:#fff;margin-bottom:6px;}
+.trust-item p{font-size:13px;color:var(--text2);line-height:1.5;}
+.local-box{background:linear-gradient(135deg,rgba(204,0,0,.13),rgba(204,0,0,.05));border:1px solid rgba(204,0,0,.2);border-radius:14px;padding:24px;}
+.local-box p{max-width:700px;margin-bottom:0;}
+.quick-links{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px;}
+.quick-links a{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:999px;background:var(--black3);border:1px solid var(--border);color:var(--text);text-decoration:none;font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;}
+.quick-links a:hover{border-color:var(--red);color:#fff;}
 
 /* CTA */
 .cta-bar{background:var(--red);padding:48px 24px;text-align:center;}
@@ -144,6 +168,14 @@ footer a:hover{color:var(--red);}
   .nav-wa{padding:8px 12px;font-size:12px;}
   .price-table td:nth-child(4){display:none;}
   .price-table th:nth-child(4){display:none;}
+}
+@media(max-width:820px){
+  .intro-grid{grid-template-columns:1fr;}
+  .trust-strip{grid-template-columns:repeat(2,minmax(0,1fr));}
+}
+@media(max-width:600px){
+  .service-list{grid-template-columns:1fr;}
+  .trust-strip{grid-template-columns:1fr;}
 }
 </style>
 </head>
@@ -178,6 +210,55 @@ footer a:hover{color:var(--red);}
   <h1>Precios de <span>service técnico</span></h1>
   <p>Todos nuestros precios son transparentes y sin sorpresas. El presupuesto final se confirma después del diagnóstico, sin costo adicional.</p>
   <div class="hero-note">📍 Los precios incluyen mano de obra. Los repuestos se presupuestan por separado.</div>
+</div>
+
+<div class="section">
+  <div class="intro-grid">
+    <div class="panel">
+      <h3>Service tecnico en <span>Flores y Floresta</span></h3>
+      <p>Esta pagina suma contexto real para quien busca un service tecnico de PC y notebook cerca de Flores, Floresta, Villa Luro y zonas cercanas. Si tu equipo esta lento, calienta mucho, no inicia o necesita mantenimiento, aca tenes los trabajos mas pedidos y cuanto suelen costar.</p>
+      <ul class="service-list">
+        <li>Formateo de PC y notebook con Windows limpio</li>
+        <li>Cambio de pasta termica y limpieza interna</li>
+        <li>Instalacion de Windows 10 y Windows 11</li>
+        <li>Optimizacion sin formateo para mejorar rendimiento</li>
+        <li>Backup de archivos personales antes del service</li>
+        <li>Diagnostico y presupuesto claro antes de avanzar</li>
+      </ul>
+      <div class="quick-links">
+        <a href="turnos.html">Pedir turno</a>
+        <a href="ubicacion.html">Como llegar</a>
+        <a href="service-tecnico-pc-flores-floresta.html">Ver service tecnico</a>
+      </div>
+    </div>
+    <div class="panel">
+      <h3>Que te conviene <span>segun el problema</span></h3>
+      <p>Si la notebook se pone muy caliente o hace mucho ruido, casi siempre conviene limpieza interna y pasta termica. Si Windows tarda mucho, se cuelga o tiene errores, suele convenir optimizacion o formateo. Si no estas seguro, primero se revisa el equipo y se confirma el trabajo antes de tocar nada.</p>
+      <p>Tambien podes pasar a la pagina especifica de service tecnico para ver que equipos atendemos, como trabajamos por turno y por que muchos clientes llegan desde Flores y Floresta.</p>
+    </div>
+  </div>
+  <div class="trust-strip">
+    <div class="trust-item">
+      <div class="trust-kicker">Zona</div>
+      <strong>Flores y Floresta</strong>
+      <p>Campana 51, con acceso comodo para ambos barrios y alrededores.</p>
+    </div>
+    <div class="trust-item">
+      <div class="trust-kicker">Turnos</div>
+      <strong>Atencion ordenada</strong>
+      <p>Coordinamos por WhatsApp para que sepas cuando traer y retirar tu equipo.</p>
+    </div>
+    <div class="trust-item">
+      <div class="trust-kicker">Precios</div>
+      <strong>Valores claros</strong>
+      <p>La tabla te da una referencia real para los trabajos mas consultados.</p>
+    </div>
+    <div class="trust-item">
+      <div class="trust-kicker">Derivacion</div>
+      <strong>Links internos utiles</strong>
+      <p>Desde aca podes pasar directo a turnos, ubicacion e info general del service.</p>
+    </div>
+  </div>
 </div>
 
 <!-- FORMATEO Y SOFTWARE -->
@@ -380,6 +461,19 @@ footer a:hover{color:var(--red);}
         <div class="faq-icon"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 4l4 4 4-4"/></svg></div>
       </div>
       <div class="faq-a">La pasta térmica se degrada con el tiempo y pierde su capacidad de conducir el calor. Además, el polvo acumulado en los coolers impide la circulación de aire. Con una limpieza + pasta nueva (usamos Arctic MX-4) podemos bajar la temperatura entre 20 y 40°C en reposo.</div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="local-box">
+    <h2 class="sec-title">Atendemos clientes de <span>Flores, Floresta y zonas cercanas</span></h2>
+    <p>Estamos sobre Campana 51, en el limite entre Floresta y Flores. Esta pagina de precios ayuda a quienes buscan cuanto cuesta un service tecnico de PC o notebook en la zona, pero tambien podes seguir hacia la pagina de ubicacion, pedir turno o ver una explicacion mas completa de los trabajos habituales.</p>
+    <div class="quick-links">
+      <a href="turnos.html">Pedir turno</a>
+      <a href="ubicacion.html">Ver ubicacion</a>
+      <a href="service-tecnico-pc-flores-floresta.html">Service tecnico</a>
+      <a href="index.html">Volver al inicio</a>
     </div>
   </div>
 </div>
