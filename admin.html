@@ -1463,9 +1463,16 @@ async function addPaso(id){
 async function delPaso(pid,id){if(!confirm('¿Borrar?'))return;await db('DELETE','pasos',`?id=eq.${pid}`);await loadPasos(id);toast('Paso borrado');playSound('action');}
 
 async function chEst(id,st,btn){
-  await db('PATCH','reparaciones',`?id=eq.${id}`,{estado:st});
+  try{
+    await db('PATCH','reparaciones',`?id=eq.${id}`,{estado:st});
+  }catch(e){
+    console.error('chEst error',e);
+    toast('No se pudo cambiar el estado. Revisá la conexión o la configuración de Supabase.',true);
+    playSound('error');
+    return;
+  }
   const d=aR.find(r=>r.id===id); if(d) d.estado=st;
-  updStats();
+  loadStats().catch(()=>{});
   btn.closest('.sgrid').querySelectorAll('.so').forEach(b=>b.className='so');
   btn.classList.add('a'+st[0]);
   const card=document.getElementById(`c-${id}`);
@@ -1495,6 +1502,9 @@ async function chEst(id,st,btn){
   } else {
     toast(`Estado → "${LB[st]}" ✓`);
     playSound(st==='entregado' ? 'success' : 'action');
+  }
+  if(fSt!=='todos' && fSt!==st){
+    setTimeout(()=>loadPage(),350);
   }
 }
 
