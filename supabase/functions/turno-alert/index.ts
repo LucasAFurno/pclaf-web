@@ -46,6 +46,7 @@ function buildTelegramMessage(payload: TurnoPayload) {
   const referido = refCodigo
     ? `${refNombre || refCodigo} (${refCodigo})`
     : "";
+  const whatsappUrl = buildWhatsappReplyUrl(payload);
 
   const lines = [
     "Nuevo turno solicitado",
@@ -63,10 +64,43 @@ function buildTelegramMessage(payload: TurnoPayload) {
     `${payload.equipo ? `Equipo: ${clean(payload.equipo, 180)}` : ""}`.trim(),
     `${payload.nota ? `Problema: ${clean(payload.nota, 400)}` : ""}`.trim(),
     `${referido ? `Referido por: ${referido}` : ""}`.trim(),
+    `${whatsappUrl ? `Responder por WhatsApp: ${whatsappUrl}` : ""}`.trim(),
     `${payload.turnoId ? `Turno ID: ${clean(payload.turnoId, 80)}` : ""}`.trim(),
   ].filter(Boolean);
 
   return lines.join("\n");
+}
+
+function normalizeWhatsappPhone(value: unknown) {
+  let digits = String(value ?? "").replace(/\D/g, "");
+  if (!digits) return "";
+
+  if (digits.startsWith("00")) digits = digits.slice(2);
+  if (digits.startsWith("549")) return digits;
+  if (digits.startsWith("54")) return digits;
+  if (digits.startsWith("15") && digits.length === 10) return `54911${digits.slice(2)}`;
+  if (digits.startsWith("11") && digits.length === 10) return `549${digits}`;
+
+  return digits;
+}
+
+function buildWhatsappReplyUrl(payload: TurnoPayload) {
+  const phone = normalizeWhatsappPhone(payload.telefono);
+  if (!phone) return "";
+
+  const nombre = clean(payload.nombre, 80) || "!";
+  const fecha = clean(payload.fecha, 40);
+  const hora = clean(payload.hora, 20);
+  const servicio = clean(payload.servicio, 140);
+
+  const message = [
+    `Hola ${nombre}, soy de PCLAF.`,
+    `Recibimos tu solicitud de turno${servicio ? ` para ${servicio}` : ""}.`,
+    fecha ? `Fecha solicitada: ${fecha}${hora ? ` a las ${hora}hs` : ""}.` : "",
+    "Ahora te confirmamos la disponibilidad.",
+  ].filter(Boolean).join("\n");
+
+  return `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
 }
 
 function buildEmailHtml(payload: TurnoPayload) {
