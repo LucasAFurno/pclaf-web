@@ -69,6 +69,18 @@ function shortDateAr(value: unknown) {
   }).format(date);
 }
 
+function title(text: string) {
+  return `* ${text}`;
+}
+
+function divider() {
+  return "--------------------";
+}
+
+function personName(nombre: unknown, apellido: unknown) {
+  return [clean(nombre, 60), clean(apellido, 60)].filter(Boolean).join(" ").trim() || "Sin nombre";
+}
+
 async function supa(path: string) {
   if (!SUPABASE_KEY) throw new Error("Missing SUPABASE_SERVICE_ROLE_KEY or SUPABASE_ANON_KEY");
   const response = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, { headers });
@@ -462,26 +474,26 @@ async function callbackReply(data: string) {
     if (target === "main" || target === "help") {
       return { text: helpV2(), keyboard: mainMenuKeyboard() };
     }
-    if (target === "resumen") return { text: await resumen(), keyboard: mainMenuKeyboard() };
-    if (target === "hoy") return { text: await turnosPorFecha("hoy", todayBuenosAires()), keyboard: mainMenuKeyboard() };
+    if (target === "resumen") return { text: await resumenV3(), keyboard: mainMenuKeyboard() };
+    if (target === "hoy") return { text: await turnosPorFechaV3("hoy", todayBuenosAires()), keyboard: mainMenuKeyboard() };
     if (target === "urgentes") return { text: await urgentes(), keyboard: mainMenuKeyboard() };
-    if (target === "turnos") return { text: await proximosTurnos(5), keyboard: mainMenuKeyboard() };
-    if (target === "espera") return { text: await reparacionesPorEstado("espera"), keyboard: mainMenuKeyboard() };
-    if (target === "proceso") return { text: await reparacionesPorEstado("proceso"), keyboard: mainMenuKeyboard() };
-    if (target === "listo") return { text: await reparacionesPorEstado("listo"), keyboard: mainMenuKeyboard() };
-    if (target === "descuentos") return { text: await descuentos(), keyboard: mainMenuKeyboard() };
+    if (target === "turnos") return { text: await proximosTurnosV3(5), keyboard: mainMenuKeyboard() };
+    if (target === "espera") return { text: await reparacionesPorEstadoV3("espera"), keyboard: mainMenuKeyboard() };
+    if (target === "proceso") return { text: await reparacionesPorEstadoV3("proceso"), keyboard: mainMenuKeyboard() };
+    if (target === "listo") return { text: await reparacionesPorEstadoV3("listo"), keyboard: mainMenuKeyboard() };
+    if (target === "descuentos") return { text: await descuentosV3(), keyboard: mainMenuKeyboard() };
   }
 
   if (action === "rep") {
-    return {
-      text: await detalleReparacion(numero),
+      return {
+      text: await detalleReparacionV3(numero),
       keyboard: repairKeyboard(await buscarReparacion(numero)),
     };
   }
 
   if (action === "hist") {
-    return {
-      text: await historialReparacion(numero),
+      return {
+      text: await historialReparacionV3(numero),
       keyboard: repairKeyboard(await buscarReparacion(numero)),
     };
   }
@@ -533,6 +545,167 @@ async function buscarCliente(term: string) {
         `Descuento: ${c.descuento_resena ? "activo" : "no"}`,
       ].join("\n");
     }),
+  ].join("\n\n");
+}
+
+async function resumenV3() {
+  const [total, espera, proceso, listo, entregado, cancelado, turnosPendientes, descuentos] = await Promise.all([
+    countRows("reparaciones"),
+    countRows("reparaciones", "&estado=eq.espera"),
+    countRows("reparaciones", "&estado=eq.proceso"),
+    countRows("reparaciones", "&estado=eq.listo"),
+    countRows("reparaciones", "&estado=eq.entregado"),
+    countRows("reparaciones", "&estado=eq.cancelado"),
+    countRows("turnos", "&estado=eq.pendiente"),
+    countRows("clientes", "&descuento_resena=eq.true"),
+  ]);
+
+  return [
+    title("Resumen PCLAF"),
+    divider(),
+    `Reparaciones: ${total}`,
+    `⏳ En espera: ${espera}`,
+    `🔧 En reparación: ${proceso}`,
+    `✅ Listas: ${listo}`,
+    `📦 Entregadas: ${entregado}`,
+    `❌ Canceladas: ${cancelado}`,
+    "",
+    `📅 Turnos pendientes: ${turnosPendientes}`,
+    `🎁 Descuentos activos: ${descuentos}`,
+  ].join("\n");
+}
+
+async function proximosTurnosV3(limit = 5) {
+  const today = todayBuenosAires();
+  const rows = await supa(
+    `turnos?select=id,nombre,apellido,telefono,servicio,fecha,hora,estado,urgente&fecha=gte.${today}&estado=neq.cancelado&order=fecha.asc,hora.asc&limit=${limit}`,
+  );
+
+  if (!rows?.length) return "No hay próximos turnos cargados.";
+
+  return [
+    title(limit === 1 ? "Próximo turno" : `Próximos ${rows.length} turnos`),
+    divider(),
+    ...rows.map((t: Record<string, unknown>, idx: number) => {
+      const nombre = personName(t.nombre, t.apellido);
+      return [
+        `${idx + 1}. ${clean(t.fecha, 20)} ${clean(t.hora, 20)}hs${t.urgente ? " [URGENTE]" : ""}`,
+        `👤 ${nombre}`,
+        `🔧 ${clean(t.servicio, 100) || "sin servicio"}`,
+        `Estado: ${labelEstado(clean(t.estado, 30))}`,
+        `${t.telefono ? `📞 ${clean(t.telefono, 40)}` : ""}`,
+      ].filter(Boolean).join("\n");
+    }),
+  ].join("\n\n");
+}
+
+async function turnosPorFechaV3(label: string, fecha: string) {
+  const rows = await supa(
+    `turnos?select=id,nombre,apellido,telefono,servicio,fecha,hora,estado,urgente&fecha=eq.${fecha}&estado=neq.cancelado&order=hora.asc`,
+  );
+
+  if (!rows?.length) return `No hay turnos para ${label}.`;
+
+  return [
+    title(`Turnos de ${label} (${rows.length})`),
+    divider(),
+    ...rows.map((t: Record<string, unknown>, idx: number) => {
+      const nombre = personName(t.nombre, t.apellido);
+      return [
+        `${idx + 1}. ${clean(t.hora, 20)}hs${t.urgente ? " [URGENTE]" : ""}`,
+        `👤 ${nombre}`,
+        `🔧 ${clean(t.servicio, 100) || "sin servicio"}`,
+        `Estado: ${labelEstado(clean(t.estado, 30))}`,
+        `${t.telefono ? `📞 ${clean(t.telefono, 40)}` : ""}`,
+      ].filter(Boolean).join("\n");
+    }),
+  ].join("\n\n");
+}
+
+async function reparacionesPorEstadoV3(estado: string, limit = 8) {
+  const rows = await supa(
+    `reparaciones?select=id,numero,problema,presupuesto,estado,equipos(nombre,modelo,clientes(nombre,apellido,telefono,codigo))&estado=eq.${estado}&order=numero.desc&limit=${limit}`,
+  );
+  if (!rows?.length) return `No hay reparaciones ${labelEstado(estado)}.`;
+
+  return [
+    title(`Reparaciones ${labelEstado(estado)} (${rows.length})`),
+    divider(),
+    ...rows.map((r: Record<string, any>) => {
+      const equipo = r.equipos || {};
+      const cliente = equipo.clientes || {};
+      const nombre = personName(cliente.nombre, cliente.apellido);
+      return [
+        `#${clean(r.numero, 20)} - ${nombre}`,
+        `💻 ${clean(equipo.nombre, 80) || "Equipo"}${equipo.modelo ? ` ${clean(equipo.modelo, 80)}` : ""}`,
+        `🧩 ${clean(r.problema, 120) || "Sin problema"}`,
+        `💰 ${money(r.presupuesto)}`,
+      ].join("\n");
+    }),
+  ].join("\n\n");
+}
+
+async function detalleReparacionV3(numero: string) {
+  const rep = await buscarReparacion(numero);
+  if (!rep) return `No encontré la reparación #${clean(numero, 20)}.`;
+  const equipo = rep.equipos || {};
+  const cliente = equipo.clientes || {};
+  const nombre = personName(cliente.nombre, cliente.apellido);
+  const pasos = await supa(`pasos?select=titulo,estado,nota,fecha,orden&reparacion_id=eq.${rep.id}&order=orden.asc&limit=6`);
+
+  return [
+    title(`Reparación #${clean(rep.numero, 20)}`),
+    divider(),
+    `Estado: ${labelEstado(clean(rep.estado, 30))}${rep.urgente ? " [URGENTE]" : ""}`,
+    `👤 Cliente: ${nombre}${cliente.codigo ? ` (${clean(cliente.codigo, 40)})` : ""}`,
+    `📞 Tel: ${clean(cliente.telefono, 40) || "-"}`,
+    `💻 Equipo: ${clean(equipo.nombre, 80) || "Equipo"}${equipo.modelo ? ` ${clean(equipo.modelo, 80)}` : ""}`,
+    `🧩 Problema: ${clean(rep.problema, 220) || "-"}`,
+    `💰 Presupuesto: ${money(rep.presupuesto)}`,
+    `📦 Entrega est.: ${clean(rep.fecha_entrega, 80) || "-"}`,
+    `🎁 Descuento: ${cliente.descuento_resena ? "activo" : "no"}`,
+    "",
+    pasos?.length
+      ? ["Últimos pasos:", ...pasos.map((p: Record<string, unknown>) => `- ${clean(p.fecha, 40) || ""} ${clean(p.titulo, 100)}${p.nota ? ` - ${clean(p.nota, 120)}` : ""}`.trim())].join("\n")
+      : "Sin pasos cargados.",
+  ].join("\n");
+}
+
+async function historialReparacionV3(numero: string, limit = 12) {
+  const rep = await buscarReparacion(numero);
+  if (!rep) return `No encontré la reparación #${clean(numero, 20)}.`;
+  const pasos = await supa(`pasos?select=titulo,estado,nota,fecha,orden&reparacion_id=eq.${rep.id}&order=orden.asc&limit=${limit}`);
+  if (!pasos?.length) return `La reparación #${clean(rep.numero, 20)} no tiene pasos cargados.`;
+  return [
+    title(`Historial #${clean(rep.numero, 20)}`),
+    divider(),
+    ...pasos.map((p: Record<string, unknown>) => `- ${clean(p.fecha, 40) || ""} ${clean(p.titulo, 120)}${p.nota ? ` - ${clean(p.nota, 180)}` : ""}`.trim()),
+  ].join("\n");
+}
+
+async function descuentosV3(limit = 15) {
+  const rows = await supa(`clientes?select=id,codigo,nombre,apellido,telefono&descuento_resena=eq.true&order=nombre.asc&limit=${limit}`);
+  if (!rows?.length) return "No hay clientes con descuento activo.";
+  return [
+    title(`Clientes con descuento activo (${rows.length})`),
+    divider(),
+    ...rows.map((c: Record<string, unknown>, idx: number) => `${idx + 1}. ${personName(c.nombre, c.apellido)} - ${clean(c.codigo, 40) || "sin código"}${c.telefono ? ` - ${clean(c.telefono, 40)}` : ""}`),
+  ].join("\n");
+}
+
+async function buscarClienteV3(term: string) {
+  const q = encodeURIComponent(`*${term}*`);
+  const rows = await supa(`clientes?select=id,codigo,nombre,apellido,telefono,descuento_resena&or=(nombre.ilike.${q},apellido.ilike.${q},codigo.ilike.${q},telefono.ilike.${q})&order=nombre.asc&limit=8`);
+  if (!rows?.length) return `No encontré clientes para "${term}".`;
+  return [
+    title(`Clientes encontrados (${rows.length})`),
+    divider(),
+    ...rows.map((c: Record<string, unknown>, idx: number) => [
+      `${idx + 1}. ${personName(c.nombre, c.apellido)}`,
+      `Código: ${clean(c.codigo, 40) || "-"}`,
+      `Tel: ${clean(c.telefono, 40) || "-"}`,
+      `Descuento: ${c.descuento_resena ? "activo" : "no"}`,
+    ].join("\n")),
   ].join("\n\n");
 }
 
@@ -626,16 +799,20 @@ async function interpretNaturalLanguage(text: string) {
     return { text: helpV2(), keyboard: mainMenuKeyboard() };
   }
 
+  if (normalized.includes("que tengo para hoy") || normalized.includes("que hay para hoy")) {
+    return { text: await turnosPorFechaV3("hoy", todayBuenosAires()), keyboard: mainMenuKeyboard() };
+  }
+
   if (normalized.includes("proximo turno") || normalized.includes("siguiente turno")) {
-    return { text: await proximosTurnos(1), keyboard: mainMenuKeyboard() };
+    return { text: await proximosTurnosV3(1), keyboard: mainMenuKeyboard() };
   }
 
   if (normalized.includes("turnos de hoy") || normalized === "hoy") {
-    return { text: await turnosPorFecha("hoy", todayBuenosAires()), keyboard: mainMenuKeyboard() };
+    return { text: await turnosPorFechaV3("hoy", todayBuenosAires()), keyboard: mainMenuKeyboard() };
   }
 
   if (normalized.includes("turnos de manana") || normalized.includes("turnos manana")) {
-    return { text: await turnosPorFecha("manana", addDays(todayBuenosAires(), 1)), keyboard: mainMenuKeyboard() };
+    return { text: await turnosPorFechaV3("manana", addDays(todayBuenosAires(), 1)), keyboard: mainMenuKeyboard() };
   }
 
   if (normalized.includes("urgente")) {
@@ -643,23 +820,23 @@ async function interpretNaturalLanguage(text: string) {
   }
 
   if (normalized.includes("resumen") || normalized.includes("cuantas reparaciones") || normalized.includes("cuantos turnos")) {
-    return { text: await resumen(), keyboard: mainMenuKeyboard() };
+    return { text: await resumenV3(), keyboard: mainMenuKeyboard() };
   }
 
   if (normalized.includes("reparaciones listas") || normalized.includes("reparaciones listos") || normalized.includes("que esta listo")) {
-    return { text: await reparacionesPorEstado("listo"), keyboard: mainMenuKeyboard() };
+    return { text: await reparacionesPorEstadoV3("listo"), keyboard: mainMenuKeyboard() };
   }
 
   if (normalized.includes("reparaciones en espera") || normalized.includes("que esta en espera")) {
-    return { text: await reparacionesPorEstado("espera"), keyboard: mainMenuKeyboard() };
+    return { text: await reparacionesPorEstadoV3("espera"), keyboard: mainMenuKeyboard() };
   }
 
   if (normalized.includes("reparaciones en reparacion") || normalized.includes("que esta en reparacion") || normalized.includes("que esta en proceso")) {
-    return { text: await reparacionesPorEstado("proceso"), keyboard: mainMenuKeyboard() };
+    return { text: await reparacionesPorEstadoV3("proceso"), keyboard: mainMenuKeyboard() };
   }
 
-  if (normalized.includes("descuento")) {
-    return { text: await descuentos(), keyboard: mainMenuKeyboard() };
+  if (normalized.includes("descuento") || normalized.includes("quien tiene descuento") || normalized.includes("quienes tienen descuento")) {
+    return { text: await descuentosV3(), keyboard: mainMenuKeyboard() };
   }
 
   if ((normalized.includes("buscar cliente") || normalized.includes("busca cliente") || normalized.startsWith("cliente ")) && !repairNumber) {
@@ -671,10 +848,32 @@ async function interpretNaturalLanguage(text: string) {
     if (term) return { text: await buscarCliente(term), keyboard: mainMenuKeyboard() };
   }
 
+  if ((normalized.includes("agrega nota a la") || normalized.includes("agregar nota a la") || normalized.includes("agrega nota a")) && repairNumber) {
+    const note = normalized
+      .replace("agregar nota a la", "")
+      .replace("agrega nota a la", "")
+      .replace("agrega nota a", "")
+      .replace(repairNumber, "")
+      .replace(/^[:\-\s]+/, "")
+      .trim();
+    if (note) {
+      const text = await agregarNota(repairNumber, note);
+      const rep = await buscarReparacion(repairNumber);
+      return { text, keyboard: rep ? repairKeyboard(rep) : mainMenuKeyboard() };
+    }
+  }
+
+  if (repairNumber && normalized.includes("historial")) {
+    const rep = await buscarReparacion(repairNumber);
+    return rep
+      ? { text: await historialReparacionV3(repairNumber), keyboard: repairKeyboard(rep) }
+      : { text: `No encontre la reparacion #${repairNumber}.`, keyboard: mainMenuKeyboard() };
+  }
+
   if (repairNumber && (normalized.includes("detalle") || normalized.includes("reparacion") || normalized.includes("ver la") || normalized.startsWith("rep "))) {
     const rep = await buscarReparacion(repairNumber);
     return rep
-      ? { text: await detalleReparacion(repairNumber), keyboard: repairKeyboard(rep) }
+      ? { text: await detalleReparacionV3(repairNumber), keyboard: repairKeyboard(rep) }
       : { text: `No encontre la reparacion #${repairNumber}.`, keyboard: mainMenuKeyboard() };
   }
 
@@ -712,26 +911,26 @@ async function answerCommandV2(text: string) {
   const arg = rest.join(" ").trim();
 
   if (command === "/start" || command === "/help" || command === "ayuda") return helpV2();
-  if (command === "/resumen" || command === "resumen") return await resumen();
-  if (command === "/hoy" || command === "hoy") return await turnosPorFecha("hoy", todayBuenosAires());
+  if (command === "/resumen" || command === "resumen") return await resumenV3();
+  if (command === "/hoy" || command === "hoy") return await turnosPorFechaV3("hoy", todayBuenosAires());
   if (command === "/manana" || command === "/mañana" || command === "manana" || command === "mañana") {
-    return await turnosPorFecha("manana", addDays(todayBuenosAires(), 1));
+    return await turnosPorFechaV3("manana", addDays(todayBuenosAires(), 1));
   }
   if (command === "/urgentes" || command === "/urgente" || command === "urgentes") return await urgentes();
-  if (command === "/turno" || command === "turno") return await proximosTurnos(1);
-  if (command === "/turnos" || command === "turnos") return await proximosTurnos(5);
+  if (command === "/turno" || command === "turno") return await proximosTurnosV3(1);
+  if (command === "/turnos" || command === "turnos") return await proximosTurnosV3(5);
 
   if (command === "/espera" || command === "espera") {
     if (arg) return await cambiarEstadoReparacion(arg, "espera");
-    return await reparacionesPorEstado("espera");
+    return await reparacionesPorEstadoV3("espera");
   }
   if (command === "/proceso" || command === "proceso") {
     if (arg) return await cambiarEstadoReparacion(arg, "proceso");
-    return await reparacionesPorEstado("proceso");
+    return await reparacionesPorEstadoV3("proceso");
   }
   if (command === "/listo" || command === "/listas" || command === "listo") {
     if (arg) return await cambiarEstadoReparacion(arg, "listo");
-    return await reparacionesPorEstado("listo");
+    return await reparacionesPorEstadoV3("listo");
   }
   if (command === "/entregar" || command === "/entregado" || command === "entregar") {
     if (!arg) return "Usa: /entregar 3288";
@@ -742,15 +941,15 @@ async function answerCommandV2(text: string) {
     return await cambiarEstadoReparacion(arg, "cancelado");
   }
   if (command === "/canceladas" || command === "/cancelado" || command === "canceladas") {
-    return await reparacionesPorEstado("cancelado");
+    return await reparacionesPorEstadoV3("cancelado");
   }
   if (command === "/reparacion" || command === "/rep" || command === "reparacion") {
     if (!arg) return "Usa: /reparacion 3288";
-    return await detalleReparacion(arg);
+    return await detalleReparacionV3(arg);
   }
   if (command === "/historial" || command === "historial") {
     if (!arg) return "Usa: /historial 3288";
-    return await historialReparacion(arg);
+    return await historialReparacionV3(arg);
   }
   if (command === "/wa" || command === "/whatsapp" || command === "wa") {
     if (!arg) return "Usa: /wa 3288";
@@ -761,10 +960,10 @@ async function answerCommandV2(text: string) {
     if (!numero || !notaParts.length) return "Usa: /nota 3288 texto de la nota";
     return await agregarNota(numero, notaParts.join(" "));
   }
-  if (command === "/descuentos" || command === "descuentos") return await descuentos();
+  if (command === "/descuentos" || command === "descuentos") return await descuentosV3();
   if (command === "/cliente" || command === "cliente") {
     if (!arg) return "Usa: /cliente nombre, codigo o telefono";
-    return await buscarCliente(arg);
+    return await buscarClienteV3(arg);
   }
 
   const natural = await interpretNaturalLanguage(text);

@@ -71,6 +71,16 @@ function daysAgoIso(days: number) {
   return date.toISOString().slice(0, 10);
 }
 
+function addDays(dateStr: string, days: number) {
+  const date = new Date(`${dateStr}T12:00:00-03:00`);
+  date.setDate(date.getDate() + days);
+  return date.toISOString().slice(0, 10);
+}
+
+function personName(nombre: unknown, apellido: unknown) {
+  return [clean(nombre, 60), clean(apellido, 60)].filter(Boolean).join(" ").trim() || "Sin nombre";
+}
+
 async function buildDailySummary() {
   const today = todayBuenosAires();
   const [
@@ -136,6 +146,88 @@ async function buildDailySummary() {
   return lines.join("\n");
 }
 
+async function buildDailySummaryV2() {
+  const today = todayBuenosAires();
+  const tomorrow = addDays(today, 1);
+  const [
+    espera,
+    proceso,
+    listo,
+    urgentes,
+    sinPresupuesto,
+    turnosHoy,
+    descuentos,
+    listasViejas,
+    esperaVieja,
+    turnosManana,
+    turnosUrgentes,
+  ] = await Promise.all([
+    countRows("reparaciones", "&estado=eq.espera"),
+    countRows("reparaciones", "&estado=eq.proceso"),
+    countRows("reparaciones", "&estado=eq.listo"),
+    countRows("reparaciones", "&urgente=eq.true&estado=neq.entregado&estado=neq.cancelado"),
+    countRows("reparaciones", "&estado=neq.entregado&estado=neq.cancelado&presupuesto=is.null"),
+    supa(`turnos?select=nombre,apellido,servicio,hora,urgente&fecha=eq.${today}&estado=neq.cancelado&order=hora.asc&limit=8`),
+    countRows("clientes", "&descuento_resena=eq.true"),
+    supa(`reparaciones?select=numero,equipos(clientes(nombre,apellido))&estado=eq.listo&created_at=lt.${daysAgoIso(3)}&order=numero.desc&limit=6`),
+    supa(`reparaciones?select=numero,equipos(clientes(nombre,apellido))&estado=eq.espera&created_at=lt.${daysAgoIso(7)}&order=numero.desc&limit=6`),
+    supa(`turnos?select=nombre,apellido,servicio,hora,urgente&fecha=eq.${tomorrow}&estado=neq.cancelado&order=hora.asc&limit=6`),
+    supa(`turnos?select=nombre,apellido,servicio,fecha,hora&urgente=eq.true&estado=neq.cancelado&order=fecha.asc,hora.asc&limit=6`),
+  ]);
+
+  const lines = [
+    "* Resumen diario PCLAF",
+    "--------------------",
+    `Fecha: ${today}`,
+    "",
+    `⏳ En espera: ${espera}`,
+    `🔧 En reparación: ${proceso}`,
+    `✅ Listas para retirar: ${listo}`,
+    `🚨 Urgentes activos: ${urgentes}`,
+    `💰 Activas sin presupuesto: ${sinPresupuesto}`,
+    `🎁 Clientes con descuento activo: ${descuentos}`,
+    "",
+    turnosHoy?.length ? `📅 Turnos de hoy (${turnosHoy.length}):` : "📅 No hay turnos para hoy.",
+  ];
+
+  (turnosHoy || []).forEach((t: Record<string, unknown>) => {
+    lines.push(`- ${clean(t.hora, 20)}hs ${personName(t.nombre, t.apellido)} - ${clean(t.servicio, 100)}${t.urgente ? " [URGENTE]" : ""}`);
+  });
+
+  if (turnosManana?.length) {
+    lines.push("", `🗓️ Turnos de mañana (${turnosManana.length}):`);
+    turnosManana.forEach((t: Record<string, unknown>) => {
+      lines.push(`- ${clean(t.hora, 20)}hs ${personName(t.nombre, t.apellido)} - ${clean(t.servicio, 100)}${t.urgente ? " [URGENTE]" : ""}`);
+    });
+  }
+
+  if (turnosUrgentes?.length) {
+    lines.push("", "🚨 Próximos turnos urgentes:");
+    turnosUrgentes.forEach((t: Record<string, unknown>) => {
+      lines.push(`- ${clean(t.fecha, 20)} ${clean(t.hora, 20)}hs ${personName(t.nombre, t.apellido)} - ${clean(t.servicio, 100)}`);
+    });
+  }
+
+  if (listasViejas?.length) {
+    lines.push("", "⚠️ Listas hace +3 días:");
+    listasViejas.forEach((r: Record<string, any>) => {
+      const cliente = r.equipos?.clientes || {};
+      lines.push(`- #${clean(r.numero, 20)} ${personName(cliente.nombre, cliente.apellido)}`);
+    });
+  }
+
+  if (esperaVieja?.length) {
+    lines.push("", "⚠️ En espera hace +7 días:");
+    esperaVieja.forEach((r: Record<string, any>) => {
+      const cliente = r.equipos?.clientes || {};
+      lines.push(`- #${clean(r.numero, 20)} ${personName(cliente.nombre, cliente.apellido)}`);
+    });
+  }
+
+  lines.push("", "Tip: probá 'que tengo para hoy', 'quien tiene descuento' o '/reparacion 3288' en el bot.");
+  return lines.join("\n");
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
@@ -150,7 +242,7 @@ Deno.serve(async (req) => {
       }
     }
 
-    const text = await buildDailySummary();
+    const text = await buildDailySummaryV2();
     await sendTelegram(text);
     return new Response(JSON.stringify({ ok: true }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
