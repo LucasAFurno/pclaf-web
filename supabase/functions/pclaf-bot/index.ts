@@ -22,6 +22,14 @@ type TelegramUpdate = {
     text?: string;
     from?: { first_name?: string };
   };
+  callback_query?: {
+    id?: string;
+    data?: string;
+    message?: {
+      chat?: { id?: number | string };
+      message_id?: number;
+    };
+  };
 };
 
 function clean(value: unknown, maxLen = 240) {
@@ -91,16 +99,30 @@ async function countRows(table: string, filter = "") {
   return Number(contentRange.split("/")[1] || 0);
 }
 
-async function sendMessage(chatId: string | number, text: string) {
+async function telegramApi(method: string, payload: Record<string, unknown>) {
   if (!TELEGRAM_BOT_TOKEN) throw new Error("Missing TELEGRAM_BOT_TOKEN");
-  await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+  const response = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/${method}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      chat_id: chatId,
-      text,
-      disable_web_page_preview: true,
-    }),
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) throw new Error(await response.text());
+  return await response.json();
+}
+
+async function sendMessage(chatId: string | number, text: string, replyMarkup?: Record<string, unknown>) {
+  await telegramApi("sendMessage", {
+    chat_id: chatId,
+    text,
+    disable_web_page_preview: true,
+    ...(replyMarkup ? { reply_markup: replyMarkup } : {}),
+  });
+}
+
+async function answerCallbackQuery(id: string, text = "") {
+  await telegramApi("answerCallbackQuery", {
+    callback_query_id: id,
+    ...(text ? { text } : {}),
   });
 }
 
@@ -123,6 +145,35 @@ function whatsappUrl(phone: unknown, message: string) {
   const normalized = normalizeWhatsappPhone(phone);
   if (!normalized) return "";
   return `https://wa.me/${normalized}?text=${encodeURIComponent(message)}`;
+}
+
+function repairKeyboard(rep: Record<string, any>) {
+  const numero = clean(rep.numero, 20);
+  const equipo = rep.equipos || {};
+  const cliente = equipo.clientes || {};
+  const nombre = clean(cliente.nombre, 60).split(" ")[0] || "";
+  const wa = whatsappUrl(
+    cliente.telefono,
+    `Hola ${nombre}, te escribimos de PCLAF. Tu ${clean(equipo.nombre, 80) || "equipo"} (#${numero}) está ${labelEstado(clean(rep.estado, 30))}.`,
+  );
+
+  const rows: Array<Array<Record<string, string>>> = [
+    [
+      { text: "Ver detalle", callback_data: `rep:${numero}` },
+      { text: "Historial", callback_data: `hist:${numero}` },
+    ],
+    [
+      { text: "En reparación", callback_data: `st:proceso:${numero}` },
+      { text: "Listo", callback_data: `st:listo:${numero}` },
+    ],
+    [
+      { text: "Entregado", callback_data: `st:entregado:${numero}` },
+      { text: "Cancelar", callback_data: `st:cancelado:${numero}` },
+    ],
+  ];
+
+  if (wa) rows.unshift([{ text: "WhatsApp cliente", url: wa }]);
+  return { inline_keyboard: rows };
 }
 
 function labelEstado(estado: string) {
@@ -313,6 +364,25 @@ async function detalleReparacion(numero: string) {
   ].join("\n");
 }
 
+async function historialReparacion(numero: string, limit = 12) {
+  const rep = await buscarReparacion(numero);
+  if (!rep) return `No encontré la reparación #${clean(numero, 20)}.`;
+
+  const pasos = await supa(
+    `pasos?select=titulo,estado,nota,fecha,orden&reparacion_id=eq.${rep.id}&order=orden.asc&limit=${limit}`,
+  );
+
+  if (!pasos?.length) return `La reparación #${clean(rep.numero, 20)} no tiene pasos cargados.`;
+
+  return [
+    `Historial #${clean(rep.numero, 20)}`,
+    "",
+    ...pasos.map((p: Record<string, unknown>) =>
+      `- ${clean(p.fecha, 40) || ""} ${clean(p.titulo, 120)}${p.nota ? ` - ${clean(p.nota, 180)}` : ""}`.trim()
+    ),
+  ].join("\n");
+}
+
 async function linkWhatsappReparacion(numero: string) {
   const rep = await buscarReparacion(numero);
   if (!rep) return `No encontré la reparación #${clean(numero, 20)}.`;
@@ -353,6 +423,35 @@ async function agregarNota(numero: string, nota: string) {
   });
 
   return `Nota agregada a la reparación #${clean(rep.numero, 20)}.`;
+}
+
+async function callbackReply(data: string) {
+  const parts = data.split(":");
+  const action = parts[0];
+  const numero = parts.at(-1) || "";
+
+  if (action === "rep") {
+    return {
+      text: await detalleReparacion(numero),
+      keyboard: repairKeyboard(await buscarReparacion(numero)),
+    };
+  }
+
+  if (action === "hist") {
+    return {
+      text: await historialReparacion(numero),
+      keyboard: repairKeyboard(await buscarReparacion(numero)),
+    };
+  }
+
+  if (action === "st") {
+    const estado = parts[1] || "";
+    const text = await cambiarEstadoReparacion(numero, estado);
+    const rep = await buscarReparacion(numero);
+    return { text, keyboard: rep ? repairKeyboard(rep) : undefined };
+  }
+
+  return { text: helpV2(), keyboard: undefined };
 }
 
 async function descuentos(limit = 15) {
@@ -455,6 +554,7 @@ function helpV2() {
     "/descuentos - clientes con descuento",
     "/cliente texto - buscar cliente por nombre, codigo o telefono",
     "/reparacion 3288 - detalle de reparacion",
+    "/historial 3288 - pasos de la reparacion",
     "/wa 3288 - link de WhatsApp al cliente",
     "/proceso 3288 - pasar a reparacion",
     "/listo 3288 - pasar a listo",
@@ -508,6 +608,10 @@ async function answerCommandV2(text: string) {
     if (!arg) return "Usa: /reparacion 3288";
     return await detalleReparacion(arg);
   }
+  if (command === "/historial" || command === "historial") {
+    if (!arg) return "Usa: /historial 3288";
+    return await historialReparacion(arg);
+  }
   if (command === "/wa" || command === "/whatsapp" || command === "wa") {
     if (!arg) return "Usa: /wa 3288";
     return await linkWhatsappReparacion(arg);
@@ -547,6 +651,22 @@ Deno.serve(async (req) => {
     }
 
     const update = (await req.json()) as TelegramUpdate;
+    const callback = update.callback_query;
+    if (callback?.data && callback.message?.chat?.id) {
+      const chatId = callback.message.chat.id;
+      if (TELEGRAM_CHAT_ID && String(chatId) !== String(TELEGRAM_CHAT_ID)) {
+        if (callback.id) await answerCallbackQuery(callback.id, "Bot interno PCLAF");
+        return new Response(JSON.stringify({ ok: true, ignored: true }), { headers: corsHeaders });
+      }
+
+      const result = await callbackReply(clean(callback.data, 120));
+      if (callback.id) await answerCallbackQuery(callback.id, "Listo");
+      await sendMessage(chatId, result.text.slice(0, 3900), result.keyboard);
+      return new Response(JSON.stringify({ ok: true }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const chatId = update.message?.chat?.id;
     const text = clean(update.message?.text, 800);
 
@@ -558,7 +678,13 @@ Deno.serve(async (req) => {
     }
 
     const reply = await answerCommandV2(text);
-    await sendMessage(chatId, reply.slice(0, 3900));
+    const [rawCommand, ...parts] = text.trim().split(/\s+/);
+    const cmd = rawCommand.toLowerCase().split("@")[0];
+    const maybeNumero = parts.join(" ").trim();
+    const repForButtons = (cmd === "/reparacion" || cmd === "/rep" || cmd === "reparacion") && maybeNumero
+      ? await buscarReparacion(maybeNumero)
+      : null;
+    await sendMessage(chatId, reply.slice(0, 3900), repForButtons ? repairKeyboard(repForButtons) : undefined);
 
     return new Response(JSON.stringify({ ok: true }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
