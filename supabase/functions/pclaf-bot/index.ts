@@ -43,9 +43,39 @@ function todayBuenosAires() {
   return `${map.year}-${map.month}-${map.day}`;
 }
 
+function addDays(dateStr: string, days: number) {
+  const date = new Date(`${dateStr}T12:00:00-03:00`);
+  date.setDate(date.getDate() + days);
+  return date.toISOString().slice(0, 10);
+}
+
+function shortDateAr(value: unknown) {
+  const raw = clean(value, 40);
+  if (!raw) return "";
+  const date = new Date(`${raw}T12:00:00-03:00`);
+  if (Number.isNaN(date.getTime())) return raw;
+  return new Intl.DateTimeFormat("es-AR", {
+    timeZone: "America/Argentina/Buenos_Aires",
+    day: "numeric",
+    month: "short",
+  }).format(date);
+}
+
 async function supa(path: string) {
   if (!SUPABASE_KEY) throw new Error("Missing SUPABASE_SERVICE_ROLE_KEY or SUPABASE_ANON_KEY");
   const response = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, { headers });
+  const text = await response.text();
+  if (!response.ok) throw new Error(text || `Supabase HTTP ${response.status}`);
+  return text ? JSON.parse(text) : null;
+}
+
+async function supaWrite(method: "POST" | "PATCH", path: string, body: Record<string, unknown>) {
+  if (!SUPABASE_KEY) throw new Error("Missing SUPABASE_SERVICE_ROLE_KEY or SUPABASE_ANON_KEY");
+  const response = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
+    method,
+    headers: { ...headers, Prefer: "return=representation" },
+    body: JSON.stringify(body),
+  });
   const text = await response.text();
   if (!response.ok) throw new Error(text || `Supabase HTTP ${response.status}`);
   return text ? JSON.parse(text) : null;
@@ -76,6 +106,23 @@ async function sendMessage(chatId: string | number, text: string) {
 
 function money(value: unknown) {
   return clean(value, 40) || "sin presupuesto";
+}
+
+function normalizeWhatsappPhone(value: unknown) {
+  let digits = String(value ?? "").replace(/\D/g, "");
+  if (!digits) return "";
+  if (digits.startsWith("00")) digits = digits.slice(2);
+  if (digits.startsWith("549")) return digits;
+  if (digits.startsWith("54")) return digits;
+  if (digits.startsWith("15") && digits.length === 10) return `54911${digits.slice(2)}`;
+  if (digits.startsWith("11") && digits.length === 10) return `549${digits}`;
+  return digits;
+}
+
+function whatsappUrl(phone: unknown, message: string) {
+  const normalized = normalizeWhatsappPhone(phone);
+  if (!normalized) return "";
+  return `https://wa.me/${normalized}?text=${encodeURIComponent(message)}`;
 }
 
 function labelEstado(estado: string) {
@@ -141,6 +188,62 @@ async function proximosTurnos(limit = 5) {
   ].join("\n\n");
 }
 
+async function turnosPorFecha(label: string, fecha: string) {
+  const rows = await supa(
+    `turnos?select=id,nombre,apellido,telefono,servicio,fecha,hora,estado,urgente&fecha=eq.${fecha}&estado=neq.cancelado&order=hora.asc`,
+  );
+
+  if (!rows?.length) return `No hay turnos para ${label}.`;
+
+  return [
+    `Turnos de ${label} (${rows.length})`,
+    "",
+    ...rows.map((t: Record<string, unknown>, idx: number) => {
+      const nombre = [clean(t.nombre, 60), clean(t.apellido, 60)].filter(Boolean).join(" ");
+      return [
+        `${idx + 1}. ${clean(t.hora, 20)}hs${t.urgente ? " [URGENTE]" : ""}`,
+        `${nombre || "Sin nombre"} - ${clean(t.servicio, 100) || "sin servicio"}`,
+        `Estado: ${labelEstado(clean(t.estado, 30))}`,
+        `${t.telefono ? `Tel: ${clean(t.telefono, 40)}` : ""}`,
+      ].filter(Boolean).join("\n");
+    }),
+  ].join("\n\n");
+}
+
+async function urgentes(limit = 10) {
+  const [reps, turnos] = await Promise.all([
+    supa(
+      `reparaciones?select=id,numero,problema,presupuesto,estado,equipos(nombre,modelo,clientes(nombre,apellido,telefono,codigo))&urgente=eq.true&estado=neq.entregado&estado=neq.cancelado&order=numero.desc&limit=${limit}`,
+    ),
+    supa(
+      `turnos?select=id,nombre,apellido,telefono,servicio,fecha,hora,estado,urgente&urgente=eq.true&estado=neq.cancelado&order=fecha.asc,hora.asc&limit=${limit}`,
+    ),
+  ]);
+
+  const lines = ["Urgentes PCLAF", ""];
+
+  if (reps?.length) {
+    lines.push("Reparaciones:");
+    reps.forEach((r: Record<string, any>) => {
+      const cliente = r.equipos?.clientes || {};
+      const nombre = [clean(cliente.nombre, 50), clean(cliente.apellido, 50)].filter(Boolean).join(" ");
+      lines.push(`#${clean(r.numero, 20)} - ${nombre || "Sin cliente"} - ${labelEstado(clean(r.estado, 30))}`);
+    });
+    lines.push("");
+  }
+
+  if (turnos?.length) {
+    lines.push("Turnos:");
+    turnos.forEach((t: Record<string, unknown>) => {
+      const nombre = [clean(t.nombre, 50), clean(t.apellido, 50)].filter(Boolean).join(" ");
+      lines.push(`${clean(t.fecha, 20)} ${clean(t.hora, 20)}hs - ${nombre || "Sin nombre"} - ${clean(t.servicio, 80)}`);
+    });
+  }
+
+  if (!reps?.length && !turnos?.length) return "No hay urgentes cargados.";
+  return lines.join("\n").trim();
+}
+
 async function reparacionesPorEstado(estado: string, limit = 8) {
   const rows = await supa(
     `reparaciones?select=id,numero,problema,presupuesto,estado,equipos(nombre,modelo,clientes(nombre,apellido,telefono,codigo))&estado=eq.${estado}&order=numero.desc&limit=${limit}`,
@@ -163,6 +266,93 @@ async function reparacionesPorEstado(estado: string, limit = 8) {
       ].join("\n");
     }),
   ].join("\n\n");
+}
+
+async function buscarReparacion(numero: string) {
+  const n = clean(numero, 20).replace(/^#/, "");
+  if (!n) return null;
+
+  const rows = await supa(
+    `reparaciones?select=id,numero,problema,presupuesto,estado,urgente,fecha_entrega,created_at,equipos(nombre,modelo,clientes(nombre,apellido,telefono,codigo,descuento_resena))&numero=eq.${encodeURIComponent(n)}&limit=1`,
+  );
+
+  return rows?.[0] || null;
+}
+
+async function detalleReparacion(numero: string) {
+  const rep = await buscarReparacion(numero);
+  if (!rep) return `No encontré la reparación #${clean(numero, 20)}.`;
+
+  const equipo = rep.equipos || {};
+  const cliente = equipo.clientes || {};
+  const nombre = [clean(cliente.nombre, 60), clean(cliente.apellido, 60)].filter(Boolean).join(" ");
+  const pasos = await supa(
+    `pasos?select=titulo,estado,nota,fecha,orden&reparacion_id=eq.${rep.id}&order=orden.asc&limit=6`,
+  );
+
+  return [
+    `Reparación #${clean(rep.numero, 20)}`,
+    "",
+    `Estado: ${labelEstado(clean(rep.estado, 30))}${rep.urgente ? " [URGENTE]" : ""}`,
+    `Cliente: ${nombre || "Sin cliente"}${cliente.codigo ? ` (${clean(cliente.codigo, 40)})` : ""}`,
+    `Tel: ${clean(cliente.telefono, 40) || "-"}`,
+    `Equipo: ${clean(equipo.nombre, 80) || "Equipo"}${equipo.modelo ? ` ${clean(equipo.modelo, 80)}` : ""}`,
+    `Problema: ${clean(rep.problema, 220) || "-"}`,
+    `Presupuesto: ${money(rep.presupuesto)}`,
+    `Entrega est.: ${clean(rep.fecha_entrega, 80) || "-"}`,
+    `Descuento: ${cliente.descuento_resena ? "activo" : "no"}`,
+    "",
+    pasos?.length
+      ? [
+        "Últimos pasos:",
+        ...pasos.map((p: Record<string, unknown>) =>
+          `- ${clean(p.fecha, 40) || ""} ${clean(p.titulo, 100)}${p.nota ? ` - ${clean(p.nota, 120)}` : ""}`.trim()
+        ),
+      ].join("\n")
+      : "Sin pasos cargados.",
+  ].join("\n");
+}
+
+async function linkWhatsappReparacion(numero: string) {
+  const rep = await buscarReparacion(numero);
+  if (!rep) return `No encontré la reparación #${clean(numero, 20)}.`;
+
+  const equipo = rep.equipos || {};
+  const cliente = equipo.clientes || {};
+  const nombre = clean(cliente.nombre, 60).split(" ")[0] || "";
+  const message = `Hola ${nombre}, te escribimos de PCLAF. Tu ${clean(equipo.nombre, 80) || "equipo"} (#${clean(rep.numero, 20)}) está ${labelEstado(clean(rep.estado, 30))}.`;
+  const url = whatsappUrl(cliente.telefono, message);
+  if (!url) return `La reparación #${clean(rep.numero, 20)} no tiene teléfono cargado.`;
+  return [`WhatsApp reparación #${clean(rep.numero, 20)}`, "", url].join("\n");
+}
+
+async function cambiarEstadoReparacion(numero: string, estado: string) {
+  const rep = await buscarReparacion(numero);
+  if (!rep) return `No encontré la reparación #${clean(numero, 20)}.`;
+
+  await supaWrite("PATCH", `reparaciones?id=eq.${rep.id}`, { estado });
+  return `Reparación #${clean(rep.numero, 20)} actualizada a ${labelEstado(estado)}.`;
+}
+
+async function agregarNota(numero: string, nota: string) {
+  const rep = await buscarReparacion(numero);
+  if (!rep) return `No encontré la reparación #${clean(numero, 20)}.`;
+  const text = clean(nota, 500);
+  if (!text) return "Usá: /nota 3288 texto de la nota";
+
+  const rows = await supa(`pasos?select=orden&reparacion_id=eq.${rep.id}&order=orden.desc&limit=1`);
+  const orden = rows?.length ? Number(rows[0].orden || 0) + 1 : 1;
+  await supaWrite("POST", "pasos", {
+    reparacion_id: rep.id,
+    orden,
+    titulo: "Nota desde Telegram",
+    estado: "active",
+    nota: text,
+    fecha: shortDateAr(todayBuenosAires()),
+    icono: "note",
+  });
+
+  return `Nota agregada a la reparación #${clean(rep.numero, 20)}.`;
 }
 
 async function descuentos(limit = 15) {
@@ -247,6 +437,95 @@ async function answerCommand(text: string) {
   return help();
 }
 
+function helpV2() {
+  return [
+    "Bot interno PCLAF",
+    "",
+    "Comandos:",
+    "/resumen - numeros generales",
+    "/hoy - turnos de hoy",
+    "/manana - turnos de manana",
+    "/urgentes - turnos y reparaciones urgentes",
+    "/espera - reparaciones en espera",
+    "/proceso - reparaciones en reparacion",
+    "/listo - reparaciones listas",
+    "/canceladas - reparaciones canceladas",
+    "/turno - proximo turno",
+    "/turnos - proximos 5 turnos",
+    "/descuentos - clientes con descuento",
+    "/cliente texto - buscar cliente por nombre, codigo o telefono",
+    "/reparacion 3288 - detalle de reparacion",
+    "/wa 3288 - link de WhatsApp al cliente",
+    "/proceso 3288 - pasar a reparacion",
+    "/listo 3288 - pasar a listo",
+    "/cancelar 3288 - cancelar reparacion",
+    "/nota 3288 texto - agregar nota al historial",
+    "",
+    "Ejemplo:",
+    "/reparacion 3288",
+  ].join("\n");
+}
+
+async function answerCommandV2(text: string) {
+  const [rawCommand, ...rest] = text.trim().split(/\s+/);
+  const command = rawCommand.toLowerCase().split("@")[0];
+  const arg = rest.join(" ").trim();
+
+  if (command === "/start" || command === "/help" || command === "ayuda") return helpV2();
+  if (command === "/resumen" || command === "resumen") return await resumen();
+  if (command === "/hoy" || command === "hoy") return await turnosPorFecha("hoy", todayBuenosAires());
+  if (command === "/manana" || command === "/mañana" || command === "manana" || command === "mañana") {
+    return await turnosPorFecha("manana", addDays(todayBuenosAires(), 1));
+  }
+  if (command === "/urgentes" || command === "/urgente" || command === "urgentes") return await urgentes();
+  if (command === "/turno" || command === "turno") return await proximosTurnos(1);
+  if (command === "/turnos" || command === "turnos") return await proximosTurnos(5);
+
+  if (command === "/espera" || command === "espera") {
+    if (arg) return await cambiarEstadoReparacion(arg, "espera");
+    return await reparacionesPorEstado("espera");
+  }
+  if (command === "/proceso" || command === "proceso") {
+    if (arg) return await cambiarEstadoReparacion(arg, "proceso");
+    return await reparacionesPorEstado("proceso");
+  }
+  if (command === "/listo" || command === "/listas" || command === "listo") {
+    if (arg) return await cambiarEstadoReparacion(arg, "listo");
+    return await reparacionesPorEstado("listo");
+  }
+  if (command === "/entregar" || command === "/entregado" || command === "entregar") {
+    if (!arg) return "Usa: /entregar 3288";
+    return await cambiarEstadoReparacion(arg, "entregado");
+  }
+  if (command === "/cancelar" || command === "cancelar") {
+    if (!arg) return "Usa: /cancelar 3288";
+    return await cambiarEstadoReparacion(arg, "cancelado");
+  }
+  if (command === "/canceladas" || command === "/cancelado" || command === "canceladas") {
+    return await reparacionesPorEstado("cancelado");
+  }
+  if (command === "/reparacion" || command === "/rep" || command === "reparacion") {
+    if (!arg) return "Usa: /reparacion 3288";
+    return await detalleReparacion(arg);
+  }
+  if (command === "/wa" || command === "/whatsapp" || command === "wa") {
+    if (!arg) return "Usa: /wa 3288";
+    return await linkWhatsappReparacion(arg);
+  }
+  if (command === "/nota" || command === "nota") {
+    const [numero, ...notaParts] = rest;
+    if (!numero || !notaParts.length) return "Usa: /nota 3288 texto de la nota";
+    return await agregarNota(numero, notaParts.join(" "));
+  }
+  if (command === "/descuentos" || command === "descuentos") return await descuentos();
+  if (command === "/cliente" || command === "cliente") {
+    if (!arg) return "Usa: /cliente nombre, codigo o telefono";
+    return await buscarCliente(arg);
+  }
+
+  return helpV2();
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   if (req.method !== "POST") {
@@ -278,7 +557,7 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ ok: true, ignored: true }), { headers: corsHeaders });
     }
 
-    const reply = await answerCommand(text);
+    const reply = await answerCommandV2(text);
     await sendMessage(chatId, reply.slice(0, 3900));
 
     return new Response(JSON.stringify({ ok: true }), {
