@@ -173,7 +173,34 @@ function repairKeyboard(rep: Record<string, any>) {
   ];
 
   if (wa) rows.unshift([{ text: "WhatsApp cliente", url: wa }]);
+  rows.push([{ text: "Menu principal", callback_data: "menu:main" }]);
   return { inline_keyboard: rows };
+}
+
+function mainMenuKeyboard() {
+  return {
+    inline_keyboard: [
+      [
+        { text: "Resumen", callback_data: "menu:resumen" },
+        { text: "Hoy", callback_data: "menu:hoy" },
+      ],
+      [
+        { text: "Urgentes", callback_data: "menu:urgentes" },
+        { text: "Turnos", callback_data: "menu:turnos" },
+      ],
+      [
+        { text: "En espera", callback_data: "menu:espera" },
+        { text: "En reparación", callback_data: "menu:proceso" },
+      ],
+      [
+        { text: "Listas", callback_data: "menu:listo" },
+        { text: "Descuentos", callback_data: "menu:descuentos" },
+      ],
+      [
+        { text: "Ayuda", callback_data: "menu:help" },
+      ],
+    ],
+  };
 }
 
 function labelEstado(estado: string) {
@@ -430,6 +457,21 @@ async function callbackReply(data: string) {
   const action = parts[0];
   const numero = parts.at(-1) || "";
 
+  if (action === "menu") {
+    const target = parts[1] || "main";
+    if (target === "main" || target === "help") {
+      return { text: helpV2(), keyboard: mainMenuKeyboard() };
+    }
+    if (target === "resumen") return { text: await resumen(), keyboard: mainMenuKeyboard() };
+    if (target === "hoy") return { text: await turnosPorFecha("hoy", todayBuenosAires()), keyboard: mainMenuKeyboard() };
+    if (target === "urgentes") return { text: await urgentes(), keyboard: mainMenuKeyboard() };
+    if (target === "turnos") return { text: await proximosTurnos(5), keyboard: mainMenuKeyboard() };
+    if (target === "espera") return { text: await reparacionesPorEstado("espera"), keyboard: mainMenuKeyboard() };
+    if (target === "proceso") return { text: await reparacionesPorEstado("proceso"), keyboard: mainMenuKeyboard() };
+    if (target === "listo") return { text: await reparacionesPorEstado("listo"), keyboard: mainMenuKeyboard() };
+    if (target === "descuentos") return { text: await descuentos(), keyboard: mainMenuKeyboard() };
+  }
+
   if (action === "rep") {
     return {
       text: await detalleReparacion(numero),
@@ -566,6 +608,104 @@ function helpV2() {
   ].join("\n");
 }
 
+function normalizeTextInput(text: string) {
+  return text
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+async function interpretNaturalLanguage(text: string) {
+  const normalized = normalizeTextInput(text);
+  const repairNumberMatch = normalized.match(/\b(\d{3,6})\b/);
+  const repairNumber = repairNumberMatch?.[1] || "";
+
+  if (normalized === "menu" || normalized === "inicio" || normalized === "panel") {
+    return { text: helpV2(), keyboard: mainMenuKeyboard() };
+  }
+
+  if (normalized.includes("proximo turno") || normalized.includes("siguiente turno")) {
+    return { text: await proximosTurnos(1), keyboard: mainMenuKeyboard() };
+  }
+
+  if (normalized.includes("turnos de hoy") || normalized === "hoy") {
+    return { text: await turnosPorFecha("hoy", todayBuenosAires()), keyboard: mainMenuKeyboard() };
+  }
+
+  if (normalized.includes("turnos de manana") || normalized.includes("turnos manana")) {
+    return { text: await turnosPorFecha("manana", addDays(todayBuenosAires(), 1)), keyboard: mainMenuKeyboard() };
+  }
+
+  if (normalized.includes("urgente")) {
+    return { text: await urgentes(), keyboard: mainMenuKeyboard() };
+  }
+
+  if (normalized.includes("resumen") || normalized.includes("cuantas reparaciones") || normalized.includes("cuantos turnos")) {
+    return { text: await resumen(), keyboard: mainMenuKeyboard() };
+  }
+
+  if (normalized.includes("reparaciones listas") || normalized.includes("reparaciones listos") || normalized.includes("que esta listo")) {
+    return { text: await reparacionesPorEstado("listo"), keyboard: mainMenuKeyboard() };
+  }
+
+  if (normalized.includes("reparaciones en espera") || normalized.includes("que esta en espera")) {
+    return { text: await reparacionesPorEstado("espera"), keyboard: mainMenuKeyboard() };
+  }
+
+  if (normalized.includes("reparaciones en reparacion") || normalized.includes("que esta en reparacion") || normalized.includes("que esta en proceso")) {
+    return { text: await reparacionesPorEstado("proceso"), keyboard: mainMenuKeyboard() };
+  }
+
+  if (normalized.includes("descuento")) {
+    return { text: await descuentos(), keyboard: mainMenuKeyboard() };
+  }
+
+  if ((normalized.includes("buscar cliente") || normalized.includes("busca cliente") || normalized.startsWith("cliente ")) && !repairNumber) {
+    const term = normalized
+      .replace("buscar cliente", "")
+      .replace("busca cliente", "")
+      .replace(/^cliente\s+/, "")
+      .trim();
+    if (term) return { text: await buscarCliente(term), keyboard: mainMenuKeyboard() };
+  }
+
+  if (repairNumber && (normalized.includes("detalle") || normalized.includes("reparacion") || normalized.includes("ver la") || normalized.startsWith("rep "))) {
+    const rep = await buscarReparacion(repairNumber);
+    return rep
+      ? { text: await detalleReparacion(repairNumber), keyboard: repairKeyboard(rep) }
+      : { text: `No encontre la reparacion #${repairNumber}.`, keyboard: mainMenuKeyboard() };
+  }
+
+  if (repairNumber && (normalized.includes("pasar") || normalized.includes("poner") || normalized.includes("cambiar"))) {
+    if (normalized.includes("listo")) {
+      const text = await cambiarEstadoReparacion(repairNumber, "listo");
+      const rep = await buscarReparacion(repairNumber);
+      return { text, keyboard: rep ? repairKeyboard(rep) : mainMenuKeyboard() };
+    }
+    if (normalized.includes("proceso") || normalized.includes("reparacion")) {
+      const text = await cambiarEstadoReparacion(repairNumber, "proceso");
+      const rep = await buscarReparacion(repairNumber);
+      return { text, keyboard: rep ? repairKeyboard(rep) : mainMenuKeyboard() };
+    }
+    if (normalized.includes("cancel")) {
+      const text = await cambiarEstadoReparacion(repairNumber, "cancelado");
+      const rep = await buscarReparacion(repairNumber);
+      return { text, keyboard: rep ? repairKeyboard(rep) : mainMenuKeyboard() };
+    }
+  }
+
+  if (repairNumber && normalized.includes("whatsapp")) {
+    const rep = await buscarReparacion(repairNumber);
+    return rep
+      ? { text: await linkWhatsappReparacion(repairNumber), keyboard: repairKeyboard(rep) }
+      : { text: `No encontre la reparacion #${repairNumber}.`, keyboard: mainMenuKeyboard() };
+  }
+
+  return null;
+}
+
 async function answerCommandV2(text: string) {
   const [rawCommand, ...rest] = text.trim().split(/\s+/);
   const command = rawCommand.toLowerCase().split("@")[0];
@@ -627,6 +767,9 @@ async function answerCommandV2(text: string) {
     return await buscarCliente(arg);
   }
 
+  const natural = await interpretNaturalLanguage(text);
+  if (natural) return natural.text;
+
   return helpV2();
 }
 
@@ -677,14 +820,28 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ ok: true, ignored: true }), { headers: corsHeaders });
     }
 
+    const natural = await interpretNaturalLanguage(text);
+    if (natural) {
+      await sendMessage(chatId, natural.text.slice(0, 3900), natural.keyboard);
+      return new Response(JSON.stringify({ ok: true }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const reply = await answerCommandV2(text);
     const [rawCommand, ...parts] = text.trim().split(/\s+/);
     const cmd = rawCommand.toLowerCase().split("@")[0];
     const maybeNumero = parts.join(" ").trim();
+    const keyboard =
+      cmd === "/start" || cmd === "/help" || cmd === "ayuda"
+        ? mainMenuKeyboard()
+        : ((cmd === "/reparacion" || cmd === "/rep" || cmd === "reparacion") && maybeNumero
+            ? (() => undefined)()
+            : undefined);
     const repForButtons = (cmd === "/reparacion" || cmd === "/rep" || cmd === "reparacion") && maybeNumero
       ? await buscarReparacion(maybeNumero)
       : null;
-    await sendMessage(chatId, reply.slice(0, 3900), repForButtons ? repairKeyboard(repForButtons) : undefined);
+    await sendMessage(chatId, reply.slice(0, 3900), repForButtons ? repairKeyboard(repForButtons) : (keyboard || undefined));
 
     return new Response(JSON.stringify({ ok: true }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

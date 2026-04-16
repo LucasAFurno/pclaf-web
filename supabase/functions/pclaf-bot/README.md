@@ -2,6 +2,14 @@
 
 Bot interno de Telegram para consultas rapidas del panel PCLAF.
 
+Tambien interpreta consultas simples en lenguaje natural, por ejemplo:
+
+- `mostrame las reparaciones listas`
+- `proximo turno`
+- `busca cliente tiesto`
+- `pasar la 3288 a listo`
+- `whatsapp 3288`
+
 ## Comandos
 
 - `/resumen`
