@@ -1491,10 +1491,10 @@ async function chEst(id,st,btn){
     const num=rep.numero||'';
     const cod=cl.codigo||'';
     const msgs={
-      proceso:`Hola ${nombre}! 🔧 Tu ${equipo} (#${num}) ya está en reparación. Te avisamos en cuanto esté listo.`,
-      listo:`Hola ${nombre}! ✅ Tu ${equipo} (#${num}) está *listo para retirar*.\n\n📍 Campana 51, Floresta. Lun-Vie 10 a 19hs.\n\nTraé el comprobante. ¡Gracias!`,
-      entregado:`Hola ${nombre}! 📦 Tu ${equipo} (#${num}) está listo y entregado. ¡Gracias por elegirnos!\n\n🎁 *Descuento especial para vos:* si dejás una reseña en Google, en tu próxima visita tenés un *10% de descuento*.\n\n⭐ https://g.page/r/CebOQaDNkBJNEBM/review\n\nUna vez que dejes la reseña, respondé este mensaje con tu código de cliente (*${cod}*) y lo activamos. ¡Gracias! 🙏`,
-      espera:`Hola ${nombre}! ⏳ Tu ${equipo} (#${num}) está en espera. Te avisamos cuando arranquemos con la reparación.`,
+      proceso:`Hola ${nombre}! \u{1F527} Tu ${equipo} (#${num}) est\u00E1 en reparaci\u00F3n. Te avisamos en cuanto est\u00E9 listo.`,
+      listo:`Hola ${nombre}! \u2705 Tu ${equipo} (#${num}) est\u00E1 listo para retirar.\n\n\u{1F4CD} Campana 51, Floresta. Lun-Vie 10 a 19hs.\n\nAlias: PC-LAF\nNombre: Lucas A. Furno\nValor: ${rep.presupuesto||''}\n\nAvisanos en qu\u00E9 horario pasas a retirar para organizarnos, muchas gracias!`,
+      entregado:`Hola ${nombre}! \u{1F4E6} Tu ${equipo} (#${num}) est\u00E1 listo y entregado. \u00A1Gracias por elegirnos!\n\n\u{1F381} *Descuento especial para vos:* si dej\u00E1s una rese\u00F1a en Google, en tu pr\u00F3xima visita ten\u00E9s un *10% de descuento*.\n\n\u2B50 https://g.page/r/CebOQaDNkBJNEBM/review\n\nUna vez que dejes la rese\u00F1a, respond\u00E9 este mensaje con tu c\u00F3digo de cliente (*${cod}*) y lo activamos. \u00A1Gracias! \u{1F64F}`,
+      espera:`Hola ${nombre}! \u23F3 Tu ${equipo} (#${num}) est\u00E1 en espera. Te avisamos cuando arranquemos con la reparaci\u00F3n.`,
     };
     toast(`Estado → "${LB[st]}" ✓`);
     playSound(st==='entregado' ? 'success' : 'action');
@@ -1667,18 +1667,18 @@ async function crearRep(){
     await loadAll();
     if(tel){
       const msg=encodeURIComponent(
-        `Hola ${nom}! 👋 Te escribimos de *PCLAF - Servicio técnico*.\n\n`+
-        `✅ Recibimos tu equipo correctamente.\n\n`+
-        `📋 *Resumen de tu ingreso:*\n`+
-        `• Equipo: ${eq}${mod?' ('+mod+')':''}\n`+
-        `• Problema: ${prob}\n`+
-        `• N° de reparación: *#${num}*\n`+
-        `${pres?'• Presupuesto: '+pres+'\n':''}`+
-        `\n📍 Campana 51, Floresta. Lun-Vie 10 a 19hs.\n`+
-        `\nPodés seguir el estado en:\n`+
-        `🔗 https://www.pclaf.com.ar/historial.html\n`+
-        `(código: *${cod}*)\n\n`+
-        `Te avisamos cada novedad. ¡Gracias! 🙏`
+        `Hola ${nom}! \u{1F44B} Te escribimos de *PCLAF - Servicio t\u00E9cnico*.\n\n`+
+        `\u2705 Recibimos tu equipo correctamente.\n\n`+
+        `\u{1F4CB} *Resumen de tu ingreso:*\n`+
+        `\u2022 Equipo: ${eq}${mod?' ('+mod+')':''}\n`+
+        `\u2022 Problema: ${prob}\n`+
+        `\u2022 N\u00B0 de reparaci\u00F3n: *#${num}*\n`+
+        `${pres?'\u2022 Presupuesto: '+pres+'\n':''}`+
+        `\n\u{1F4CD} Campana 51, Floresta. Lun-Vie 10 a 19hs.\n`+
+        `\nPod\u00E9s seguir el estado en:\n`+
+        `\u{1F517} https://www.pclaf.com.ar/historial.html\n`+
+        `(c\u00F3digo: *${cod}*)\n\n`+
+        `Te avisamos cada novedad. \u00A1Gracias! \u{1F64F}`
       );
       toast(`Reparación #${num} creada ✓`);
       playSound('success');
