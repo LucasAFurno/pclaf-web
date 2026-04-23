@@ -118,6 +118,13 @@ main{max-width:1200px;margin:0 auto;padding:22px 24px 80px;overflow:hidden;}
 .bgrid{display:grid;grid-template-columns:minmax(0,1.08fr) minmax(320px,.92fr);gap:12px;margin-top:12px;align-items:start;}
 .bsec{background:linear-gradient(180deg,rgba(255,255,255,.018),rgba(255,255,255,.01));border:1px solid var(--border);border-radius:12px;padding:15px;box-shadow:inset 0 1px 0 rgba(255,255,255,.02);}
 .bsec h4{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.14em;margin-bottom:12px;}
+.bsec-main{grid-column:1/2;}
+.bsec-flow{grid-column:2/3;grid-row:1/span 2;}
+.bsec-reports{grid-column:1/2;}
+.bsec-photos{grid-column:1/2;}
+.bsec-rating{grid-column:2/3;}
+.section-actions{display:grid;grid-template-columns:1fr;gap:8px;margin-top:12px;}
+.section-inline-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:10px;}
 .cir{display:grid;grid-template-columns:110px minmax(0,1fr);align-items:start;gap:10px;padding:5px 0;margin:0;}
 .cil{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;line-height:1.4;padding-top:2px;}
 .civ{font-size:14px;font-weight:700;color:#fff;font-family:var(--mono);text-align:right;line-height:1.35;overflow-wrap:anywhere;}
@@ -287,6 +294,8 @@ tr:hover td{background:var(--black3);}
 @media(max-width:900px){
   .kgrid,.sbar{grid-template-columns:1fr 1fr;}
   .cg2,.cgeq,.bgrid{grid-template-columns:1fr;}
+  .bsec-main,.bsec-flow,.bsec-reports,.bsec-photos,.bsec-rating{grid-column:auto;grid-row:auto;}
+  .section-inline-actions{grid-template-columns:1fr;}
   .rcp{display:none;}
   .topbar{padding:0 12px;gap:8px;}
   .tabs{gap:1px;}
@@ -1351,7 +1360,7 @@ function renderCards(data){
       </div>
       <div class="rcb" id="b-${r.id}">
         <div class="bgrid">
-          <div class="bsec">
+          <div class="bsec bsec-main">
             <h4>Cliente y equipo</h4>
             <div id="equipoSpecs-${r.id}">${renderEquipmentSnapshot(r.id)}</div>
             <div class="cir"><span class="cil">Nombre</span><span class="civ">${c.nombre||'–'}${c.apellido?' '+c.apellido:''}</span></div>
@@ -1380,7 +1389,7 @@ function renderCards(data){
             <button class="pdf-btn" onclick="generarPDF('${r.id}')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> Generar presupuesto PDF</button>
             <input type="file" accept=".html" style="display:none" id="reporteInput-${r.id}" onchange="procesarReporte('${r.id}',this)"/>
             <div id="reporteStatus-${r.id}" style="font-size:11px;color:var(--text3);margin-top:4px;display:none"></div>
-            <div id="reporteActions-${r.id}" style="display:grid;gap:4px;margin-top:6px"></div>
+            <div id="reporteActions-${r.id}" style="display:none"></div>
             <div style="display:none;gap:6px;align-items:center;flex-wrap:wrap;margin-top:6px">
               <select class="sse" id="reporteSlot-${r.id}"><option value="antes">📸 Antes</option><option value="tecnico">🔧 Técnico</option><option value="despues">✅ Después</option></select>
               <button class="pdf-btn" onclick="descargarLauncherReporte('${r.id}','${r.numero}')" style="margin:0;border-color:var(--amber);color:var(--amber)">Auto reporte</button>
@@ -1393,7 +1402,7 @@ function renderCards(data){
             <button class="pdf-btn" onclick="editarRep('${r.id}')" style="margin-top:4px;border-color:var(--amber);color:var(--amber)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Editar reparación</button>
 ${tel?`<a class="wab" href="https://wa.me/54${tel}?text=${wm}" target="_blank" rel="noopener noreferrer"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg> WhatsApp a ${(c.nombre||'').split(' ')[0]||'cliente'}</a>`:''}
           </div>
-          <div class="bsec">
+          <div class="bsec bsec-flow">
             <h4>Cambiar estado</h4>
             <div class="sgrid" style="margin-bottom:14px">
               ${['espera','proceso','listo','entregado','cancelado'].map(s=>`<div class="so ${r.estado===s?'a'+s[0]:''}" onclick="chEst('${r.id}','${s}',this)">${IC[s]} ${s.charAt(0).toUpperCase()+s.slice(1)}</div>`).join('')}
@@ -1417,7 +1426,11 @@ ${tel?`<a class="wab" href="https://wa.me/54${tel}?text=${wm}" target="_blank" r
               <div class="sr2"><input class="sin" id="sno-${r.id}" placeholder="Nota (opcional)"/><input class="sin" id="sfe-${r.id}" placeholder="Fecha" style="max-width:110px" value="${new Date().toLocaleDateString('es-AR',{day:'numeric',month:'short'})}"/><button class="smbtn" onclick="addPaso('${r.id}')">+ Paso</button></div>
             </div>
           </div>
-          <div class="bsec" style="grid-column:1/2">
+          <div class="bsec bsec-reports">
+            <h4 style="margin-bottom:8px">Diagnósticos y reportes</h4>
+            <div id="reportePanel-${r.id}" style="display:grid;gap:4px"></div>
+          </div>
+          <div class="bsec bsec-photos">
             <h4 style="margin-bottom:8px">📷 Fotos del proceso</h4>
             <div id="fotos-${r.id}" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;min-height:32px;"><div style="color:var(--text3);font-size:12px;padding:4px 0">Cargando...</div></div>
             <div style="display:flex;gap:6px;align-items:center">
@@ -1428,7 +1441,7 @@ ${tel?`<a class="wab" href="https://wa.me/54${tel}?text=${wm}" target="_blank" r
               <select class="sse" id="fotoTipo-${r.id}"><option value="antes">📸 Antes</option><option value="durante">🔧 Durante</option><option value="despues">✅ Después</option></select>
             </div>
           </div>
-          <div class="bsec" style="grid-column:2/3" id="califSec-${r.id}">
+          <div class="bsec bsec-rating" id="califSec-${r.id}">
             <h4 style="margin-bottom:8px">⭐ Calificación</h4>
             <div id="calif-${r.id}" style="color:var(--text3);font-size:12px">Cargando...</div>
           </div>
@@ -1936,7 +1949,7 @@ async function verReporteAdmin(reportId, repId=''){
 }
 
 async function loadReportActions(repId){
-  const cont=document.getElementById(`reporteActions-${repId}`);
+  const cont=document.getElementById(`reportePanel-${repId}`) || document.getElementById(`reporteActions-${repId}`);
   if(!cont) return;
   cont.innerHTML='<div style="color:var(--text3);font-size:11px">Consultando reportes...</div>';
   try{
