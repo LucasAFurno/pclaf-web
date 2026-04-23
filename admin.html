@@ -1442,7 +1442,7 @@ ${tel?`<a class="wab" href="https://wa.me/54${tel}?text=${wm}" target="_blank" r
     </div>`:'';
 
   document.getElementById('rlist').innerHTML=cards+paginacion;
-  await restoreOpenRepairCard();
+  restoreOpenRepairCard().catch(()=>{});
 }
 
 function renderList(){ loadPage(); } // backwards compat
