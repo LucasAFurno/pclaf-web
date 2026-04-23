@@ -240,23 +240,26 @@ tr:hover td{background:var(--black3);}
 /* presupuesto PDF btn */
 .pdf-btn{display:flex;align-items:center;justify-content:center;gap:6px;background:var(--black4);border:1px solid var(--border2);color:var(--text2);padding:8px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;margin-top:6px;width:100%;}
 .pdf-btn:hover{border-color:var(--red);color:var(--red);}
-.pdf-btn.compact{margin-top:0;padding:5px 9px;font-size:11px;border-radius:7px;min-height:30px;}
-.report-groups{display:grid;gap:8px;}
-.report-group{background:var(--black3);border:1px solid var(--border);border-radius:11px;padding:10px;}
-.report-group-title{font-size:11px;font-weight:700;color:#fff;margin-bottom:8px;}
-.report-slot-list{display:grid;gap:6px;}
-.report-slot-card{background:var(--black4);border:1px solid var(--border2);border-radius:9px;padding:8px 10px;}
-.report-slot-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px;}
-.report-slot-title{font-size:12px;font-weight:700;color:#fff;line-height:1.2;}
-.report-slot-date{font-size:10px;color:var(--text3);white-space:nowrap;}
-.report-slot-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;}
-[id^="reporteActions-"]{display:grid;gap:7px!important;margin-top:4px!important;}
-[id^="reporteActions-"]>div{padding:9px!important;border-radius:10px!important;}
-[id^="reporteActions-"]>div>div:first-child{font-size:10px!important;margin-bottom:7px!important;}
-[id^="reporteActions-"]>div>div:last-child{gap:6px!important;}
-[id^="reporteActions-"]>div>div:last-child>div{padding:8px 9px!important;border-radius:9px!important;}
-[id^="reporteActions-"]>div>div:last-child>div>div:first-child{margin-bottom:6px!important;}
-[id^="reporteActions-"] .pdf-btn{margin-top:0!important;padding:5px 8px!important;font-size:11px!important;min-height:30px;}
+.pdf-btn.compact{margin-top:0;padding:4px 8px;font-size:10px;border-radius:7px;min-height:28px;}
+.report-groups{display:grid;grid-template-columns:minmax(0,.95fr) minmax(0,1.05fr);gap:6px;align-items:start;}
+.report-group{background:var(--black3);border:1px solid var(--border);border-radius:11px;padding:8px;}
+.report-group-title{font-size:10px;font-weight:700;color:#fff;margin-bottom:6px;letter-spacing:.08em;text-transform:uppercase;}
+.report-slot-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px;}
+.report-slot-card{background:var(--black4);border:1px solid var(--border2);border-radius:9px;padding:8px 9px;}
+.report-slot-head{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:6px;}
+.report-slot-title{font-size:11px;font-weight:700;color:#fff;line-height:1.15;}
+.report-slot-date{font-size:9px;color:var(--text3);white-space:nowrap;}
+.report-slot-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;}
+[id^="reporteActions-"]{display:grid;grid-template-columns:minmax(0,.95fr) minmax(0,1.05fr);gap:6px!important;margin-top:4px!important;align-items:start;}
+[id^="reporteActions-"]>div{min-width:0;}
+[id^="reporteActions-"]>div:last-child>div:last-child{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px!important;}
+[id^="reporteActions-"] .pdf-btn{margin-top:0!important;padding:4px 8px!important;font-size:10px!important;min-height:28px;}
+@media (max-width: 820px){
+  .report-groups{grid-template-columns:1fr;}
+  .report-slot-list{grid-template-columns:1fr;}
+  [id^="reporteActions-"]{grid-template-columns:1fr!important;}
+  [id^="reporteActions-"]>div:last-child>div:last-child{grid-template-columns:1fr!important;}
+}
 /* comprobante */
 @media print{
   body > *{display:none!important;}
@@ -1945,15 +1948,15 @@ async function loadReportActions(repId){
     const formatDate=r=>r?new Date(r.created_at).toLocaleDateString('es-AR',{day:'numeric',month:'short',year:'numeric'}):'Sin subir';
     const renderSlot=(slot,title,color,auto=false)=>{
       const r=bySlot[slot];
-      return `<div style="background:var(--black4);border:1px solid var(--border2);border-radius:10px;padding:10px 12px">
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px">
-          <div style="font-size:12px;font-weight:700;color:#fff">${title}</div>
-          <div style="font-size:10px;color:var(--text3)">${formatDate(r)}</div>
+      return `<div class="report-slot-card">
+        <div class="report-slot-head">
+          <div class="report-slot-title">${title}</div>
+          <div class="report-slot-date">${formatDate(r)}</div>
         </div>
-        <div style="display:flex;gap:6px;flex-wrap:wrap">
-          ${r?`<button class="pdf-btn" onclick="verReporteAdmin('${r.id}','${repId}')" style="margin:0;padding:6px 10px;font-size:11px">Ver</button>`:''}
-          <button class="pdf-btn" onclick="prepararResubidaReporte('${repId}','${slot}')" style="margin:0;padding:6px 10px;font-size:11px;border-color:${color};color:${color}">${r?'Re-subir':'Subir'}</button>
-          ${auto?`<button class="pdf-btn" onclick="descargarLauncherReporte('${repId}','${aR.find(x=>x.id===repId)?.numero||''}','${slot}')" style="margin:0;padding:6px 10px;font-size:11px;border-color:var(--amber);color:var(--amber)">Auto</button>`:''}
+        <div class="report-slot-actions">
+          ${r?`<button class="pdf-btn compact" onclick="verReporteAdmin('${r.id}','${repId}')">Ver</button>`:'<span></span>'}
+          <button class="pdf-btn compact" onclick="prepararResubidaReporte('${repId}','${slot}')" style="border-color:${color};color:${color}">${r?'Re-subir':'Subir'}</button>
+          ${auto?`<button class="pdf-btn compact" onclick="descargarLauncherReporte('${repId}','${aR.find(x=>x.id===repId)?.numero||''}','${slot}')" style="border-color:var(--amber);color:var(--amber)">Auto</button>`:'<span></span>'}
         </div>
       </div>`;
     };
