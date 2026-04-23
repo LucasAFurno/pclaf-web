@@ -116,18 +116,18 @@ main{max-width:1200px;margin:0 auto;padding:22px 24px 80px;overflow:hidden;}
 .rcb{display:none;padding:0 16px 16px;border-top:1px solid var(--border);}
 .rc.open .rcb{display:block;}
 .bgrid{display:grid;grid-template-columns:minmax(0,1.08fr) minmax(320px,.92fr);gap:12px;margin-top:12px;align-items:start;}
-.bsec{background:linear-gradient(180deg,rgba(255,255,255,.018),rgba(255,255,255,.01));border:1px solid var(--border);border-radius:12px;padding:15px;box-shadow:inset 0 1px 0 rgba(255,255,255,.02);}
+.bsec{background:linear-gradient(180deg,rgba(255,255,255,.02),rgba(255,255,255,.008));border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:15px;box-shadow:inset 0 1px 0 rgba(255,255,255,.025);}
 .bsec h4{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.14em;margin-bottom:12px;}
-.bsec-main{grid-column:1/2;}
-.bsec-flow{grid-column:2/3;grid-row:1/span 2;}
-.bsec-reports{grid-column:1/2;}
-.bsec-photos{grid-column:1/2;}
-.bsec-rating{grid-column:2/3;}
+.bsec-main{grid-column:1/2;border-color:rgba(255,255,255,.08);}
+.bsec-flow{grid-column:2/3;grid-row:1/span 2;border-color:rgba(59,130,246,.22);background:linear-gradient(180deg,rgba(59,130,246,.055),rgba(255,255,255,.01));}
+.bsec-reports{grid-column:1/2;border-color:rgba(245,158,11,.18);background:linear-gradient(180deg,rgba(245,158,11,.05),rgba(255,255,255,.01));}
+.bsec-photos{grid-column:1/2;border-color:rgba(34,197,94,.16);}
+.bsec-rating{grid-column:2/3;border-color:rgba(250,204,21,.16);}
 .section-actions{display:grid;grid-template-columns:1fr;gap:8px;margin-top:12px;}
 .section-inline-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:10px;}
 .cir{display:grid;grid-template-columns:110px minmax(0,1fr);align-items:start;gap:10px;padding:5px 0;margin:0;}
-.cil{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;line-height:1.4;padding-top:2px;}
-.civ{font-size:14px;font-weight:700;color:#fff;font-family:var(--mono);text-align:right;line-height:1.35;overflow-wrap:anywhere;}
+.cil{font-size:10px;font-weight:700;color:#7f8794;text-transform:uppercase;letter-spacing:.1em;line-height:1.4;padding-top:3px;}
+.civ{font-size:14px;font-weight:600;color:#edf1f7;font-family:inherit;text-align:right;line-height:1.42;overflow-wrap:anywhere;}
 .spec-card{margin:0 0 14px;padding:12px 13px;background:linear-gradient(180deg,rgba(255,255,255,.025),rgba(255,255,255,.01));border:1px solid var(--border2);border-radius:11px;}
 .spec-title{font-size:12px;font-weight:700;color:#fff;margin-bottom:8px;}
 .spec-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px;}
@@ -139,17 +139,17 @@ main{max-width:1200px;margin:0 auto;padding:22px 24px 80px;overflow:hidden;}
 .spec-field{display:flex;flex-direction:column;gap:4px;}
 .spec-field label{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;}
 .spec-note{margin-top:9px;font-size:10px;color:var(--text3);line-height:1.5;}
-.wab{display:flex;align-items:center;justify-content:center;gap:7px;background:#25d366;color:#fff;text-decoration:none;padding:10px 12px;border-radius:10px;font-size:13px;font-weight:700;margin-top:10px;width:100%;min-height:42px;}
+.wab{display:flex;align-items:center;justify-content:center;gap:7px;background:#22c55e;color:#fff;text-decoration:none;padding:10px 12px;border-radius:11px;font-size:13px;font-weight:700;margin-top:10px;width:100%;min-height:42px;box-shadow:inset 0 1px 0 rgba(255,255,255,.12);}
 .wab:hover{opacity:.88;}
 .sgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
-.so{display:flex;align-items:center;justify-content:center;min-height:42px;padding:9px 10px;border-radius:9px;border:1.5px solid var(--border);background:var(--black4);font-size:12px;font-weight:700;color:var(--text2);cursor:pointer;transition:all .15s;text-align:center;font-family:var(--mono);line-height:1.1;}
+.so{display:flex;align-items:center;justify-content:center;min-height:42px;padding:9px 10px;border-radius:10px;border:1.5px solid rgba(255,255,255,.08);background:rgba(255,255,255,.02);font-size:12px;font-weight:700;color:#c5ccd6;cursor:pointer;transition:all .15s;text-align:center;font-family:inherit;line-height:1.1;}
 .so:hover{border-color:var(--border2);color:#fff;}
 .so.ae{border-color:var(--blue);color:var(--blue);background:var(--blue-dim);}
 .so.ap{border-color:var(--amber);color:var(--amber);background:var(--amber-dim);}
 .so.al{border-color:var(--green);color:var(--green);background:var(--green-dim);}
 .so.ad{border-color:var(--border2);color:var(--text3);background:rgba(255,255,255,.04);}
 .so.ac{border-color:var(--red);color:var(--red);background:rgba(204,0,0,.1);}
-.prin{flex:1;background:var(--black4);border:1px solid var(--border2);border-radius:8px;padding:8px 10px;font-size:13px;color:var(--text);outline:none;font-family:var(--mono);}
+.prin{flex:1;background:var(--black4);border:1px solid var(--border2);border-radius:9px;padding:8px 10px;font-size:13px;color:var(--text);outline:none;font-family:inherit;font-weight:600;}
 .prin:focus{border-color:var(--red);}
 .smbtn{background:var(--red);border:none;border-radius:8px;padding:8px 12px;font-size:12px;font-weight:700;color:#fff;cursor:pointer;white-space:nowrap;transition:background .15s;min-height:36px;}
 .smbtn:hover{background:var(--red-dark);}
@@ -158,7 +158,7 @@ main{max-width:1200px;margin:0 auto;padding:22px 24px 80px;overflow:hidden;}
 .stl{display:flex;flex-direction:column;gap:6px;max-height:320px;overflow-y:auto;margin-bottom:10px;}
 .str{display:flex;align-items:flex-start;gap:8px;background:var(--black4);border-radius:8px;padding:9px 10px;}
 .stt{font-size:12px;color:var(--text);flex:1;line-height:1.45;}
-.std{font-family:var(--mono);font-size:10px;color:var(--text3);}
+.std{font-family:inherit;font-size:10px;color:#87909c;}
 .sdel{background:none;border:none;color:var(--text3);cursor:pointer;font-size:13px;transition:color .15s;padding:0 3px;}
 .sdel:hover{color:var(--red);}
 .internal-notes-wrap{margin:16px 0 14px;padding:13px;background:linear-gradient(180deg,rgba(59,130,246,.08),rgba(59,130,246,.03));border:1px solid rgba(59,130,246,.18);border-radius:12px;}
@@ -242,10 +242,10 @@ tr:hover td{background:var(--black3);}
 .foto-thumb{width:56px;height:56px;object-fit:cover;border-radius:6px;border:1px solid var(--border);}
 /* fecha estimada */
 .fest-row{display:flex;gap:5px;align-items:center;}
-.fest-in{flex:1;background:var(--black4);border:1px solid var(--border2);border-radius:6px;padding:6px 10px;font-size:12px;color:var(--text);outline:none;font-family:var(--mono);}
+.fest-in{flex:1;background:var(--black4);border:1px solid var(--border2);border-radius:8px;padding:7px 10px;font-size:12px;color:var(--text);outline:none;font-family:inherit;font-weight:600;}
 .fest-in:focus{border-color:var(--green);}
 /* presupuesto PDF btn */
-.pdf-btn{display:flex;align-items:center;justify-content:center;gap:6px;background:var(--black4);border:1px solid var(--border2);color:var(--text2);padding:9px 10px;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;margin-top:6px;width:100%;min-height:40px;}
+.pdf-btn{display:flex;align-items:center;justify-content:center;gap:6px;background:rgba(255,255,255,.018);border:1px solid rgba(255,255,255,.08);color:#d5dbe3;padding:9px 10px;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;margin-top:6px;width:100%;min-height:40px;}
 .pdf-btn:hover{border-color:var(--red);color:var(--red);}
 .pdf-btn.compact{margin-top:0;padding:7px 8px;font-size:11px;font-weight:700;border-radius:9px;min-height:34px;line-height:1.1;letter-spacing:0;white-space:normal;}
 .report-groups{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;align-items:start;}
@@ -1386,6 +1386,7 @@ function renderCards(data){
             <div class="cir"><span class="cil">Entrega est.</span>
               <div class="fest-row"><input class="fest-in" id="fe-${r.id}" value="${r.fecha_entrega||''}" placeholder="Ej: 25 mar"/><button class="smbtn" style="padding:5px 9px;font-size:11px;background:var(--green)" onclick="saveFechaEst('${r.id}')">✓</button></div>
             </div>
+            <div class="section-inline-actions">
             <button class="pdf-btn" onclick="generarPDF('${r.id}')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> Generar presupuesto PDF</button>
             <input type="file" accept=".html" style="display:none" id="reporteInput-${r.id}" onchange="procesarReporte('${r.id}',this)"/>
             <div id="reporteStatus-${r.id}" style="font-size:11px;color:var(--text3);margin-top:4px;display:none"></div>
@@ -1399,7 +1400,8 @@ function renderCards(data){
               <button class="pdf-btn" onclick="descargarLauncherReporte('${r.id}','${r.numero}','tecnico','tecnico')" style="border-color:var(--red);color:var(--red)">Auto reporte tÃ©cnico</button>
               <button class="pdf-btn" onclick="descargarLauncherReporte('${r.id}','${r.numero}','cliente','despues')" style="border-color:var(--amber);color:var(--amber)">Auto reporte cliente despuÃ©s</button>
             </div>
-            <button class="pdf-btn" onclick="editarRep('${r.id}')" style="margin-top:4px;border-color:var(--amber);color:var(--amber)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Editar reparación</button>
+            <button class="pdf-btn" onclick="editarRep('${r.id}')" style="margin-top:0;border-color:rgba(245,158,11,.35);color:var(--amber)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Editar reparación</button>
+            </div>
 ${tel?`<a class="wab" href="https://wa.me/54${tel}?text=${wm}" target="_blank" rel="noopener noreferrer"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg> WhatsApp a ${(c.nombre||'').split(' ')[0]||'cliente'}</a>`:''}
           </div>
           <div class="bsec bsec-flow">
