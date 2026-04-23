@@ -154,6 +154,20 @@ main{max-width:1200px;margin:0 auto;padding:22px 24px 80px;overflow:hidden;}
 .std{font-family:var(--mono);font-size:10px;color:var(--text3);}
 .sdel{background:none;border:none;color:var(--text3);cursor:pointer;font-size:13px;transition:color .15s;padding:0 3px;}
 .sdel:hover{color:var(--red);}
+.internal-notes-wrap{margin:16px 0 14px;padding:12px;background:linear-gradient(180deg,rgba(59,130,246,.08),rgba(59,130,246,.03));border:1px solid rgba(59,130,246,.18);border-radius:10px;}
+.internal-notes-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;}
+.internal-notes-title{font-size:12px;font-weight:700;color:#fff;}
+.internal-notes-sub{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;}
+.internal-notes-list{display:flex;flex-direction:column;gap:6px;max-height:132px;overflow-y:auto;margin-bottom:8px;}
+.internal-note{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05);border-radius:8px;padding:8px 9px;}
+.internal-note-text{font-size:12px;line-height:1.45;color:var(--text);}
+.internal-note-date{font-size:10px;color:var(--text3);margin-top:5px;font-family:var(--mono);}
+.internal-notes-empty{font-size:11px;color:var(--text3);text-align:center;padding:10px 8px;border:1px dashed rgba(255,255,255,.08);border-radius:8px;}
+.internal-notes-form{display:flex;flex-direction:column;gap:7px;}
+.internal-notes-input{min-height:72px;resize:vertical;background:var(--black4);border:1px solid var(--border2);border-radius:8px;padding:9px 10px;font-size:12px;color:var(--text);outline:none;font-family:inherit;line-height:1.45;}
+.internal-notes-input:focus{border-color:var(--blue);}
+.internal-notes-btn{align-self:flex-end;background:var(--blue);}
+.internal-notes-btn:hover{background:#2563eb;}
 .sf{display:flex;flex-direction:column;gap:6px;}
 .sr2{display:flex;gap:6px;}
 .sin{flex:1;background:var(--black4);border:1px solid var(--border2);border-radius:6px;padding:7px 10px;font-size:12px;color:var(--text);outline:none;}
@@ -226,6 +240,23 @@ tr:hover td{background:var(--black3);}
 /* presupuesto PDF btn */
 .pdf-btn{display:flex;align-items:center;justify-content:center;gap:6px;background:var(--black4);border:1px solid var(--border2);color:var(--text2);padding:8px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;margin-top:6px;width:100%;}
 .pdf-btn:hover{border-color:var(--red);color:var(--red);}
+.pdf-btn.compact{margin-top:0;padding:5px 9px;font-size:11px;border-radius:7px;min-height:30px;}
+.report-groups{display:grid;gap:8px;}
+.report-group{background:var(--black3);border:1px solid var(--border);border-radius:11px;padding:10px;}
+.report-group-title{font-size:11px;font-weight:700;color:#fff;margin-bottom:8px;}
+.report-slot-list{display:grid;gap:6px;}
+.report-slot-card{background:var(--black4);border:1px solid var(--border2);border-radius:9px;padding:8px 10px;}
+.report-slot-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px;}
+.report-slot-title{font-size:12px;font-weight:700;color:#fff;line-height:1.2;}
+.report-slot-date{font-size:10px;color:var(--text3);white-space:nowrap;}
+.report-slot-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;}
+[id^="reporteActions-"]{display:grid;gap:7px!important;margin-top:4px!important;}
+[id^="reporteActions-"]>div{padding:9px!important;border-radius:10px!important;}
+[id^="reporteActions-"]>div>div:first-child{font-size:10px!important;margin-bottom:7px!important;}
+[id^="reporteActions-"]>div>div:last-child{gap:6px!important;}
+[id^="reporteActions-"]>div>div:last-child>div{padding:8px 9px!important;border-radius:9px!important;}
+[id^="reporteActions-"]>div>div:last-child>div>div:first-child{margin-bottom:6px!important;}
+[id^="reporteActions-"] .pdf-btn{margin-top:0!important;padding:5px 8px!important;font-size:11px!important;min-height:30px;}
 /* comprobante */
 @media print{
   body > *{display:none!important;}
@@ -791,6 +822,8 @@ let aR=[],aE=[],aC=[];
 let pageRepairMap={};
 const equipmentSpecsCache={};
 const equipmentManualCache={};
+const INTERNAL_NOTES_FILENAME='admin_notas_internas.json';
+let currentOpenRepairId=null;
 let fSt='todos';
 let mCh={};
 let currentPage=0;
@@ -954,8 +987,8 @@ function parseMetricPasoDate(raw, fallbackYearSource=null){
 
 async function loadAll(){
   currentPage=0;
-  await Promise.all([loadPage(), loadStats(), loadAllData()]);
-  loadPage();
+  await Promise.all([loadStats(), loadAllData()]);
+  await loadPage();
 }
 
 function updStats(){} // now handled by loadStats
@@ -1247,8 +1280,9 @@ async function loadEquipmentSpecs(repId, force=false){
   container.innerHTML=renderEquipmentSnapshot(repId,null,true);
   try{
     const reportes=await db('GET','reportes',`?reparacion_id=eq.${repId}&order=created_at.desc&select=id,filename,html_content,created_at&limit=10`);
-    const tecnico=(reportes||[]).find(r=>inferReportSlot(r.filename)==='tecnico' && r.html_content);
-    const candidato=tecnico || (reportes||[]).find(r=>r.html_content);
+    const publicReportes=(reportes||[]).filter(r=>inferReportSlot(r.filename)!=='interno');
+    const tecnico=publicReportes.find(r=>inferReportSlot(r.filename)==='tecnico' && r.html_content);
+    const candidato=tecnico || publicReportes.find(r=>r.html_content);
     const specs=extractEquipmentSpecsFromReport(candidato?.html_content || '');
     if(specs){
       equipmentSpecsCache[repId]=specs;
@@ -1360,7 +1394,19 @@ ${tel?`<a class="wab" href="https://wa.me/54${tel}?text=${wm}" target="_blank" r
             <div class="sgrid" style="margin-bottom:14px">
               ${['espera','proceso','listo','entregado','cancelado'].map(s=>`<div class="so ${r.estado===s?'a'+s[0]:''}" onclick="chEst('${r.id}','${s}',this)">${IC[s]} ${s.charAt(0).toUpperCase()+s.slice(1)}</div>`).join('')}
             </div>
-            <h4 style="margin-bottom:8px">📋 Historial de pasos</h4>
+            <h4 style="margin-bottom:10px">Seguimiento interno</h4>
+            <div class="internal-notes-wrap">
+              <div class="internal-notes-head">
+                <div class="internal-notes-title">Notas internas</div>
+                <div class="internal-notes-sub">Solo admin</div>
+              </div>
+              <div class="internal-notes-list" id="in-${r.id}"><div class="internal-notes-empty">Cargando notas...</div></div>
+              <div class="internal-notes-form">
+                <textarea class="internal-notes-input" id="ini-${r.id}" placeholder="Ej: ingreso sucio, no pago, se quejo por precio, avisar repuesto, vino sin fuente..."></textarea>
+                <button class="smbtn internal-notes-btn" onclick="addInternalNote('${r.id}')">Guardar nota</button>
+              </div>
+            </div>
+            <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin:2px 0 8px">Historial de pasos</div>
             <div class="stl" id="st-${r.id}"><div style="color:var(--text3);font-size:12px;text-align:center;padding:8px">Cargando...</div></div>
             <div class="sf">
               <div class="sr2"><input class="sin" id="sti-${r.id}" placeholder="Título del paso"/><select class="sse" id="ses-${r.id}"><option value="done">✅ Hecho</option><option value="active">🔧 En curso</option><option value="pending">⏳ Pendiente</option></select></div>
@@ -1396,9 +1442,18 @@ ${tel?`<a class="wab" href="https://wa.me/54${tel}?text=${wm}" target="_blank" r
     </div>`:'';
 
   document.getElementById('rlist').innerHTML=cards+paginacion;
+  await restoreOpenRepairCard();
 }
 
 function renderList(){ loadPage(); } // backwards compat
+
+async function restoreOpenRepairCard(){
+  if(!currentOpenRepairId) return;
+  const el=document.getElementById(`c-${currentOpenRepairId}`);
+  if(!el) return;
+  if(el.classList.contains('open')) return;
+  await togC(currentOpenRepairId);
+}
 
 function goPage(p){
   if(p<0||p>=Math.ceil(totalCount/PAGE_SIZE)) return;
@@ -1413,13 +1468,74 @@ async function togC(id){
   const was=c.classList.contains('open');
   document.querySelectorAll('.rc.open').forEach(x=>x.classList.remove('open'));
   if(!was){
+    currentOpenRepairId=id;
     c.classList.add('open');
     await loadPasos(id);
+    loadInternalNotes(id).catch(()=>{const c=document.getElementById(`in-${id}`);if(c)c.innerHTML='<div class="internal-notes-empty">No se pudieron cargar las notas internas</div>';});
     loadEquipmentSpecs(id).catch(()=>{});
     loadReportActions(id).catch(()=>{});
     loadFotos(id).catch(()=>{const c=document.getElementById(`fotos-${id}`);if(c)c.innerHTML='<div style="color:var(--text3);font-size:12px">Subí fotos una vez creada la tabla en Supabase</div>';});
     loadCalif(id).catch(()=>{const c=document.getElementById(`calif-${id}`);if(c)c.innerHTML='<div style="color:var(--text3);font-size:12px">Sin calificación todavía</div>';});
+  }else{
+    currentOpenRepairId=null;
   }
+}
+
+function parseInternalNotes(raw){
+  if(!raw) return [];
+  try{
+    const parsed=JSON.parse(raw);
+    return Array.isArray(parsed)?parsed.filter(Boolean):[];
+  }catch(_){
+    return [];
+  }
+}
+
+function formatInternalNoteDate(value){
+  if(!value) return '';
+  const d=new Date(value);
+  if(Number.isNaN(d.getTime())) return String(value);
+  return d.toLocaleString('es-AR',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+}
+
+async function getInternalNotesRecord(repId){
+  const rows=await db('GET','reportes',`?reparacion_id=eq.${repId}&filename=eq.${encodeURIComponent(INTERNAL_NOTES_FILENAME)}&select=id,html_content,created_at&limit=1`);
+  return rows?.[0]||null;
+}
+
+async function loadInternalNotes(repId){
+  const cont=document.getElementById(`in-${repId}`);
+  if(!cont) return;
+  const row=await getInternalNotesRecord(repId);
+  const notes=parseInternalNotes(row?.html_content);
+  if(!notes.length){
+    cont.innerHTML='<div class="internal-notes-empty">Sin notas internas por ahora</div>';
+    return;
+  }
+  cont.innerHTML=notes.slice().reverse().map(note=>`<div class="internal-note"><div class="internal-note-text">${String(note.text||'').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>')}</div><div class="internal-note-date">${formatInternalNoteDate(note.created_at||note.fecha||'')}</div></div>`).join('');
+}
+
+async function addInternalNote(repId){
+  const input=document.getElementById(`ini-${repId}`);
+  const text=input?.value?.trim()||'';
+  if(!text){toast('Escribí una nota interna',true);return;}
+  const current=await getInternalNotesRecord(repId);
+  const notes=parseInternalNotes(current?.html_content);
+  notes.push({
+    id:`n${Date.now()}`,
+    text,
+    created_at:new Date().toISOString()
+  });
+  const payload={reparacion_id:repId,filename:INTERNAL_NOTES_FILENAME,html_content:JSON.stringify(notes),html_cliente:''};
+  if(current?.id){
+    await db('PATCH','reportes',`?id=eq.${current.id}`,payload);
+  }else{
+    await db('POST','reportes','',payload);
+  }
+  if(input) input.value='';
+  await loadInternalNotes(repId);
+  toast('Nota interna guardada ✓');
+  playSound('action');
 }
 
 async function loadPasos(id){
@@ -1491,10 +1607,10 @@ async function chEst(id,st,btn){
     const num=rep.numero||'';
     const cod=cl.codigo||'';
     const msgs={
-      proceso:`Hola ${nombre}! \u{1F527} Tu ${equipo} (#${num}) est\u00E1 en reparaci\u00F3n. Te avisamos en cuanto est\u00E9 listo.`,
-      listo:`Hola ${nombre}! \u2705 Tu ${equipo} (#${num}) est\u00E1 listo para retirar.\n\n\u{1F4CD} Campana 51, Floresta. Lun-Vie 10 a 19hs.\n\nAlias: PC-LAF\nNombre: Lucas A. Furno\nValor: ${rep.presupuesto||''}\n\nAvisanos en qu\u00E9 horario pasas a retirar para organizarnos, muchas gracias!`,
-      entregado:`Hola ${nombre}! \u{1F4E6} Tu ${equipo} (#${num}) est\u00E1 listo y entregado. \u00A1Gracias por elegirnos!\n\n\u{1F381} *Descuento especial para vos:* si dej\u00E1s una rese\u00F1a en Google, en tu pr\u00F3xima visita ten\u00E9s un *10% de descuento*.\n\n\u2B50 https://g.page/r/CebOQaDNkBJNEBM/review\n\nUna vez que dejes la rese\u00F1a, respond\u00E9 este mensaje con tu c\u00F3digo de cliente (*${cod}*) y lo activamos. \u00A1Gracias! \u{1F64F}`,
-      espera:`Hola ${nombre}! \u23F3 Tu ${equipo} (#${num}) est\u00E1 en espera. Te avisamos cuando arranquemos con la reparaci\u00F3n.`,
+      proceso:`Hola ${nombre}! Tu ${equipo} (#${num}) est\u00E1 en reparaci\u00F3n. Te avisamos en cuanto est\u00E9 listo.`,
+      listo:`Hola ${nombre}! Tu ${equipo} (#${num}) est\u00E1 listo para retirar.\n\nCampana 51, Floresta. Lun-Vie 10 a 19hs.\n\nAlias: PC-LAF\nNombre: Lucas A. Furno\nValor: ${rep.presupuesto||''}\n\nAvisanos en qu\u00E9 horario pasas a retirar para organizarnos, muchas gracias!`,
+      entregado:`Hola ${nombre}! Tu ${equipo} (#${num}) est\u00E1 listo y entregado. Gracias por elegirnos.\n\nDescuento especial para vos: si dej\u00E1s una rese\u00F1a en Google, en tu pr\u00F3xima visita ten\u00E9s un 10% de descuento.\n\nhttps://g.page/r/CebOQaDNkBJNEBM/review\n\nUna vez que dejes la rese\u00F1a, respond\u00E9 este mensaje con tu c\u00F3digo de cliente (*${cod}*) y lo activamos. Gracias!`,
+      espera:`Hola ${nombre}! Tu ${equipo} (#${num}) est\u00E1 en espera. Te avisamos cuando arranquemos con la reparaci\u00F3n.`,
     };
     toast(`Estado → "${LB[st]}" ✓`);
     playSound(st==='entregado' ? 'success' : 'action');
@@ -1667,18 +1783,18 @@ async function crearRep(){
     await loadAll();
     if(tel){
       const msg=encodeURIComponent(
-        `Hola ${nom}! \u{1F44B} Te escribimos de *PCLAF - Servicio t\u00E9cnico*.\n\n`+
-        `\u2705 Recibimos tu equipo correctamente.\n\n`+
-        `\u{1F4CB} *Resumen de tu ingreso:*\n`+
-        `\u2022 Equipo: ${eq}${mod?' ('+mod+')':''}\n`+
-        `\u2022 Problema: ${prob}\n`+
-        `\u2022 N\u00B0 de reparaci\u00F3n: *#${num}*\n`+
-        `${pres?'\u2022 Presupuesto: '+pres+'\n':''}`+
-        `\n\u{1F4CD} Campana 51, Floresta. Lun-Vie 10 a 19hs.\n`+
+        `Hola ${nom}! Te escribimos de *PCLAF - Servicio t\u00E9cnico*.\n\n`+
+        `Recibimos tu equipo correctamente.\n\n`+
+        `Resumen de tu ingreso:\n`+
+        `- Equipo: ${eq}${mod?' ('+mod+')':''}\n`+
+        `- Problema: ${prob}\n`+
+        `- N\u00B0 de reparaci\u00F3n: *#${num}*\n`+
+        `${pres?'- Presupuesto: '+pres+'\n':''}`+
+        `\nCampana 51, Floresta. Lun-Vie 10 a 19hs.\n`+
         `\nPod\u00E9s seguir el estado en:\n`+
-        `\u{1F517} https://www.pclaf.com.ar/historial.html\n`+
+        `https://www.pclaf.com.ar/historial.html\n`+
         `(c\u00F3digo: *${cod}*)\n\n`+
-        `Te avisamos cada novedad. \u00A1Gracias! \u{1F64F}`
+        `Te avisamos cada novedad. Gracias!`
       );
       toast(`Reparación #${num} creada ✓`);
       playSound('success');
@@ -1824,7 +1940,7 @@ async function loadReportActions(repId){
     const bySlot={antes:null,despues:null,tecnico:null};
     (reportes||[]).forEach(r=>{
       const slot=inferReportSlot(r.filename);
-      if(slot!=='legacy'&&!bySlot[slot]) bySlot[slot]=r;
+      if(slot!=='legacy'&&slot!=='interno'&&!bySlot[slot]) bySlot[slot]=r;
     });
     const formatDate=r=>r?new Date(r.created_at).toLocaleDateString('es-AR',{day:'numeric',month:'short',year:'numeric'}):'Sin subir';
     const renderSlot=(slot,title,color,auto=false)=>{
@@ -2481,6 +2597,7 @@ function prepararResubidaReporte(repId, slot='antes'){
 
 function inferReportSlot(filename='') {
   const name = String(filename || '').toLowerCase();
+  if (name.includes('admin_notas_internas') || name.includes('nota_interna')) return 'interno';
   if (name.includes('auto_tecnico') || name.includes('reporte_tecnico') || name.includes('tecnico')) return 'tecnico';
   if (name.includes('cliente_antes') || name.includes('reporte_antes') || name.includes('antes')) return 'antes';
   if (name.includes('cliente_despues') || name.includes('reporte_despues') || name.includes('despues')) return 'despues';

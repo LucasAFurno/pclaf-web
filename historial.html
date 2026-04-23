@@ -222,6 +222,7 @@ async function db(table, qs = '') {
 
 function inferReportSlot(filename='') {
   const name = String(filename || '').toLowerCase();
+  if (name.includes('admin_notas_internas') || name.includes('nota_interna')) return 'interno';
   if (name.includes('auto_tecnico') || name.includes('tecnico')) return 'tecnico';
   if (name.includes('cliente_antes') || name.includes('reporte_antes') || name.includes('antes')) return 'antes';
   if (name.includes('cliente_despues') || name.includes('reporte_despues') || name.includes('despues')) return 'despues';
@@ -232,7 +233,7 @@ function pickClientReports(reportes=[]) {
   const slots = { antes:null, despues:null, legacy:null };
   reportes.forEach(rep => {
     const slot = inferReportSlot(rep.filename);
-    if (slot === 'tecnico') return;
+    if (slot === 'tecnico' || slot === 'interno') return;
     if (!slots[slot]) slots[slot] = rep;
   });
   return slots;
