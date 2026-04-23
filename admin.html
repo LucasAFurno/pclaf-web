@@ -124,14 +124,19 @@ main{max-width:1200px;margin:0 auto;padding:22px 24px 80px;overflow:hidden;}
 .bsec-photos{grid-column:1/2;border-color:rgba(34,197,94,.16);}
 .bsec-rating{grid-column:2/3;border-color:rgba(250,204,21,.16);}
 .section-actions{display:grid;grid-template-columns:1fr;gap:8px;margin-top:12px;}
-.section-inline-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-top:8px;}
-.details-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:2px 14px;margin-bottom:6px;}
-.details-grid .cir{grid-template-columns:78px minmax(0,1fr);}
+.section-inline-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:10px;align-items:start;}
+.details-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 14px;margin-bottom:8px;align-items:start;}
+.details-grid .cir{grid-template-columns:74px minmax(0,1fr);}
 .details-grid .civ{text-align:left;}
 .details-grid .full-row{grid-column:1/-1;}
+.details-grid .field-span-2{grid-column:1/-1;}
 .cir{display:grid;grid-template-columns:92px minmax(0,1fr);align-items:start;gap:8px;padding:3px 0;margin:0;}
 .cil{font-size:10px;font-weight:700;color:#7f8794;text-transform:uppercase;letter-spacing:.1em;line-height:1.4;padding-top:3px;}
 .civ{font-size:13px;font-weight:600;color:#edf1f7;font-family:inherit;text-align:right;line-height:1.32;overflow-wrap:anywhere;}
+.budget-stack{display:flex;flex-direction:column;align-items:flex-end;gap:4px;min-width:0;}
+.budget-input-wrap{display:flex;align-items:center;justify-content:flex-end;gap:5px;flex-wrap:nowrap;}
+.budget-hint{font-size:10px;color:var(--green);font-weight:700;line-height:1.15;text-align:right;}
+.inline-note{font-size:10px;color:var(--text3);line-height:1.25;margin-top:3px;}
 .spec-card{margin:0 0 10px;padding:9px 10px;background:linear-gradient(180deg,rgba(255,255,255,.025),rgba(255,255,255,.01));border:1px solid var(--border2);border-radius:10px;}
 .spec-title{font-size:11px;font-weight:700;color:#fff;margin-bottom:6px;}
 .spec-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:7px;}
@@ -252,12 +257,12 @@ tr:hover td{background:var(--black3);}
 .pdf-btn{display:flex;align-items:center;justify-content:center;gap:6px;background:rgba(255,255,255,.018);border:1px solid rgba(255,255,255,.08);color:#d5dbe3;padding:7px 9px;border-radius:10px;font-size:11px;font-weight:700;cursor:pointer;transition:all .15s;margin-top:6px;width:100%;min-height:34px;}
 .pdf-btn:hover{border-color:var(--red);color:var(--red);}
 .pdf-btn.compact{margin-top:0;padding:6px 7px;font-size:10px;font-weight:700;border-radius:9px;min-height:28px;line-height:1;letter-spacing:0;white-space:normal;}
-.report-flat-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;align-items:start;}
-.report-slot-card{background:var(--black4);border:1px solid var(--border2);border-radius:10px;padding:8px 8px 7px;}
-.report-slot-head{display:flex;flex-direction:column;align-items:flex-start;gap:2px;margin-bottom:6px;}
+.report-flat-grid{display:grid;grid-template-columns:1.1fr 1fr 1fr;gap:8px;align-items:stretch;}
+.report-slot-card{background:var(--black4);border:1px solid var(--border2);border-radius:10px;padding:8px;display:flex;flex-direction:column;gap:7px;min-width:0;}
+.report-slot-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;}
 .report-slot-title{font-size:11px;font-weight:700;color:#fff;line-height:1.2;word-break:break-word;}
-.report-slot-date{font-size:9px;color:var(--text3);white-space:nowrap;line-height:1.1;}
-.report-slot-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;}
+.report-slot-date{font-size:9px;color:var(--text3);white-space:nowrap;line-height:1.1;text-align:right;flex-shrink:0;}
+.report-slot-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;}
 [id^="reporteActions-"]{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:9px!important;margin-top:6px!important;align-items:start;}
 [id^="reporteActions-"]>div{min-width:0;}
 [id^="reporteActions-"]>div:last-child>div:last-child{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px!important;}
@@ -266,6 +271,8 @@ tr:hover td{background:var(--black3);}
   .report-flat-grid{grid-template-columns:1fr;}
   [id^="reporteActions-"]{grid-template-columns:1fr!important;}
   [id^="reporteActions-"]>div:last-child>div:last-child{grid-template-columns:1fr!important;}
+  .descuento-banner{grid-template-columns:1fr;}
+  .descuento-actions{justify-content:flex-start;}
 }
 /* comprobante */
 @media print{
@@ -281,9 +288,10 @@ tr:hover td{background:var(--black3);}
 .descuento-title{font-size:11px;font-weight:700;color:var(--green);line-height:1.15;}
 .descuento-subline{font-size:10px;color:var(--text3);margin-top:2px;line-height:1.25;}
 .descuento-actions{display:flex;gap:6px;align-items:center;justify-content:flex-end;flex-wrap:wrap;}
-.descuento-toggle{display:flex;align-items:center;gap:6px;cursor:pointer;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:999px;padding:4px 7px;}
+.descuento-toggle{display:flex;align-items:center;gap:6px;cursor:pointer;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:999px;padding:4px 7px;min-height:28px;}
 .descuento-toggle.off{opacity:.9;}
 .descuento-toggle-label{font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;}
+.descuento-state{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;min-width:56px;text-align:right;}
 .toggle-track{width:36px;height:20px;border-radius:10px;background:var(--border2);position:relative;transition:background .2s;flex-shrink:0;}
 .toggle-track.on{background:var(--green);}
 .toggle-knob{width:16px;height:16px;border-radius:50%;background:#fff;position:absolute;top:2px;left:2px;transition:transform .2s;}
@@ -1370,35 +1378,39 @@ function renderCards(data){
             <h4>Cliente y equipo</h4>
             <div id="equipoSpecs-${r.id}">${renderEquipmentSnapshot(r.id)}</div>
             <div class="details-grid">
-            <div class="cir"><span class="cil">Nombre</span><span class="civ">${c.nombre||'–'}${c.apellido?' '+c.apellido:''}</span></div>
-            <div class="cir"><span class="cil">Teléfono</span><span class="civ">${c.telefono||'–'}</span></div>
-            <div class="cir"><span class="cil">Código</span><span class="civ">${c.codigo||'–'}</span></div>
-            <div class="cir"><span class="cil">Equipo</span><span class="civ">${e.nombre||'–'}${e.modelo?' · '+e.modelo:''}</span></div>
-            <div class="cir"><span class="cil">Problema</span><span class="civ" style="font-size:12px">${r.problema||'–'}</span></div>
-            ${clienteReferido?`<div class="cir"><span class="cil">Cliente referido</span><span class="civ">${clienteReferido}</span></div>`:''}
+            <div class="cir"><span class="cil">Nombre</span><span class="civ">${c.nombre||'-'}${c.apellido?' '+c.apellido:''}</span></div>
+            <div class="cir"><span class="cil">Telefono</span><span class="civ">${c.telefono||'-'}</span></div>
+            <div class="cir"><span class="cil">Codigo</span><span class="civ">${c.codigo||'-'}</span></div>
+            <div class="cir"><span class="cil">Equipo</span><span class="civ">${e.nombre||'-'}${e.modelo?' · '+e.modelo:''}</span></div>
+            <div class="cir field-span-2"><span class="cil">Problema</span><span class="civ" style="font-size:12px">${r.problema||'-'}</span></div>
+            ${clienteReferido?`<div class="cir"><span class="cil">Referido</span><span class="civ">${clienteReferido}</span></div>`:''}
             <div class="cir"><span class="cil">Presupuesto</span>
-              <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end">
-                <div style="display:flex;gap:5px"><input class="prin" id="pr-${r.id}" value="${r.presupuesto||''}" placeholder="$0.000" style="width:95px"/><button class="smbtn" style="padding:5px 9px;font-size:11px" onclick="savePr('${r.id}')">✓</button></div>
-                ${descuentoActivo&&r.presupuesto?`<span style="font-size:11px;color:var(--green);font-weight:700;white-space:nowrap">con desc: ${getDiscountBudgetLabel(r.presupuesto)}</span>`:''}
+              <div class="budget-stack">
+                <div class="budget-input-wrap"><input class="prin" id="pr-${r.id}" value="${r.presupuesto||''}" placeholder="$0.000" style="width:95px"/><button class="smbtn" style="padding:5px 9px;font-size:11px" onclick="savePr('${r.id}')">OK</button></div>
+                ${descuentoActivo&&r.presupuesto?`<span class="budget-hint">con desc: ${getDiscountBudgetLabel(r.presupuesto)}</span>`:''}
               </div>
             </div>
-            <div class="descuento-banner full-row" id="descBanner-${c.id||'x'}">
+            <div class="cir"><span class="cil">Entrega est.</span>
+              <div class="fest-row"><input class="fest-in" id="fe-${r.id}" value="${r.fecha_entrega||''}" placeholder="Ej: 25 mar"/><button class="smbtn" style="padding:5px 9px;font-size:11px;background:var(--green)" onclick="saveFechaEst('${r.id}')">OK</button></div>
+            </div>
+            <div class="descuento-banner field-span-2" id="descBanner-${c.id||'x'}">
               <div class="descuento-copy">
                 <div class="descuento-title">${descuentoBannerTitulo}</div>
                 <div class="descuento-subline">${descuentoBannerDetalle}</div>
-              ${descuentoPendiente&&clienteReferido?`<div style="font-size:11px;color:var(--text3)">Se acreditó por ${clienteReferido}.</div>`:''}
+                ${descuentoPendiente&&clienteReferido?`<div class="inline-note">Se acredito por ${clienteReferido}.</div>`:''}
               </div>
-              <button class="descuento-toggle" onclick="toggleDescuento('${c.id||''}',this)">
-                <div class="toggle-track ${c.descuento_resena?'on':''}" id="dTrack-${c.id||'x'}"><div class="toggle-knob"></div></div>
-                <span class="descuento-toggle-label" id="dLbl-${c.id||'x'}">${c.descuento_resena?'ACTIVO':'inactivo'}</span>
-              </button>
-            </div>
-            <div class="cir"><span class="cil">Entrega est.</span>
-              <div class="fest-row"><input class="fest-in" id="fe-${r.id}" value="${r.fecha_entrega||''}" placeholder="Ej: 25 mar"/><button class="smbtn" style="padding:5px 9px;font-size:11px;background:var(--green)" onclick="saveFechaEst('${r.id}')">✓</button></div>
+              <div class="descuento-actions">
+                ${tieneReferido?`<button class="descuento-toggle ${c.descuento_resena?'':'off'}" onclick="toggleDescuento('${c.id||''}',this,'recomendado')"><span class="descuento-toggle-label">Recomendado</span><div class="toggle-track ${c.descuento_resena?'on':''}" id="dTrackRec-${c.id||'x'}"><div class="toggle-knob"></div></div></button>`:''}
+                <button class="descuento-toggle ${tieneReferido&&c.descuento_resena?'off':''}" onclick="toggleDescuento('${c.id||''}',this,'resena')">
+                  <span class="descuento-toggle-label">Google</span>
+                  <div class="toggle-track ${!tieneReferido&&c.descuento_resena?'on':''}" id="dTrackRes-${c.id||'x'}"><div class="toggle-knob"></div></div>
+                </button>
+                <span class="descuento-state" id="dLbl-${c.id||'x'}" style="color:${c.descuento_resena?'var(--green)':'var(--text3)'}">${c.descuento_resena?'ACTIVO':'inactivo'}</span>
+              </div>
             </div>
             </div>
             <div class="section-inline-actions">
-            <button class="pdf-btn" onclick="generarPDF('${r.id}')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> Generar presupuesto PDF</button>
+            <button class="pdf-btn" onclick="generarPDF('${r.id}')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> Presupuesto PDF</button>
             <input type="file" accept=".html" style="display:none" id="reporteInput-${r.id}" onchange="procesarReporte('${r.id}',this)"/>
             <div id="reporteStatus-${r.id}" style="font-size:11px;color:var(--text3);margin-top:4px;display:none"></div>
             <div id="reporteActions-${r.id}" style="display:none"></div>
@@ -1411,7 +1423,7 @@ function renderCards(data){
               <button class="pdf-btn" onclick="descargarLauncherReporte('${r.id}','${r.numero}','tecnico','tecnico')" style="border-color:var(--red);color:var(--red)">Auto reporte tÃ©cnico</button>
               <button class="pdf-btn" onclick="descargarLauncherReporte('${r.id}','${r.numero}','cliente','despues')" style="border-color:var(--amber);color:var(--amber)">Auto reporte cliente despuÃ©s</button>
             </div>
-            <button class="pdf-btn" onclick="editarRep('${r.id}')" style="margin-top:0;border-color:rgba(245,158,11,.35);color:var(--amber)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Editar reparación</button>
+            <button class="pdf-btn" onclick="editarRep('${r.id}')" style="margin-top:0;border-color:rgba(245,158,11,.35);color:var(--amber)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Editar</button>
             </div>
 ${tel?`<a class="wab" href="https://wa.me/54${tel}?text=${wm}" target="_blank" rel="noopener noreferrer"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg> WhatsApp a ${(c.nombre||'').split(' ')[0]||'cliente'}</a>`:''}
           </div>
@@ -1985,20 +1997,13 @@ async function loadReportActions(repId){
           <button class="pdf-btn compact" onclick="prepararResubidaReporte('${repId}','${slot}')" style="border-color:${color};color:${color}">${r?'Resubir':'Subir'}</button>
           ${auto?`<button class="pdf-btn compact" onclick="descargarLauncherReporte('${repId}','${aR.find(x=>x.id===repId)?.numero||''}','${slot}')" style="border-color:var(--amber);color:var(--amber)">Auto</button>`:'<span></span>'}
         </div>
-      </div></div>`;
+      </div>`;
     };
     cont.innerHTML=`<div class="report-flat-grid">
-      <div class="report-group">
-        <div class="report-group-title">Técnico</div>
-        ${renderSlot('tecnico','Diagnóstico técnico','var(--red)',true)}
-      </div>
-      <div class="report-group">
-        <div class="report-group-title">Cliente</div>
-        <div class="report-slot-list">
-          ${renderSlot('antes','Antes','var(--green)',true)}
-          ${renderSlot('despues','Después','var(--amber)',true)}
-        </div>
-      </div></div>`;
+      ${renderSlot('tecnico','Diagnostico tecnico','var(--red)',true)}
+      ${renderSlot('antes','Antes','var(--green)',true)}
+      ${renderSlot('despues','Despues','var(--amber)',true)}
+    </div>`;
   }catch(e){
     cont.innerHTML='<div style="color:var(--text3);font-size:11px">No se pudieron cargar los reportes</div>';
   }
@@ -2271,18 +2276,22 @@ function getNombreRep(rep){
 
 
 // ── DESCUENTO RESEÑA ──
-async function toggleDescuento(clienteId, btn){
-  const track = document.getElementById(`dTrack-${clienteId}`);
-  const lbl   = document.getElementById(`dLbl-${clienteId}`);
-  const cl    = aC.find(c=>c.id===clienteId);
+async function toggleDescuento(clienteId, btn, source='resena'){
+  const lbl = document.getElementById(`dLbl-${clienteId}`);
+  const trackRec = document.getElementById(`dTrackRec-${clienteId}`);
+  const trackRes = document.getElementById(`dTrackRes-${clienteId}`);
+  const cl = aC.find(c=>c.id===clienteId);
   if(!cl) return;
   const nuevo = !cl.descuento_resena;
-  await db('PATCH','clientes',`?id=eq.${clienteId}`,{descuento_resena: nuevo});
+  await db('PATCH','clientes',`?id=eq.${clienteId}`,{descuento_resena:nuevo});
   cl.descuento_resena = nuevo;
-  track.classList.toggle('on', nuevo);
-  lbl.textContent  = nuevo ? 'ACTIVO' : 'inactivo';
-  lbl.style.color  = nuevo ? 'var(--green)' : 'var(--text3)';
-  toast(nuevo ? '🎁 Descuento manual activado — 10% en próxima reparación ✓' : 'Descuento desactivado');
+  if(trackRec) trackRec.classList.toggle('on', nuevo && source==='recomendado');
+  if(trackRes) trackRes.classList.toggle('on', nuevo && source!=='recomendado');
+  document.querySelectorAll(`#descBanner-${clienteId} .descuento-toggle`).forEach(el=>el.classList.add('off'));
+  if(nuevo && btn) btn.classList.remove('off');
+  lbl.textContent = nuevo ? 'ACTIVO' : 'inactivo';
+  lbl.style.color = nuevo ? 'var(--green)' : 'var(--text3)';
+  toast(nuevo ? `Descuento activado por ${source==='recomendado'?'recomendado':'Google'}` : 'Descuento desactivado');
   playSound('action');
 }
 
