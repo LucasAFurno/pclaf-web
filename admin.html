@@ -1383,11 +1383,14 @@ function renderCards(data){
               </div>
             </div>
             <div class="descuento-banner full-row" id="descBanner-${c.id||'x'}">
-              <div class="descuento-copy"><div class="descuento-title">${descuentoBannerTitulo}</div><div class="descuento-subline">${descuentoBannerDetalle}</div>
+              <div class="descuento-copy">
+                <div class="descuento-title">${descuentoBannerTitulo}</div>
+                <div class="descuento-subline">${descuentoBannerDetalle}</div>
               ${descuentoPendiente&&clienteReferido?`<div style="font-size:11px;color:var(--text3)">Se acreditó por ${clienteReferido}.</div>`:''}
+              </div>
               <button class="descuento-toggle" onclick="toggleDescuento('${c.id||''}',this)">
                 <div class="toggle-track ${c.descuento_resena?'on':''}" id="dTrack-${c.id||'x'}"><div class="toggle-knob"></div></div>
-                <span style="font-size:11px;color:${c.descuento_resena?'var(--green)':'var(--text3)'};font-weight:600" id="dLbl-${c.id||'x'}">${c.descuento_resena?'ACTIVO':'inactivo'}</span>
+                <span class="descuento-toggle-label" id="dLbl-${c.id||'x'}">${c.descuento_resena?'ACTIVO':'inactivo'}</span>
               </button>
             </div>
             <div class="cir"><span class="cil">Entrega est.</span>
@@ -1995,7 +1998,7 @@ async function loadReportActions(repId){
           ${renderSlot('antes','Antes','var(--green)',true)}
           ${renderSlot('despues','Después','var(--amber)',true)}
         </div>
-      </div>`;
+      </div></div>`;
   }catch(e){
     cont.innerHTML='<div style="color:var(--text3);font-size:11px">No se pudieron cargar los reportes</div>';
   }
