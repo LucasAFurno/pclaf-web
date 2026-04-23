@@ -125,6 +125,9 @@ main{max-width:1200px;margin:0 auto;padding:22px 24px 80px;overflow:hidden;}
 .bsec-rating{grid-column:2/3;border-color:rgba(250,204,21,.16);}
 .section-actions{display:grid;grid-template-columns:1fr;gap:8px;margin-top:12px;}
 .section-inline-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-top:8px;}
+.details-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:2px 14px;margin-bottom:6px;}
+.details-grid .cir{grid-template-columns:78px minmax(0,1fr);}
+.details-grid .civ{text-align:left;}
 .cir{display:grid;grid-template-columns:92px minmax(0,1fr);align-items:start;gap:8px;padding:3px 0;margin:0;}
 .cil{font-size:10px;font-weight:700;color:#7f8794;text-transform:uppercase;letter-spacing:.1em;line-height:1.4;padding-top:3px;}
 .civ{font-size:13px;font-weight:600;color:#edf1f7;font-family:inherit;text-align:right;line-height:1.32;overflow-wrap:anywhere;}
@@ -248,11 +251,7 @@ tr:hover td{background:var(--black3);}
 .pdf-btn{display:flex;align-items:center;justify-content:center;gap:6px;background:rgba(255,255,255,.018);border:1px solid rgba(255,255,255,.08);color:#d5dbe3;padding:7px 9px;border-radius:10px;font-size:11px;font-weight:700;cursor:pointer;transition:all .15s;margin-top:6px;width:100%;min-height:34px;}
 .pdf-btn:hover{border-color:var(--red);color:var(--red);}
 .pdf-btn.compact{margin-top:0;padding:6px 7px;font-size:10px;font-weight:700;border-radius:9px;min-height:28px;line-height:1;letter-spacing:0;white-space:normal;}
-.report-groups{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:9px;align-items:start;}
-.report-group{background:linear-gradient(180deg,rgba(255,255,255,.018),rgba(255,255,255,.01));border:1px solid var(--border);border-radius:12px;padding:9px;}
-.report-group-title{font-size:11px;font-weight:700;color:#fff;margin-bottom:7px;letter-spacing:0;text-transform:none;}
-.report-slot-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;}
-.report-slot-list .report-slot-actions{grid-template-columns:1fr;}
+.report-flat-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;align-items:start;}
 .report-slot-card{background:var(--black4);border:1px solid var(--border2);border-radius:10px;padding:8px 8px 7px;}
 .report-slot-head{display:flex;flex-direction:column;align-items:flex-start;gap:2px;margin-bottom:6px;}
 .report-slot-title{font-size:11px;font-weight:700;color:#fff;line-height:1.2;word-break:break-word;}
@@ -263,8 +262,7 @@ tr:hover td{background:var(--black3);}
 [id^="reporteActions-"]>div:last-child>div:last-child{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px!important;}
 [id^="reporteActions-"] .pdf-btn{margin-top:0!important;padding:6px 7px!important;font-size:10px!important;min-height:28px;}
 @media (max-width: 820px){
-  .report-groups{grid-template-columns:1fr;}
-  .report-slot-list{grid-template-columns:1fr;}
+  .report-flat-grid{grid-template-columns:1fr;}
   [id^="reporteActions-"]{grid-template-columns:1fr!important;}
   [id^="reporteActions-"]>div:last-child>div:last-child{grid-template-columns:1fr!important;}
 }
@@ -296,6 +294,7 @@ tr:hover td{background:var(--black3);}
   .cg2,.cgeq,.bgrid{grid-template-columns:1fr;}
   .bsec-main,.bsec-flow,.bsec-reports,.bsec-photos,.bsec-rating{grid-column:auto;grid-row:auto;}
   .section-inline-actions{grid-template-columns:1fr;}
+  .details-grid{grid-template-columns:1fr;}
   .rcp{display:none;}
   .topbar{padding:0 12px;gap:8px;}
   .tabs{gap:1px;}
@@ -1363,6 +1362,7 @@ function renderCards(data){
           <div class="bsec bsec-main">
             <h4>Cliente y equipo</h4>
             <div id="equipoSpecs-${r.id}">${renderEquipmentSnapshot(r.id)}</div>
+            <div class="details-grid">
             <div class="cir"><span class="cil">Nombre</span><span class="civ">${c.nombre||'–'}${c.apellido?' '+c.apellido:''}</span></div>
             <div class="cir"><span class="cil">Teléfono</span><span class="civ">${c.telefono||'–'}</span></div>
             <div class="cir"><span class="cil">Código</span><span class="civ">${c.codigo||'–'}</span></div>
@@ -1385,6 +1385,7 @@ function renderCards(data){
             </div>
             <div class="cir"><span class="cil">Entrega est.</span>
               <div class="fest-row"><input class="fest-in" id="fe-${r.id}" value="${r.fecha_entrega||''}" placeholder="Ej: 25 mar"/><button class="smbtn" style="padding:5px 9px;font-size:11px;background:var(--green)" onclick="saveFechaEst('${r.id}')">✓</button></div>
+            </div>
             </div>
             <div class="section-inline-actions">
             <button class="pdf-btn" onclick="generarPDF('${r.id}')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> Generar presupuesto PDF</button>
@@ -1974,9 +1975,9 @@ async function loadReportActions(repId){
           <button class="pdf-btn compact" onclick="prepararResubidaReporte('${repId}','${slot}')" style="border-color:${color};color:${color}">${r?'Resubir':'Subir'}</button>
           ${auto?`<button class="pdf-btn compact" onclick="descargarLauncherReporte('${repId}','${aR.find(x=>x.id===repId)?.numero||''}','${slot}')" style="border-color:var(--amber);color:var(--amber)">Auto</button>`:'<span></span>'}
         </div>
-      </div>`;
+      </div></div>`;
     };
-    cont.innerHTML=`
+    cont.innerHTML=`<div class="report-flat-grid">
       <div class="report-group">
         <div class="report-group-title">Técnico</div>
         ${renderSlot('tecnico','Diagnóstico técnico','var(--red)',true)}
