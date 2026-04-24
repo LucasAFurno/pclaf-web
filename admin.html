@@ -115,15 +115,17 @@ main{max-width:1200px;margin:0 auto;padding:22px 24px 80px;overflow:hidden;}
 .badge-urgente{display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:700;color:var(--amber);background:var(--amber-dim);border:1px solid rgba(245,158,11,.3);border-radius:4px;padding:2px 6px;font-family:var(--mono);animation:py 1.5s infinite;}
 .rcb{display:none;padding:0 12px 12px;border-top:1px solid var(--border);}
 .rc.open .rcb{display:block;}
-.bgrid{display:grid;grid-template-columns:minmax(0,1.22fr) minmax(300px,1fr) minmax(250px,.7fr);gap:10px;margin-top:10px;align-items:start;}
+.bgrid{display:grid;gap:10px;margin-top:10px;align-items:start;}
+.btop{display:grid;grid-template-columns:minmax(0,1.22fr) minmax(300px,1fr) minmax(250px,.7fr);gap:10px;align-items:start;}
+.bbottom{display:grid;grid-template-columns:minmax(0,1.22fr) minmax(300px,1fr) minmax(250px,.7fr);gap:10px;align-items:start;}
 .bsec{background:linear-gradient(180deg,rgba(255,255,255,.02),rgba(255,255,255,.008));border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:11px 12px;box-shadow:inset 0 1px 0 rgba(255,255,255,.025);}
 .bsec h4{font-size:9px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.16em;margin-bottom:9px;}
-.bsec-main{grid-column:1/2;border-color:rgba(255,255,255,.08);}
-.bsec-flow{grid-column:2/3;border-color:rgba(59,130,246,.22);background:linear-gradient(180deg,rgba(59,130,246,.055),rgba(255,255,255,.01));}
-.bsec-perks{grid-column:3/4;border-color:rgba(34,197,94,.18);background:linear-gradient(180deg,rgba(34,197,94,.05),rgba(255,255,255,.01));}
-.bsec-reports{grid-column:1/2;border-color:rgba(245,158,11,.18);background:linear-gradient(180deg,rgba(245,158,11,.05),rgba(255,255,255,.01));}
-.bsec-photos{grid-column:2/3;border-color:rgba(34,197,94,.16);}
-.bsec-rating{grid-column:3/4;border-color:rgba(250,204,21,.16);}
+.bsec-main{border-color:rgba(255,255,255,.08);}
+.bsec-flow{border-color:rgba(59,130,246,.22);background:linear-gradient(180deg,rgba(59,130,246,.055),rgba(255,255,255,.01));}
+.bsec-perks{border-color:rgba(34,197,94,.18);background:linear-gradient(180deg,rgba(34,197,94,.05),rgba(255,255,255,.01));}
+.bsec-reports{border-color:rgba(245,158,11,.18);background:linear-gradient(180deg,rgba(245,158,11,.05),rgba(255,255,255,.01));}
+.bsec-photos{border-color:rgba(34,197,94,.16);}
+.bsec-rating{border-color:rgba(250,204,21,.16);}
 .subcap{font-size:10px;font-weight:700;color:#dbe3ee;letter-spacing:.04em;margin:10px 0 7px;}
 .perks-stack{display:grid;gap:10px;}
 .perks-actions{display:grid;gap:8px;}
@@ -310,8 +312,7 @@ tr:hover td{background:var(--black3);}
 /* ── RESPONSIVE ─────────────────────────────── */
 @media(max-width:900px){
   .kgrid,.sbar{grid-template-columns:1fr 1fr;}
-  .cg2,.cgeq,.bgrid{grid-template-columns:1fr;}
-  .bsec-main,.bsec-flow,.bsec-perks,.bsec-reports,.bsec-photos,.bsec-rating{grid-column:auto;grid-row:auto;}
+  .cg2,.cgeq,.btop,.bbottom{grid-template-columns:1fr;}
   .section-inline-actions{grid-template-columns:1fr;}
   .details-grid{grid-template-columns:1fr;}
   .rcp{display:none;}
@@ -351,7 +352,7 @@ tr:hover td{background:var(--black3);}
   main{padding-bottom:80px;}
   /* Stats */
   .kgrid,.sbar{grid-template-columns:1fr 1fr;}
-  .cg2,.cgeq,.bgrid{grid-template-columns:1fr;}
+  .cg2,.cgeq,.btop,.bbottom{grid-template-columns:1fr;}
   .rcp{display:none;}
   /* Repair cards */
   .card-actions{flex-wrap:wrap;}
@@ -1378,6 +1379,7 @@ function renderCards(data){
       </div>
       <div class="rcb" id="b-${r.id}">
         <div class="bgrid">
+          <div class="btop">
           <div class="bsec bsec-main">
             <h4>Datos y estado</h4>
             <div id="equipoSpecs-${r.id}">${renderEquipmentSnapshot(r.id)}</div>
@@ -1462,6 +1464,8 @@ function renderCards(data){
               <button class="pdf-btn" onclick="descargarLauncherReporte('${r.id}','${r.numero}','cliente','despues')" style="border-color:var(--amber);color:var(--amber)">Auto reporte cliente despues</button>
             </div>
           </div>
+          </div>
+          <div class="bbottom">
           <div class="bsec bsec-reports">
             <h4 style="margin-bottom:8px">Diagnósticos y reportes</h4>
             <div id="reportePanel-${r.id}" style="display:grid;gap:4px"></div>
