@@ -118,9 +118,10 @@ main{max-width:1200px;margin:0 auto;padding:22px 24px 80px;overflow:hidden;}
 .bgrid{display:grid;gap:10px;margin-top:10px;align-items:start;}
 .btop,.bbottom{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:10px;align-items:start;}
 .btop > .bsec,.bbottom > .bsec{min-width:0;}
-.btop > .bsec-main{grid-column:span 5;}
-.btop > .bsec-flow{grid-column:span 4;}
-.btop > .bsec-perks{grid-column:span 3;}
+.btop{grid-template-columns:minmax(0,1.3fr) minmax(320px,.9fr);}
+.btop > .bsec-main{grid-column:1;grid-row:1 / span 2;}
+.btop > .bsec-flow{grid-column:2;grid-row:1;}
+.btop > .bsec-perks{grid-column:2;grid-row:2;}
 .bbottom > .bsec-reports{grid-column:1/-1;}
 .bbottom > .bsec-photos{grid-column:span 7;}
 .bbottom > .bsec-rating{grid-column:span 5;}
@@ -133,7 +134,7 @@ main{max-width:1200px;margin:0 auto;padding:22px 24px 80px;overflow:hidden;}
 .bsec-photos{border-color:rgba(34,197,94,.16);}
 .bsec-rating{border-color:rgba(250,204,21,.16);}
 .subcap{font-size:10px;font-weight:700;color:#dbe3ee;letter-spacing:.04em;margin:10px 0 7px;}
-.perks-stack{display:grid;gap:10px;}
+.perks-stack{display:grid;gap:9px;}
 .perks-actions{display:grid;gap:8px;}
 .section-actions{display:grid;grid-template-columns:1fr;gap:8px;margin-top:12px;}
 .section-inline-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:10px;align-items:start;}
@@ -149,6 +150,9 @@ main{max-width:1200px;margin:0 auto;padding:22px 24px 80px;overflow:hidden;}
 .budget-input-wrap{display:flex;align-items:center;justify-content:flex-end;gap:5px;flex-wrap:nowrap;}
 .budget-hint{font-size:10px;color:var(--green);font-weight:700;line-height:1.15;text-align:right;}
 .inline-note{font-size:10px;color:var(--text3);line-height:1.25;margin-top:3px;}
+.btop .stl{max-height:248px;}
+.btop .internal-notes-wrap{margin:8px 0 10px;}
+.btop .section-inline-actions{margin-top:0;}
 .spec-card{margin:0 0 10px;padding:9px 10px;background:linear-gradient(180deg,rgba(255,255,255,.025),rgba(255,255,255,.01));border:1px solid var(--border2);border-radius:10px;}
 .spec-title{font-size:11px;font-weight:700;color:#fff;margin-bottom:6px;}
 .spec-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:7px;}
