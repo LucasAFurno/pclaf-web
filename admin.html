@@ -116,12 +116,10 @@ main{max-width:1200px;margin:0 auto;padding:22px 24px 80px;overflow:hidden;}
 .rcb{display:none;padding:0 12px 12px;border-top:1px solid var(--border);}
 .rc.open .rcb{display:block;}
 .bgrid{display:grid;gap:10px;margin-top:10px;align-items:start;}
-.btop,.bbottom{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:10px;align-items:start;}
-.btop > .bsec,.bbottom > .bsec{min-width:0;}
-.btop{grid-template-columns:minmax(0,1.3fr) minmax(320px,.9fr);}
-.btop > .bsec-main{grid-column:1;grid-row:1 / span 2;}
-.btop > .bsec-flow{grid-column:2;grid-row:1;}
-.btop > .bsec-perks{grid-column:2;grid-row:2;}
+.btop,.bmid,.bbottom{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:10px;align-items:start;}
+.btop > .bsec,.bmid > .bsec,.bbottom > .bsec{min-width:0;}
+.btop{grid-template-columns:minmax(0,1fr);}
+.bmid{grid-template-columns:minmax(0,1fr);}
 .bbottom > .bsec-reports{grid-column:1/-1;}
 .bbottom > .bsec-photos{grid-column:span 7;}
 .bbottom > .bsec-rating{grid-column:span 5;}
@@ -139,6 +137,9 @@ main{max-width:1200px;margin:0 auto;padding:22px 24px 80px;overflow:hidden;}
 .main-split{display:grid;grid-template-columns:minmax(0,1.18fr) minmax(180px,.82fr);gap:12px;align-items:start;}
 .main-state{padding-left:2px;}
 .main-state .subcap{margin-top:0;}
+.flow-split{display:grid;grid-template-columns:minmax(0,.92fr) minmax(0,1.08fr);gap:10px;align-items:start;}
+.flow-col{min-width:0;}
+.flow-col .subcap{margin-top:0;}
 .section-actions{display:grid;grid-template-columns:1fr;gap:8px;margin-top:12px;}
 .section-inline-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:10px;align-items:start;}
 .details-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 14px;margin-bottom:8px;align-items:start;}
@@ -153,9 +154,9 @@ main{max-width:1200px;margin:0 auto;padding:22px 24px 80px;overflow:hidden;}
 .budget-input-wrap{display:flex;align-items:center;justify-content:flex-end;gap:5px;flex-wrap:nowrap;}
 .budget-hint{font-size:10px;color:var(--green);font-weight:700;line-height:1.15;text-align:right;}
 .inline-note{font-size:10px;color:var(--text3);line-height:1.25;margin-top:3px;}
-.btop .stl{max-height:248px;}
-.btop .internal-notes-wrap{margin:8px 0 10px;}
-.btop .section-inline-actions{margin-top:0;}
+.bmid .stl{max-height:248px;}
+.bmid .internal-notes-wrap{margin:8px 0 0;}
+.bmid .section-inline-actions{margin-top:0;}
 .spec-card{margin:0 0 10px;padding:9px 10px;background:linear-gradient(180deg,rgba(255,255,255,.025),rgba(255,255,255,.01));border:1px solid var(--border2);border-radius:10px;}
 .spec-title{font-size:11px;font-weight:700;color:#fff;margin-bottom:6px;}
 .spec-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:7px;}
@@ -325,8 +326,9 @@ tr:hover td{background:var(--black3);}
 /* ── RESPONSIVE ─────────────────────────────── */
 @media(max-width:900px){
   .kgrid,.sbar{grid-template-columns:1fr 1fr;}
-  .cg2,.cgeq,.btop,.bbottom{grid-template-columns:1fr;}
+  .cg2,.cgeq,.btop,.bmid,.bbottom{grid-template-columns:1fr;}
   .main-split{grid-template-columns:1fr;}
+  .flow-split{grid-template-columns:1fr;}
   .section-inline-actions{grid-template-columns:1fr;}
   .details-grid{grid-template-columns:1fr;}
   .rcp{display:none;}
@@ -366,8 +368,9 @@ tr:hover td{background:var(--black3);}
   main{padding-bottom:80px;}
   /* Stats */
   .kgrid,.sbar{grid-template-columns:1fr 1fr;}
-  .cg2,.cgeq,.btop,.bbottom{grid-template-columns:1fr;}
+  .cg2,.cgeq,.btop,.bmid,.bbottom{grid-template-columns:1fr;}
   .main-split{grid-template-columns:1fr;}
+  .flow-split{grid-template-columns:1fr;}
   .rcp{display:none;}
   /* Repair cards */
   .card-actions{flex-wrap:wrap;}
@@ -1426,24 +1429,32 @@ function renderCards(data){
               </div>
             </div>
           </div>
+          </div>
+          <div class="bmid">
           <div class="bsec bsec-flow">
             <h4>Comentarios y notas</h4>
-            <div class="internal-notes-wrap">
-              <div class="internal-notes-head">
-                <div class="internal-notes-title">Notas internas</div>
-                <div class="internal-notes-sub">Solo admin</div>
+            <div class="flow-split">
+              <div class="flow-col">
+                <div class="internal-notes-wrap">
+                  <div class="internal-notes-head">
+                    <div class="internal-notes-title">Notas internas</div>
+                    <div class="internal-notes-sub">Solo admin</div>
+                  </div>
+                  <div class="internal-notes-list" id="in-${r.id}"><div class="internal-notes-empty">Cargando notas...</div></div>
+                  <div class="internal-notes-form">
+                    <textarea class="internal-notes-input" id="ini-${r.id}" placeholder="Ej: ingreso sucio, no pago, se quejo por precio, avisar repuesto, vino sin fuente..."></textarea>
+                    <button class="smbtn internal-notes-btn" onclick="addInternalNote('${r.id}')">Guardar nota</button>
+                  </div>
+                </div>
               </div>
-              <div class="internal-notes-list" id="in-${r.id}"><div class="internal-notes-empty">Cargando notas...</div></div>
-              <div class="internal-notes-form">
-                <textarea class="internal-notes-input" id="ini-${r.id}" placeholder="Ej: ingreso sucio, no pago, se quejo por precio, avisar repuesto, vino sin fuente..."></textarea>
-                <button class="smbtn internal-notes-btn" onclick="addInternalNote('${r.id}')">Guardar nota</button>
+              <div class="flow-col">
+                <div class="subcap" style="margin-bottom:8px">Historial de pasos</div>
+                <div class="stl" id="st-${r.id}"><div style="color:var(--text3);font-size:12px;text-align:center;padding:8px">Cargando...</div></div>
+                <div class="sf">
+                  <div class="sr2"><input class="sin" id="sti-${r.id}" placeholder="Titulo del paso"/><select class="sse" id="ses-${r.id}"><option value="done">Hecho</option><option value="active">En curso</option><option value="pending">Pendiente</option></select></div>
+                  <div class="sr2"><input class="sin" id="sno-${r.id}" placeholder="Nota (opcional)"/><input class="sin" id="sfe-${r.id}" placeholder="Fecha" style="max-width:110px" value="${new Date().toLocaleDateString('es-AR',{day:'numeric',month:'short'})}"/><button class="smbtn" onclick="addPaso('${r.id}')">+ Paso</button></div>
+                </div>
               </div>
-            </div>
-            <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin:2px 0 8px">Historial de pasos</div>
-            <div class="stl" id="st-${r.id}"><div style="color:var(--text3);font-size:12px;text-align:center;padding:8px">Cargando...</div></div>
-            <div class="sf">
-              <div class="sr2"><input class="sin" id="sti-${r.id}" placeholder="Titulo del paso"/><select class="sse" id="ses-${r.id}"><option value="done">Hecho</option><option value="active">En curso</option><option value="pending">Pendiente</option></select></div>
-              <div class="sr2"><input class="sin" id="sno-${r.id}" placeholder="Nota (opcional)"/><input class="sin" id="sfe-${r.id}" placeholder="Fecha" style="max-width:110px" value="${new Date().toLocaleDateString('es-AR',{day:'numeric',month:'short'})}"/><button class="smbtn" onclick="addPaso('${r.id}')">+ Paso</button></div>
             </div>
           </div>
           <div class="bsec bsec-perks">
@@ -1456,8 +1467,8 @@ function renderCards(data){
                   ${descuentoPendiente&&clienteReferido?`<div class="inline-note">Se acredito por ${clienteReferido}.</div>`:''}
                 </div>
                 <div class="descuento-actions">
-                  ${tieneReferido?`<button class="descuento-toggle ${c.descuento_resena?'':'off'}" onclick="toggleDescuento('${c.id||''}',this,'recomendado')"><span class="descuento-toggle-label">Recomendado</span><div class="toggle-track ${c.descuento_resena?'on':''}" id="dTrackRec-${c.id||'x'}"><div class="toggle-knob"></div></div></button>`:''}
-                  <button class="descuento-toggle ${tieneReferido&&c.descuento_resena?'off':''}" onclick="toggleDescuento('${c.id||''}',this,'resena')">
+                  <button class="descuento-toggle ${c.descuento_resena&&tieneReferido?'':'off'}" onclick="toggleDescuento('${c.id||''}',this,'referido')"><span class="descuento-toggle-label">Referido</span><div class="toggle-track ${c.descuento_resena&&tieneReferido?'on':''}" id="dTrackRef-${c.id||'x'}"><div class="toggle-knob"></div></div></button>
+                  <button class="descuento-toggle ${(!tieneReferido&&c.descuento_resena)?'':'off'}" onclick="toggleDescuento('${c.id||''}',this,'resena')">
                     <span class="descuento-toggle-label">Google</span>
                     <div class="toggle-track ${!tieneReferido&&c.descuento_resena?'on':''}" id="dTrackRes-${c.id||'x'}"><div class="toggle-knob"></div></div>
                   </button>
@@ -1484,6 +1495,7 @@ function renderCards(data){
               <button class="pdf-btn" onclick="descargarLauncherReporte('${r.id}','${r.numero}','tecnico','tecnico')" style="border-color:var(--red);color:var(--red)">Auto reporte tecnico</button>
               <button class="pdf-btn" onclick="descargarLauncherReporte('${r.id}','${r.numero}','cliente','despues')" style="border-color:var(--amber);color:var(--amber)">Auto reporte cliente despues</button>
             </div>
+          </div>
           </div>
           </div>
           <div class="bbottom">
@@ -2315,20 +2327,20 @@ function getNombreRep(rep){
 // ── DESCUENTO RESEÑA ──
 async function toggleDescuento(clienteId, btn, source='resena'){
   const lbl = document.getElementById(`dLbl-${clienteId}`);
-  const trackRec = document.getElementById(`dTrackRec-${clienteId}`);
+  const trackRef = document.getElementById(`dTrackRef-${clienteId}`);
   const trackRes = document.getElementById(`dTrackRes-${clienteId}`);
   const cl = aC.find(c=>c.id===clienteId);
   if(!cl) return;
   const nuevo = !cl.descuento_resena;
   await db('PATCH','clientes',`?id=eq.${clienteId}`,{descuento_resena:nuevo});
   cl.descuento_resena = nuevo;
-  if(trackRec) trackRec.classList.toggle('on', nuevo && source==='recomendado');
-  if(trackRes) trackRes.classList.toggle('on', nuevo && source!=='recomendado');
+  if(trackRef) trackRef.classList.toggle('on', nuevo && source==='referido');
+  if(trackRes) trackRes.classList.toggle('on', nuevo && source!=='referido');
   document.querySelectorAll(`#descBanner-${clienteId} .descuento-toggle`).forEach(el=>el.classList.add('off'));
   if(nuevo && btn) btn.classList.remove('off');
   lbl.textContent = nuevo ? 'ACTIVO' : 'inactivo';
   lbl.style.color = nuevo ? 'var(--green)' : 'var(--text3)';
-  toast(nuevo ? `Descuento activado por ${source==='recomendado'?'recomendado':'Google'}` : 'Descuento desactivado');
+  toast(nuevo ? `Descuento activado por ${source==='referido'?'referido':'Google'}` : 'Descuento desactivado');
   playSound('action');
 }
 
