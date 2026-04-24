@@ -338,12 +338,15 @@ async function cargar(code) {
     const equipos = await db('equipos', `?cliente_id=eq.${cliente.id}&order=created_at.asc`);
 
     for (const eq of equipos) {
-      eq.repairs = await db('reparaciones', `?equipo_id=eq.${eq.id}&order=created_at.desc`);
+      // No mostrar reparaciones canceladas al cliente.
+      eq.repairs = await db('reparaciones', `?equipo_id=eq.${eq.id}&estado=neq.cancelado&order=created_at.desc`);
       const activa = eq.repairs.find(r => ['listo','proceso','espera'].includes(r.estado));
       eq.lastStatus = activa?.estado || 'ok';
     }
 
-    currentClient = { ...cliente, discountSource, machines: equipos };
+    // Ocultar equipos que solo tuvieron reparaciones canceladas.
+    const visibles = equipos.filter(eq => (eq.repairs || []).length > 0);
+    currentClient = { ...cliente, discountSource, machines: visibles };
     hide('loading');
     renderMachines(currentClient, code);
 
