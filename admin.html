@@ -136,6 +136,9 @@ main{max-width:1200px;margin:0 auto;padding:22px 24px 80px;overflow:hidden;}
 .subcap{font-size:10px;font-weight:700;color:#dbe3ee;letter-spacing:.04em;margin:10px 0 7px;}
 .perks-stack{display:grid;gap:9px;}
 .perks-actions{display:grid;gap:8px;}
+.main-split{display:grid;grid-template-columns:minmax(0,1.18fr) minmax(180px,.82fr);gap:12px;align-items:start;}
+.main-state{padding-left:2px;}
+.main-state .subcap{margin-top:0;}
 .section-actions{display:grid;grid-template-columns:1fr;gap:8px;margin-top:12px;}
 .section-inline-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:10px;align-items:start;}
 .details-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 14px;margin-bottom:8px;align-items:start;}
@@ -323,6 +326,7 @@ tr:hover td{background:var(--black3);}
 @media(max-width:900px){
   .kgrid,.sbar{grid-template-columns:1fr 1fr;}
   .cg2,.cgeq,.btop,.bbottom{grid-template-columns:1fr;}
+  .main-split{grid-template-columns:1fr;}
   .section-inline-actions{grid-template-columns:1fr;}
   .details-grid{grid-template-columns:1fr;}
   .rcp{display:none;}
@@ -363,6 +367,7 @@ tr:hover td{background:var(--black3);}
   /* Stats */
   .kgrid,.sbar{grid-template-columns:1fr 1fr;}
   .cg2,.cgeq,.btop,.bbottom{grid-template-columns:1fr;}
+  .main-split{grid-template-columns:1fr;}
   .rcp{display:none;}
   /* Repair cards */
   .card-actions{flex-wrap:wrap;}
@@ -1392,27 +1397,33 @@ function renderCards(data){
           <div class="btop">
           <div class="bsec bsec-main">
             <h4>Datos y estado</h4>
-            <div id="equipoSpecs-${r.id}">${renderEquipmentSnapshot(r.id)}</div>
-            <div class="details-grid">
-            <div class="cir"><span class="cil">Nombre</span><span class="civ">${c.nombre||'-'}${c.apellido?' '+c.apellido:''}</span></div>
-            <div class="cir"><span class="cil">Telefono</span><span class="civ">${c.telefono||'-'}</span></div>
-            <div class="cir"><span class="cil">Codigo</span><span class="civ">${c.codigo||'-'}</span></div>
-            <div class="cir"><span class="cil">Equipo</span><span class="civ">${e.nombre||'-'}${e.modelo?' - '+e.modelo:''}</span></div>
-            <div class="cir field-span-2"><span class="cil">Problema</span><span class="civ" style="font-size:12px">${r.problema||'-'}</span></div>
-            ${clienteReferido?`<div class="cir"><span class="cil">Referido</span><span class="civ">${clienteReferido}</span></div>`:''}
-            <div class="cir"><span class="cil">Presupuesto</span>
-              <div class="budget-stack">
-                <div class="budget-input-wrap"><input class="prin" id="pr-${r.id}" value="${r.presupuesto||''}" placeholder="$0.000" style="width:95px"/><button class="smbtn" style="padding:5px 9px;font-size:11px" onclick="savePr('${r.id}')">OK</button></div>
-                ${descuentoActivo&&r.presupuesto?`<span class="budget-hint">con desc: ${getDiscountBudgetLabel(r.presupuesto)}</span>`:''}
+            <div class="main-split">
+              <div class="main-data">
+                <div id="equipoSpecs-${r.id}">${renderEquipmentSnapshot(r.id)}</div>
+                <div class="details-grid">
+                <div class="cir"><span class="cil">Nombre</span><span class="civ">${c.nombre||'-'}${c.apellido?' '+c.apellido:''}</span></div>
+                <div class="cir"><span class="cil">Telefono</span><span class="civ">${c.telefono||'-'}</span></div>
+                <div class="cir"><span class="cil">Codigo</span><span class="civ">${c.codigo||'-'}</span></div>
+                <div class="cir"><span class="cil">Equipo</span><span class="civ">${e.nombre||'-'}${e.modelo?' - '+e.modelo:''}</span></div>
+                <div class="cir field-span-2"><span class="cil">Problema</span><span class="civ" style="font-size:12px">${r.problema||'-'}</span></div>
+                ${clienteReferido?`<div class="cir"><span class="cil">Referido</span><span class="civ">${clienteReferido}</span></div>`:''}
+                <div class="cir"><span class="cil">Presupuesto</span>
+                  <div class="budget-stack">
+                    <div class="budget-input-wrap"><input class="prin" id="pr-${r.id}" value="${r.presupuesto||''}" placeholder="$0.000" style="width:95px"/><button class="smbtn" style="padding:5px 9px;font-size:11px" onclick="savePr('${r.id}')">OK</button></div>
+                    ${descuentoActivo&&r.presupuesto?`<span class="budget-hint">con desc: ${getDiscountBudgetLabel(r.presupuesto)}</span>`:''}
+                  </div>
+                </div>
+                <div class="cir"><span class="cil">Entrega est.</span>
+                  <div class="fest-row"><input class="fest-in" id="fe-${r.id}" value="${r.fecha_entrega||''}" placeholder="Ej: 25 mar"/><button class="smbtn" style="padding:5px 9px;font-size:11px;background:var(--green)" onclick="saveFechaEst('${r.id}')">OK</button></div>
+                </div>
+                </div>
               </div>
-            </div>
-            <div class="cir"><span class="cil">Entrega est.</span>
-              <div class="fest-row"><input class="fest-in" id="fe-${r.id}" value="${r.fecha_entrega||''}" placeholder="Ej: 25 mar"/><button class="smbtn" style="padding:5px 9px;font-size:11px;background:var(--green)" onclick="saveFechaEst('${r.id}')">OK</button></div>
-            </div>
-            </div>
-            <div class="subcap">Estado</div>
-            <div class="sgrid">
-              ${['espera','proceso','listo','entregado','cancelado'].map(s=>`<div class="so ${r.estado===s?'a'+s[0]:''}" onclick="chEst('${r.id}','${s}',this)">${IC[s]} ${s.charAt(0).toUpperCase()+s.slice(1)}</div>`).join('')}
+              <div class="main-state">
+                <div class="subcap">Estado</div>
+                <div class="sgrid">
+                  ${['espera','proceso','listo','entregado','cancelado'].map(s=>`<div class="so ${r.estado===s?'a'+s[0]:''}" onclick="chEst('${r.id}','${s}',this)">${IC[s]} ${s.charAt(0).toUpperCase()+s.slice(1)}</div>`).join('')}
+                </div>
+              </div>
             </div>
           </div>
           <div class="bsec bsec-flow">
