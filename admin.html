@@ -116,8 +116,11 @@ main{max-width:1200px;margin:0 auto;padding:22px 24px 80px;overflow:hidden;}
 .rcb{display:none;padding:0 12px 12px;border-top:1px solid var(--border);}
 .rc.open .rcb{display:block;}
 .bgrid{display:grid;gap:10px;margin-top:10px;align-items:start;}
-.btop{display:grid;grid-template-columns:minmax(0,1.22fr) minmax(300px,1fr) minmax(250px,.7fr);gap:10px;align-items:start;}
-.bbottom{display:grid;grid-template-columns:minmax(0,1.22fr) minmax(300px,1fr) minmax(250px,.7fr);gap:10px;align-items:start;}
+.btop,.bbottom{display:flex;gap:10px;align-items:flex-start;min-width:0;}
+.btop > .bsec,.bbottom > .bsec{min-width:0;flex:1 1 0;}
+.btop > .bsec-main,.bbottom > .bsec-reports{flex:1.22 1 0;}
+.btop > .bsec-flow,.bbottom > .bsec-photos{flex:1 1 0;}
+.btop > .bsec-perks,.bbottom > .bsec-rating{flex:.7 1 0;}
 .bsec{background:linear-gradient(180deg,rgba(255,255,255,.02),rgba(255,255,255,.008));border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:11px 12px;box-shadow:inset 0 1px 0 rgba(255,255,255,.025);}
 .bsec h4{font-size:9px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.16em;margin-bottom:9px;}
 .bsec-main{border-color:rgba(255,255,255,.08);}
@@ -312,7 +315,8 @@ tr:hover td{background:var(--black3);}
 /* ── RESPONSIVE ─────────────────────────────── */
 @media(max-width:900px){
   .kgrid,.sbar{grid-template-columns:1fr 1fr;}
-  .cg2,.cgeq,.btop,.bbottom{grid-template-columns:1fr;}
+  .cg2,.cgeq{grid-template-columns:1fr;}
+  .btop,.bbottom{flex-direction:column;}
   .section-inline-actions{grid-template-columns:1fr;}
   .details-grid{grid-template-columns:1fr;}
   .rcp{display:none;}
@@ -352,7 +356,8 @@ tr:hover td{background:var(--black3);}
   main{padding-bottom:80px;}
   /* Stats */
   .kgrid,.sbar{grid-template-columns:1fr 1fr;}
-  .cg2,.cgeq,.btop,.bbottom{grid-template-columns:1fr;}
+  .cg2,.cgeq{grid-template-columns:1fr;}
+  .btop,.bbottom{flex-direction:column;}
   .rcp{display:none;}
   /* Repair cards */
   .card-actions{flex-wrap:wrap;}
