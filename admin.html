@@ -150,6 +150,9 @@ main{max-width:1200px;margin:0 auto;padding:22px 24px 80px;overflow:hidden;}
 .bsec-main .details-grid .cir{padding:6px 0;border-bottom:1px solid rgba(255,255,255,.06);}
 .bsec-main .details-grid .cil{padding-top:0;}
 .bsec-main .details-grid .civ{text-align:left;}
+.equipo-specs{display:contents;}
+.spec-hint{font-size:11px;font-weight:600;color:var(--text3);line-height:1.35;}
+.details-grid .spec-editor{grid-column:1/-1;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:10px;margin-top:6px;}
 .cir{display:grid;grid-template-columns:92px minmax(0,1fr);align-items:start;gap:8px;padding:3px 0;margin:0;}
 .cil{font-size:10px;font-weight:700;color:#7f8794;text-transform:uppercase;letter-spacing:.1em;line-height:1.4;padding-top:3px;}
 .civ{font-size:13px;font-weight:600;color:#edf1f7;font-family:inherit;text-align:right;line-height:1.32;overflow-wrap:anywhere;}
@@ -1180,13 +1183,13 @@ function renderEquipmentSnapshot(repId, specs=null, loading=false){
       ? 'Datos tomados del último diagnóstico técnico subido.'
       : 'Subí un diagnóstico técnico para completar CPU, RAM, GPU y modelo por equipo.';
   const finalHint=hasManual ? 'Usando corrección manual compartida entre admins.' : hint;
-  return `<div class="spec-card">
-    <div class="spec-head">
-      <div class="spec-title">Ficha del equipo</div>
-      <div class="spec-actions">
+  return `
+    <div class="cir field-span-2">
+      <span class="cil">Ficha del equipo</span>
+      <span class="civ" style="display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap">
         <button class="spec-mini-btn" onclick="toggleEquipmentEditor('${repId}')">Editar ficha</button>
         ${hasManual?`<button class="spec-mini-btn" onclick="clearEquipmentManualEdit('${repId}')">Usar automatico</button>`:''}
-      </div>
+      </span>
     </div>
     ${rows.map(([label,value])=>`<div class="cir"><span class="cil">${escapeSpecHtml(label)}</span><span class="civ">${escapeSpecHtml(value)}</span></div>`).join('')}
     <div class="spec-editor" id="specEditor-${repId}" style="display:none">
@@ -1228,8 +1231,11 @@ function renderEquipmentSnapshot(repId, specs=null, loading=false){
         <button class="spec-mini-btn" style="color:#fff;border-color:var(--green);background:rgba(34,197,94,.12)" onclick="saveEquipmentManualEdit('${repId}')">Guardar correccion</button>
       </div>
     </div>
-    <div class="spec-note">${escapeSpecHtml(finalHint)}</div>
-  </div>`;
+    <div class="cir field-span-2">
+      <span class="cil">Info</span>
+      <span class="civ spec-hint">${escapeSpecHtml(finalHint)}</span>
+    </div>
+  `;
 }
 
 function toggleEquipmentEditor(repId){
@@ -1411,8 +1417,8 @@ function renderCards(data){
             <h4>Datos y estado</h4>
             <div class="main-split">
               <div class="main-data">
-                <div id="equipoSpecs-${r.id}">${renderEquipmentSnapshot(r.id)}</div>
                 <div class="details-grid">
+                <div id="equipoSpecs-${r.id}" class="equipo-specs">${renderEquipmentSnapshot(r.id)}</div>
                 <div class="cir"><span class="cil">Nombre</span><span class="civ">${c.nombre||'-'}${c.apellido?' '+c.apellido:''}</span></div>
                 <div class="cir"><span class="cil">Telefono</span><span class="civ">${c.telefono||'-'}</span></div>
                 <div class="cir"><span class="cil">Codigo</span><span class="civ">${c.codigo||'-'}</span></div>
