@@ -864,6 +864,33 @@ if(_logoutReason){
   setTimeout(()=>toast(_logoutReason,true),120);
 }
 
+function normalizePhoneInput(value){
+  return String(value||'').replace(/[^\d+()\-\s]/g,'').trim().slice(0,24);
+}
+
+function normalizeWhatsappPhone(value){
+  let digits=String(value||'').replace(/\D/g,'');
+  if(!digits) return '';
+  if(digits.startsWith('00')) digits=digits.slice(2);
+  if(digits.startsWith('549')) return digits;
+  if(digits.startsWith('54') && digits.length>10){
+    return digits[2]==='9' ? digits : `549${digits.slice(2)}`;
+  }
+  if(digits.startsWith('0')) digits=digits.slice(1);
+  if(digits.startsWith('15') && digits.length===10) return `54911${digits.slice(2)}`;
+  if(digits.startsWith('11') && digits.length===10) return `549${digits}`;
+  if(digits.startsWith('9') && digits.length>10) return `54${digits}`;
+  if(digits.length===10) return `549${digits}`;
+  return digits;
+}
+
+function buildWhatsappUrl(phone, msgOrEncoded='', alreadyEncoded=false){
+  const normalized=normalizeWhatsappPhone(phone);
+  if(!normalized) return '';
+  const text=alreadyEncoded ? msgOrEncoded : encodeURIComponent(msgOrEncoded||'');
+  return `https://wa.me/${normalized}${text?`?text=${text}`:''}`;
+}
+
 // TABS
 function switchTab(name,btn){
   // Close all open repair cards first
@@ -1380,7 +1407,7 @@ function renderCards(data){
   const cards=data.map(r=>{
     const e=r.equipos||{};
     const c=e.clientes||{};
-    const tel=(c.telefono||'').replace(/\D/g,'');
+    const tel=normalizeWhatsappPhone(c.telefono||'');
     const wm=encodeURIComponent(`Hola ${(c.nombre||'').split(' ')[0]}, te escribimos de PCLAF. Tu ${e.nombre||'equipo'} (#${r.numero}) está ${LB[r.estado]||r.estado}.`);
     const urgente=r.urgente||false;
     const descuentoActivo=!!c.descuento_resena;
@@ -1495,7 +1522,7 @@ function renderCards(data){
                   <button class="pdf-btn" onclick="generarPDF('${r.id}')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> Presupuesto PDF</button>
                   <button class="pdf-btn" onclick="editarRep('${r.id}')" style="margin-top:0;border-color:rgba(245,158,11,.35);color:var(--amber)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Editar</button>
                 </div>
-                ${tel?`<a class="wab" href="https://wa.me/54${tel}?text=${wm}" target="_blank" rel="noopener noreferrer"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg> WhatsApp a ${(c.nombre||'').split(' ')[0]||'cliente'}</a>`:''}
+                ${tel?`<a class="wab" href="${buildWhatsappUrl(c.telefono,wm,true)}" target="_blank" rel="noopener noreferrer"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg> WhatsApp a ${(c.nombre||'').split(' ')[0]||'cliente'}</a>`:''}
               </div>
             </div>
             <input type="file" accept=".html" style="display:none" id="reporteInput-${r.id}" onchange="procesarReporte('${r.id}',this)"/>
@@ -1752,8 +1779,13 @@ async function savePr(id){
 
 // ── WhatsApp — abre directo sin toast intermedio ──
 function abrirWA(telefono, msgEncoded){
-  const tel = telefono.replace(/\D/g,'');
-  window.open(`https://wa.me/54${tel}?text=${msgEncoded}`, '_blank');
+  const url=buildWhatsappUrl(telefono,msgEncoded,true);
+  if(!url){
+    toast('El cliente no tiene un WhatsApp valido cargado.',true);
+    playSound('error');
+    return;
+  }
+  window.open(url, '_blank');
 }
 
 // MODAL — número automático
@@ -1837,11 +1869,11 @@ async function openModalFromTurno(nom, ape, tel, servicio, nota, urgente){
   // Try to find existing client by phone if username didn't resolve it
   if(!matchedClient && tel){
     try{
-      const telNum=tel.replace(/\D/g,'');
-      matchedClient=aC.find(c=>(c.telefono||'').replace(/\D/g,'')===telNum) || null;
+      const telNum=normalizeWhatsappPhone(tel);
+      matchedClient=aC.find(c=>normalizeWhatsappPhone(c.telefono)===telNum) || null;
       let res=matchedClient?[matchedClient]:null;
       if(!res?.length){
-        res=await db('GET','clientes',`?telefono=eq.${telNum}&limit=1`);
+        res=(aC||[]).filter(c=>normalizeWhatsappPhone(c.telefono)===telNum).slice(0,1);
       }
       if(res?.length){
         document.getElementById('mCod').value=res[0].codigo||'';
@@ -1866,7 +1898,7 @@ async function crearRep(){
   const nom=document.getElementById('mNom').value.trim();
   const ape=document.getElementById('mApe').value.trim();
   const nomCompleto=ape?`${nom} ${ape}`:nom;
-  const tel=document.getElementById('mTel').value.trim();
+  const tel=normalizePhoneInput(document.getElementById('mTel').value);
   const eq=document.getElementById('mEq').value.trim();
   const mod=document.getElementById('mMod').value.trim();
   const num=document.getElementById('mNum').value.trim();
@@ -2136,7 +2168,7 @@ function renderTurnos(){
       </div>
       <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
         <span style="font-size:10px;font-weight:600;padding:3px 9px;border-radius:20px;background:${estBg[t.estado]||'var(--black3)'};color:${estCol[t.estado]||'var(--text3)'};">${t.estado}</span>
-      ${t.telefono?`<a href="https://wa.me/54${t.telefono.replace(/\D/g,'')}?text=${encodeURIComponent(`Hola ${t.nombre}! Confirmamos tu turno en PCLAF para el ${t.fecha} a las ${t.hora}. Campana 51, Floresta.`)}" target="_blank" rel="noopener noreferrer" style="background:#25d366;color:#fff;padding:5px 10px;border-radius:6px;font-size:11px;font-weight:700;text-decoration:none;">✓ Confirmar WA</a>`:''}
+      ${normalizeWhatsappPhone(t.telefono)?`<a href="${buildWhatsappUrl(t.telefono,encodeURIComponent(`Hola ${t.nombre}! Confirmamos tu turno en PCLAF para el ${t.fecha} a las ${t.hora}. Campana 51, Floresta.`),true)}" target="_blank" rel="noopener noreferrer" style="background:#25d366;color:#fff;padding:5px 10px;border-radius:6px;font-size:11px;font-weight:700;text-decoration:none;">✓ Confirmar WA</a>`:''}
         <button onclick="openModalFromTurno('${(t.nombre||'').replace(/'/g,"\\'")}','${(t.apellido||'').replace(/'/g,"\\'")}','${(t.telefono||'').replace(/'/g,"\\'")}','${(t.servicio||'').replace(/'/g,"\\'")}','${(t.nota||'').replace(/'/g,"\\'")}',${!!t.urgente})" style="background:var(--red);border:none;border-radius:6px;padding:5px 10px;font-size:11px;font-weight:700;color:#fff;cursor:pointer;">+ Reparación</button>
         <select onchange="cambiarEstadoTurno('${t.id}',this.value)" style="background:var(--black3);border:1px solid var(--border2);border-radius:6px;padding:5px 8px;font-size:11px;color:var(--text2);cursor:pointer;outline:none;">
           <option value="pendiente" ${t.estado==='pendiente'?'selected':''}>Pendiente</option>
@@ -2162,7 +2194,7 @@ function irATurno(id){
   if(!t){switchTab('turnos',document.querySelector('.tab[onclick*=turnos]'));return;}
 
   // Try to find a matching reparacion by phone, username or name
-  const telNorm=(t.telefono||'').replace(/\D/g,'');
+  const telNorm=normalizeWhatsappPhone(t.telefono||'');
   const meta=parseTurnoMeta(t.nota||'');
   const usuarioNorm=normalizeTurnoUser(meta.usuario);
   const nomBuscar=(t.nombre||'').toLowerCase();
@@ -2171,7 +2203,7 @@ function irATurno(id){
   const match=aR.find(r=>{
     const e=aE.find(x=>x.id===r.equipo_id)||{};
     const c=aC.find(x=>x.id===e.cliente_id)||{};
-    const cTel=(c.telefono||'').replace(/\D/g,'');
+    const cTel=normalizeWhatsappPhone(c.telefono||'');
     const cNom=(c.nombre||'').toLowerCase();
     const cUser=normalizeTurnoUser(c.codigo);
     return (telNorm&&cTel===telNorm)
@@ -2393,7 +2425,7 @@ async function guardarEdicion(){
   const eid=document.getElementById('eEqId').value;
   const cid=document.getElementById('eClId').value;
   try{
-    await db('PATCH','clientes',`?id=eq.${cid}`,{nombre:document.getElementById('eNom').value.trim(),apellido:document.getElementById('eApe').value.trim(),telefono:document.getElementById('eTel').value.trim()});
+    await db('PATCH','clientes',`?id=eq.${cid}`,{nombre:document.getElementById('eNom').value.trim(),apellido:document.getElementById('eApe').value.trim(),telefono:normalizePhoneInput(document.getElementById('eTel').value)});
     await db('PATCH','equipos',`?id=eq.${eid}`,{nombre:document.getElementById('eEq').value.trim(),modelo:document.getElementById('eMod').value.trim()});
     await db('PATCH','reparaciones',`?id=eq.${rid}`,{problema:document.getElementById('eProb').value.trim(),presupuesto:document.getElementById('ePres').value.trim(),fecha_entrega:document.getElementById('eFest').value.trim()});
     closeEdit();
