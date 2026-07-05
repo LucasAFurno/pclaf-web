@@ -3,6 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-LJY1CM9SD1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-LJY1CM9SD1');
+</script>
 <title>Pagina no encontrada | PCLAF</title>
 <meta name="robots" content="noindex, follow">
 <meta name="description" content="La URL que intentaste abrir ya no existe. Te redirigimos a la seccion principal correspondiente de PCLAF para que puedas seguir navegando.">
@@ -22,10 +31,26 @@
     var path = window.location.pathname.toLowerCase();
     var destination = "https://www.pclaf.com.ar/";
 
-    if (path.indexOf("/productos/") === 0 || path.indexOf("/electronica/") === 0) {
+    if (
+      path.indexOf("/productos/") === 0 ||
+      path === "/productos" ||
+      path === "/productos/" ||
+      path.indexOf("/ar/productos/") === 0 ||
+      path.indexOf("/electronica/") === 0
+    ) {
       destination = "https://www.pclaf.com.ar/precios.html";
+    } else if (
+      path.indexOf("/service/") === 0 ||
+      path === "/service" ||
+      path === "/service/" ||
+      path.indexOf("/grooming/") === 0 ||
+      path.indexOf("/sobre-mi/") === 0
+    ) {
+      destination = "https://www.pclaf.com.ar/service-tecnico-pc-flores-floresta.html";
     } else if (path.indexOf("/turnos") === 0 || path.indexOf("/reservas") === 0) {
       destination = "https://www.pclaf.com.ar/turnos.html";
+    } else if (path.indexOf("/ubicacion") === 0 || path.indexOf("/contacto") === 0) {
+      destination = "https://www.pclaf.com.ar/ubicacion.html";
     }
 
     window.location.replace(destination);
