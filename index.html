@@ -733,6 +733,8 @@ section{max-width:1100px;margin:0 auto;padding:80px 24px;}
   border-radius:14px;
   overflow:hidden;
   transition:border-color .2s, transform .2s;
+  display:flex;
+  flex-direction:column;
 }
 .social-card:hover{
   border-color:var(--border2);
@@ -741,14 +743,12 @@ section{max-width:1100px;margin:0 auto;padding:80px 24px;}
 
 .social-card-img{
   position:relative;
-  aspect-ratio:9/16;
-  background:var(--black3);
-  overflow:hidden;
+  background:none;
+  overflow:visible;
 }
 .social-card-img img{
-  width:100%;height:100%;
-  object-fit:contain;
-  object-position:center top;
+  width:100%;
+  height:auto;
   display:block;
   transition:transform .3s ease;
 }
@@ -776,21 +776,35 @@ section{max-width:1100px;margin:0 auto;padding:80px 24px;}
 
 .social-card-body{padding:18px;}
 .social-card-type{
+  display:inline-flex;align-items:center;
+  width:max-content;
+  padding:4px 8px;
+  border-radius:999px;
+  background:rgba(255,255,255,0.04);
+  border:1px solid rgba(255,255,255,0.06);
   font-family:var(--mono);font-size:10px;
   color:var(--text3);letter-spacing:.08em;
-  text-transform:uppercase;margin-bottom:8px;
+  text-transform:uppercase;margin-bottom:12px;
 }
 .social-card-text{
-  font-size:13px;color:var(--text2);
-  line-height:1.65;margin-bottom:14px;
+  font-size:14px;color:rgba(255,255,255,0.78);
+  line-height:1.6;margin-bottom:18px;
+  min-height:68px;
+  text-wrap:pretty;
 }
 .social-card-cta{
-  font-family:var(--mono);font-size:11px;font-weight:500;
-  color:var(--red);text-decoration:none;
+  display:inline-flex;align-items:center;justify-content:center;
+  width:max-content;
+  padding:9px 12px;
+  border-radius:999px;
+  background:rgba(204,0,0,0.12);
+  border:1px solid rgba(204,0,0,0.24);
+  font-family:var(--mono);font-size:11px;font-weight:600;
+  color:#ff5c5c;text-decoration:none;
   letter-spacing:.04em;
-  transition:opacity .15s;
+  transition:opacity .15s, border-color .15s, background .15s;
 }
-.social-card-cta:hover{opacity:.7;}
+.social-card-cta:hover{opacity:1;background:rgba(204,0,0,0.18);border-color:rgba(204,0,0,0.34);}
 
 /* Follow buttons row */
 .social-follow{display:none;}
@@ -801,7 +815,6 @@ section{max-width:1100px;margin:0 auto;padding:80px 24px;}
 
 @media(max-width:768px){
   .social-grid{grid-template-columns:1fr;}
-  .social-card-img{aspect-ratio:9/16;}
 }
 
 /* ─── CONTACT BAR ─── */
