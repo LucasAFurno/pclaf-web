@@ -156,6 +156,9 @@ html{scroll-behavior:smooth;}
   --red-dark:  #9e0000;
   --red-dim:   rgba(204,0,0,0.1);
   --red-glow:  rgba(204,0,0,0.25);
+  --arg-sky:   #7fc9f7;
+  --arg-sky-soft:#d9f1ff;
+  --arg-sun:   #f3c33c;
   --black:     #080808;
   --black2:    #0f0f0f;
   --black3:    #161616;
@@ -177,6 +180,31 @@ body{
   font-family:var(--body);
   overflow-x:hidden;
   padding-top:64px; /* altura del nav fijo */
+}
+
+.celebration-layer{
+  position:fixed;
+  inset:64px 0 auto;
+  height:0;
+  pointer-events:none;
+  z-index:60;
+}
+.confetti{
+  position:absolute;
+  top:-12vh;
+  width:10px;
+  height:22px;
+  border-radius:3px;
+  opacity:.92;
+  animation:confetti-fall linear infinite;
+  will-change:transform,opacity;
+}
+.confetti.sky{background:linear-gradient(180deg,var(--arg-sky-soft),var(--arg-sky));}
+.confetti.white{background:linear-gradient(180deg,#ffffff,#dcecf7);}
+@keyframes confetti-fall{
+  0%{transform:translate3d(0,0,0) rotate(0deg);opacity:0;}
+  10%{opacity:.95;}
+  100%{transform:translate3d(var(--drift),110vh,0) rotate(680deg);opacity:0;}
 }
 
 /* ─── NOISE OVERLAY ─── */
@@ -229,10 +257,15 @@ nav{
 .hero{
   min-height:calc(100vh - 136px);
   display:flex;flex-direction:column;justify-content:center;
-  padding:48px 24px 60px;
-  max-width:1100px;margin:0 auto;
+  width:100%;
+  max-width:none;
+  margin:0;
+  padding:210px 0 60px;
   position:relative;
+  overflow:hidden;
+  isolation:isolate;
 }
+
 
 /* big grid background text */
 .hero-bg-text{
@@ -243,10 +276,56 @@ nav{
   color:rgba(204,0,0,0.04);
   white-space:nowrap;letter-spacing:-4px;
   pointer-events:none;user-select:none;
+  z-index:1;
+}
+.hero-flag-bg{
+  position:absolute;
+  left:50%;
+  top:0;
+  bottom:168px;
+  width:100vw;
+  max-width:none;
+  height:auto;
+  transform:translateX(-50%);
+  opacity:.34;
+  pointer-events:none;
   z-index:0;
+  filter:none;
+}
+.hero-flag-bg::before{
+  content:'';
+  position:absolute;
+  inset:0;
+  background:linear-gradient(90deg, rgba(8,8,8,.88) 0 20%, rgba(8,8,8,.48) 38%, rgba(8,8,8,.14) 56%, rgba(8,8,8,.06) 100%);
+  z-index:2;
+}
+.hero-flag-bg::after{
+  content:'';
+  position:absolute;
+  inset:0;
+  background:
+    linear-gradient(90deg, rgba(255,255,255,.12) 0 10%, rgba(255,255,255,0) 16%, rgba(0,0,0,.18) 28%, rgba(255,255,255,.06) 46%, rgba(0,0,0,.22) 64%, rgba(255,255,255,.05) 82%, rgba(0,0,0,.16) 100%),
+    linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,0) 36%, rgba(0,0,0,.1) 100%);
+  mix-blend-mode:multiply;
+  opacity:.55;
+  z-index:1;
+}
+.hero-flag-media{
+  width:100%;
+  height:100%;
+  display:block;
+  object-fit:cover;
+  object-position:center;
 }
 
-.hero-content{position:relative;z-index:1;}
+.hero-content{
+  position:relative;
+  z-index:2;
+  width:100%;
+  max-width:1100px;
+  margin:0 auto;
+  padding:0 24px;
+}
 
 .hero-eyebrow{
   display:inline-flex;align-items:center;gap:10px;
@@ -666,10 +745,9 @@ section{max-width:1100px;margin:0 auto;padding:80px 24px;}
   background:var(--black3);
   overflow:hidden;
 }
-/* when a real image is added: */
 .social-card-img img{
   width:100%;height:100%;
-  object-fit:cover;
+  object-fit:contain;
   object-position:center top;
   display:block;
   transition:transform .3s ease;
@@ -677,24 +755,12 @@ section{max-width:1100px;margin:0 auto;padding:80px 24px;}
 .social-card:hover .social-card-img img{
   transform:scale(1.03);
 }
-
-.social-card-placeholder{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;
-  position:absolute;inset:0;
-  display:flex;flex-direction:column;
-  align-items:center;justify-content:center;
-  gap:12px;
-  background: linear-gradient(135deg, #1a1a1a 0%, #111 50%, #1e1e1e 100%);
-  /* subtle grid pattern */
-  background-image:
-    linear-gradient(rgba(204,0,0,0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(204,0,0,0.04) 1px, transparent 1px);
-  background-size: 24px 24px;
-}
-.social-card-placeholder svg{color:var(--border2);}
-.social-card-placeholder span{
-  font-family:var(--mono);font-size:11px;
-  color:var(--text3);letter-spacing:.06em;
-  text-align:center;padding:0 16px;
+.social-card-img::after{
+  content:'';
+  position:absolute;
+  inset:0;
+  background:linear-gradient(180deg, rgba(0,0,0,.04) 0%, rgba(0,0,0,0) 55%, rgba(0,0,0,.12) 100%);
+  pointer-events:none;
 }
 
 .social-card-platform{
@@ -735,7 +801,7 @@ section{max-width:1100px;margin:0 auto;padding:80px 24px;}
 
 @media(max-width:768px){
   .social-grid{grid-template-columns:1fr;}
-  .social-card-img{aspect-ratio:4/5;}
+  .social-card-img{aspect-ratio:9/16;}
 }
 
 /* ─── CONTACT BAR ─── */
@@ -848,12 +914,16 @@ footer{
   .stat{border-right:none;padding-right:0;margin-right:0;}
   .logo-tag{display:none;}
   .nav-social{display:none;}
+  .hero-content{padding:0 20px;}
+  .hero-flag-bg{bottom:150px;opacity:.3;}
 }
 @media(max-width:480px){
   .steps{grid-template-columns:1fr;}
   .hero-ctas{flex-direction:column;align-items:stretch;}
   .btn-primary,.btn-secondary{justify-content:center;width:100%;}
   .footer-inner{grid-template-columns:1fr;}
+  .hero-content{padding:0 20px;}
+  .hero-flag-bg{bottom:188px;opacity:.24;}
 }
 
 /* ── NAV MOBILE ── */
@@ -900,6 +970,22 @@ footer{
 </style>
 </head>
 <body>
+<div class="celebration-layer" aria-hidden="true">
+  <span class="confetti sky" style="left:4%;--drift:36px;animation-duration:9.2s;animation-delay:-1.2s;"></span>
+  <span class="confetti white" style="left:11%;--drift:-28px;animation-duration:10.1s;animation-delay:-5.8s;"></span>
+  <span class="confetti sky" style="left:18%;--drift:44px;animation-duration:8.7s;animation-delay:-3.4s;"></span>
+  <span class="confetti white" style="left:24%;--drift:-38px;animation-duration:11.3s;animation-delay:-2.1s;"></span>
+  <span class="confetti sky" style="left:31%;--drift:26px;animation-duration:9.8s;animation-delay:-7.1s;"></span>
+  <span class="confetti white" style="left:39%;--drift:-42px;animation-duration:10.6s;animation-delay:-4.7s;"></span>
+  <span class="confetti sky" style="left:46%;--drift:34px;animation-duration:8.9s;animation-delay:-6.1s;"></span>
+  <span class="confetti white" style="left:53%;--drift:-30px;animation-duration:10.8s;animation-delay:-2.7s;"></span>
+  <span class="confetti sky" style="left:60%;--drift:40px;animation-duration:9.5s;animation-delay:-8.2s;"></span>
+  <span class="confetti white" style="left:67%;--drift:-26px;animation-duration:11.2s;animation-delay:-1.8s;"></span>
+  <span class="confetti sky" style="left:74%;--drift:31px;animation-duration:8.8s;animation-delay:-5.2s;"></span>
+  <span class="confetti white" style="left:81%;--drift:-36px;animation-duration:10.4s;animation-delay:-7.4s;"></span>
+  <span class="confetti sky" style="left:88%;--drift:29px;animation-duration:9.1s;animation-delay:-3.9s;"></span>
+  <span class="confetti white" style="left:94%;--drift:-24px;animation-duration:11.7s;animation-delay:-6.6s;"></span>
+</div>
 
 <!-- ─── NAV ─── -->
 <nav>
@@ -940,9 +1026,6 @@ footer{
       </a>
     </div>
   </div>
-
-    </div>
-  </div>
 </nav>
 
 <!-- ─── SEGUIMIENTO DESTACADO ─── -->
@@ -964,6 +1047,11 @@ footer{
 
 <!-- ─── HERO ─── -->
 <section class="hero">
+  <div class="hero-flag-bg" aria-hidden="true">
+    <video class="hero-flag-media" autoplay muted loop playsinline preload="auto">
+      <source src="assets/hero-flag-loop.mp4" type="video/mp4">
+    </video>
+  </div>
   <div class="hero-bg-text">PCLAF</div>
   <div class="hero-content">
     <div class="hero-eyebrow">Floresta y Flores, CABA | Desde 2009</div>
@@ -1116,10 +1204,7 @@ footer{
       <!-- Card 1 — Instagram -->
       <a class="social-card" href="https://www.instagram.com/servicepclaf" target="_blank" rel="noopener noreferrer">
         <div class="social-card-img">
-          <div class="social-card-placeholder" style="background:linear-gradient(135deg,#833ab4 0%,#fd1d1d 50%,#fcb045 100%);">
-            <svg viewBox="0 0 24 24" fill="white" width="64" height="64" opacity="0.95"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
-            <span style="color:#fff;font-size:15px;font-weight:700;letter-spacing:.04em;">@servicepclaf</span>
-          </div>
+          <img src="assets/social-post-1.png" alt="Post de Instagram de PCLAF mostrando una PC llena de polvo">
         </div>
         <div class="social-card-body">
           <div class="social-card-platform ig">
@@ -1135,10 +1220,7 @@ footer{
       <!-- Card 2 — TikTok -->
       <a class="social-card" href="https://www.tiktok.com/@servicepclaf" target="_blank" rel="noopener noreferrer">
         <div class="social-card-img">
-          <div class="social-card-placeholder" style="background:#010101;">
-            <svg viewBox="0 0 24 24" fill="white" width="64" height="64" opacity="0.95"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.18 8.18 0 004.78 1.52V6.76a4.85 4.85 0 01-1.01-.07z"/></svg>
-            <span style="color:#fff;font-size:15px;font-weight:700;letter-spacing:.04em;">@servicepclaf</span>
-          </div>
+          <img src="assets/social-post-2.png" alt="Post de TikTok de PCLAF sobre mejora de FPS en juegos">
         </div>
         <div class="social-card-body">
           <div class="social-card-platform tk">
@@ -1154,10 +1236,7 @@ footer{
       <!-- Card 3 — Facebook -->
       <a class="social-card" href="https://www.facebook.com/servicepclaf" target="_blank" rel="noopener noreferrer">
         <div class="social-card-img">
-          <div class="social-card-placeholder" style="background:#1877f2;">
-            <svg viewBox="0 0 24 24" fill="white" width="64" height="64" opacity="0.95"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
-            <span style="color:#fff;font-size:15px;font-weight:700;letter-spacing:.04em;">@servicepclaf</span>
-          </div>
+          <img src="assets/social-post-1.png" alt="Post de Facebook de PCLAF mostrando una limpieza profunda de PC">
         </div>
         <div class="social-card-body">
           <div class="social-card-platform fb">
