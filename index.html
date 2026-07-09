@@ -232,13 +232,14 @@ nav{
   width:42px;height:42px;border-radius:6px;overflow:hidden;flex-shrink:0;
 }
 .logo-name{
-  font-family:var(--display);font-size:24px;font-weight:900;
-  color:var(--white);letter-spacing:1px;line-height:1;
+  font-family:var(--mono);font-size:12px;font-weight:700;
+  color:var(--white);letter-spacing:.06em;line-height:1.1;
+  text-transform:none;
 }
-.logo-name em{color:var(--red);font-style:normal;}
+.logo-name em{color:var(--white);font-style:normal;}
 .logo-tag{
   font-family:var(--mono);font-size:12px;color:rgba(255,255,255,.92);
-  font-weight:700;letter-spacing:.04em;text-transform:none;margin-top:4px;
+  font-weight:700;letter-spacing:.04em;text-transform:none;margin-top:3px;
   line-height:1.2;
 }
 .nav-live{
@@ -255,20 +256,20 @@ nav{
   min-width:0;
 }
 .nav-live-logo{
-  width:22px;
-  height:22px;
+  width:34px;
+  height:34px;
   object-fit:contain;
   flex:0 0 auto;
   object-position:center;
   filter:drop-shadow(0 0 3px rgba(0,0,0,.35));
 }
 .nav-live-logo--afa{
-  width:20px;
-  height:20px;
+  width:32px;
+  height:32px;
 }
 .nav-live-logo--f1{
-  width:28px;
-  height:15px;
+  width:48px;
+  height:24px;
 }
 .nav-live-text{
   min-width:0;
@@ -685,6 +686,43 @@ section{max-width:1100px;margin:0 auto;padding:80px 24px;}
 }
 .reviews-track:hover{animation-play-state:paused;}
 @keyframes slide{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@keyframes breathe-red-black{
+  0%{
+    background:#c00;
+    box-shadow:0 0 0 rgba(204,0,0,0);
+  }
+  50%{
+    background:#260000;
+    box-shadow:0 0 18px rgba(204,0,0,.18);
+  }
+  100%{
+    background:#c00;
+    box-shadow:0 0 0 rgba(204,0,0,0);
+  }
+}
+
+.highlight-track-btn{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  background:var(--red);
+  color:#fff;
+  padding:13px 24px;
+  border-radius:7px;
+  font-family:var(--display);
+  font-size:16px;
+  font-weight:800;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  text-decoration:none;
+  white-space:nowrap;
+  animation:breathe-red-black 2.8s ease-in-out infinite;
+  transition:transform .18s ease, box-shadow .18s ease;
+}
+.highlight-track-btn:hover{
+  transform:translateY(-1px);
+  box-shadow:0 8px 20px rgba(204,0,0,.24);
+}
 
 .review-card{
   background:var(--black2);border:1px solid var(--border);
@@ -750,10 +788,73 @@ section{max-width:1100px;margin:0 auto;padding:80px 24px;}
 }
 .map-dir-btn:hover{background:var(--red-dark);}
 .map-dir-btn svg{width:14px;height:14px;}
+.map-transit{
+  margin-top:18px;
+  background:var(--black2);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:22px 24px;
+}
+.map-transit-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  margin-bottom:16px;
+  flex-wrap:wrap;
+}
+.map-transit-title{
+  font-family:var(--display);
+  font-size:clamp(20px,2.8vw,28px);
+  font-weight:800;
+  color:var(--white);
+}
+.map-transit-note{
+  font-family:var(--mono);
+  font-size:11px;
+  font-weight:700;
+  color:var(--text3);
+  letter-spacing:.06em;
+  text-transform:uppercase;
+}
+.map-transit-grid{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:14px;
+}
+.map-transit-card{
+  background:rgba(255,255,255,.02);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:16px;
+}
+.map-transit-label{
+  font-family:var(--mono);
+  font-size:11px;
+  font-weight:700;
+  color:var(--red);
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  margin-bottom:8px;
+}
+.map-transit-value{
+  font-size:15px;
+  font-weight:700;
+  color:var(--white);
+  line-height:1.45;
+}
+.map-transit-value small{
+  display:block;
+  margin-top:6px;
+  font-size:12px;
+  font-weight:600;
+  color:var(--text2);
+}
 
 @media(max-width:768px){
   .map-wrap{grid-template-columns:1fr;}
   .map-embed{height:260px;}
+  .map-transit-grid{grid-template-columns:1fr;}
 }
 
 /* ─── SEGUINOS ─── */
@@ -1057,7 +1158,7 @@ footer{
         <text x="21" y="38" text-anchor="middle" font-family="Arial Black,sans-serif" font-weight="900" font-size="14" fill="white">LAF</text>
       </svg>
       <div>
-        <div class="logo-name">PC<em>LAF</em></div>
+        <div class="logo-name">Servicio <em>técnico</em></div>
         <div class="logo-tag">Campana 51, Floresta, CABA</div>
       </div>
     </a>
@@ -1107,7 +1208,7 @@ footer{
     </div>
     <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
       <div style="font-family:var(--display);font-size:clamp(18px,3vw,26px);font-weight:800;color:var(--white);flex:1;min-width:200px;">¿Dejaste un equipo? Consultá el estado acá</div>
-      <a href="historial.html" style="display:inline-flex;align-items:center;gap:8px;background:var(--red);color:#fff;padding:13px 24px;border-radius:7px;font-family:var(--display);font-size:16px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;text-decoration:none;transition:background .15s;white-space:nowrap;" onmouseover="this.style.background='var(--red-dark)'" onmouseout="this.style.background='var(--red)'">
+      <a class="highlight-track-btn" href="historial.html">
         <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="6.5" cy="6.5" r="4"/><path d="M11 11l3 3"/></svg>
         Ver mi historial
       </a>
@@ -1416,19 +1517,19 @@ footer{
     </div>
     <div class="reviews-meta reveal">
       <div class="reviews-score">
-        <div class="score-num">4.9</div>
+        <div class="score-num">4.4</div>
         <div class="score-right">
           <div class="score-stars">
             <svg viewBox="0 0 16 16"><polygon points="8,1 10.2,5.4 15,6.1 11.5,9.5 12.4,14.3 8,12 3.6,14.3 4.5,9.5 1,6.1 5.8,5.4"/></svg>
             <svg viewBox="0 0 16 16"><polygon points="8,1 10.2,5.4 15,6.1 11.5,9.5 12.4,14.3 8,12 3.6,14.3 4.5,9.5 1,6.1 5.8,5.4"/></svg>
             <svg viewBox="0 0 16 16"><polygon points="8,1 10.2,5.4 15,6.1 11.5,9.5 12.4,14.3 8,12 3.6,14.3 4.5,9.5 1,6.1 5.8,5.4"/></svg>
             <svg viewBox="0 0 16 16"><polygon points="8,1 10.2,5.4 15,6.1 11.5,9.5 12.4,14.3 8,12 3.6,14.3 4.5,9.5 1,6.1 5.8,5.4"/></svg>
-            <svg viewBox="0 0 16 16"><polygon points="8,1 10.2,5.4 15,6.1 11.5,9.5 12.4,14.3 8,12 3.6,14.3 4.5,9.5 1,6.1 5.8,5.4"/></svg>
+            <svg style="fill:url(#half)" viewBox="0 0 16 16"><polygon points="8,1 10.2,5.4 15,6.1 11.5,9.5 12.4,14.3 8,12 3.6,14.3 4.5,9.5 1,6.1 5.8,5.4"/></svg>
           </div>
-          <div class="score-label">Basado en reseñas de clientes</div>
+          <div class="score-label">Basado en 7 opiniones de Google</div>
         </div>
       </div>
-      <p class="reviews-desc">Clientes de Floresta y alrededores que trajeron su equipo y se fueron contentos.</p>
+      <p class="reviews-desc">Reseñas publicadas en la ficha real de Google Business de PCLAF.</p>
     </div>
 
     <!-- SVG defs para media estrella -->
@@ -1447,10 +1548,10 @@ footer{
         <!-- Reseña 1 -->
         <div class="review-card">
           <div class="review-top">
-            <div class="review-avatar" style="background:#cc3300;">MG</div>
+            <div class="review-avatar" style="background:#c53d2f;">EP</div>
             <div>
-              <div class="review-name">Martín G.</div>
-              <div class="review-date">hace 2 semanas</div>
+              <div class="review-name">Elizabeth Pier S.</div>
+              <div class="review-date">Hace 2 semanas</div>
             </div>
           </div>
           <div class="review-stars">
@@ -1460,17 +1561,17 @@ footer{
             <svg class="full" viewBox="0 0 16 16"><polygon points="8,1 10.2,5.4 15,6.1 11.5,9.5 12.4,14.3 8,12 3.6,14.3 4.5,9.5 1,6.1 5.8,5.4"/></svg>
             <svg class="full" viewBox="0 0 16 16"><polygon points="8,1 10.2,5.4 15,6.1 11.5,9.5 12.4,14.3 8,12 3.6,14.3 4.5,9.5 1,6.1 5.8,5.4"/></svg>
           </div>
-          <div class="review-text">La notebook tardaba 10 minutos en abrir. Me la devolvieron en el día como nueva. Santi me explicó todo, muy claro y copado. Limpieza + pasta térmica y arranca en segundos.</div>
-          <div class="review-badge">💻 Atendido por Santi</div>
+          <div class="review-text">Se nota que son muy profesionales. Muy claros y honestos al informar. Muy rápidos y cordiales. En todo momento me mantuvieron al tanto de las novedades. Super recomendado</div>
+          <div class="review-badge">Google Maps · 5 estrellas</div>
         </div>
 
         <!-- Reseña 2 -->
         <div class="review-card">
           <div class="review-top">
-            <div class="review-avatar" style="background:#0066aa;">VR</div>
+            <div class="review-avatar" style="background:#2859a8;">FA</div>
             <div>
-              <div class="review-name">Valeria R.</div>
-              <div class="review-date">hace 1 mes</div>
+              <div class="review-name">Francisco Adrian F.</div>
+              <div class="review-date">Una semana atrás</div>
             </div>
           </div>
           <div class="review-stars">
@@ -1480,17 +1581,17 @@ footer{
             <svg class="full" viewBox="0 0 16 16"><polygon points="8,1 10.2,5.4 15,6.1 11.5,9.5 12.4,14.3 8,12 3.6,14.3 4.5,9.5 1,6.1 5.8,5.4"/></svg>
             <svg class="full" viewBox="0 0 16 16"><polygon points="8,1 10.2,5.4 15,6.1 11.5,9.5 12.4,14.3 8,12 3.6,14.3 4.5,9.5 1,6.1 5.8,5.4"/></svg>
           </div>
-          <div class="review-text">Formateo rápido, Mica me guardó todos los archivos y quedó todo instalado y listo. Me explicó cómo hacer el backup para la próxima. Muy buena onda y el precio justo.</div>
-          <div class="review-badge">💾 Atendida por Mica</div>
+          <div class="review-text">Siempre nos asesoramos con Pclaf y la verdad no lo cambiamos. Económicos honestos y rápidos en los arreglos. Súper recomendables</div>
+          <div class="review-badge">Google Maps · 5 estrellas</div>
         </div>
 
         <!-- Reseña 3 -->
         <div class="review-card">
           <div class="review-top">
-            <div class="review-avatar" style="background:#227733;">DL</div>
+            <div class="review-avatar" style="background:#1e7d67;">CP</div>
             <div>
-              <div class="review-name">Diego P.</div>
-              <div class="review-date">hace 3 semanas</div>
+              <div class="review-name">Cristian P.</div>
+              <div class="review-date">Hace 2 meses</div>
             </div>
           </div>
           <div class="review-stars">
@@ -1500,17 +1601,17 @@ footer{
             <svg class="full" viewBox="0 0 16 16"><polygon points="8,1 10.2,5.4 15,6.1 11.5,9.5 12.4,14.3 8,12 3.6,14.3 4.5,9.5 1,6.1 5.8,5.4"/></svg>
             <svg class="full" viewBox="0 0 16 16"><polygon points="8,1 10.2,5.4 15,6.1 11.5,9.5 12.4,14.3 8,12 3.6,14.3 4.5,9.5 1,6.1 5.8,5.4"/></svg>
           </div>
-          <div class="review-text">La PC se apagaba sola del calor. Diego (el del equipo, no yo jaja) la revisó el mismo día y al otro me avisaron que estaba lista. Bajó 35 grados de temperatura. Excelente.</div>
-          <div class="review-badge">🖥️ Atendido por Diego</div>
+          <div class="review-text">Excelente servicio y rapidez para solucionar el problema.</div>
+          <div class="review-badge">Google Maps · 5 estrellas</div>
         </div>
 
         <!-- Reseña 4 -->
         <div class="review-card">
           <div class="review-top">
-            <div class="review-avatar" style="background:#883399;">CM</div>
+            <div class="review-avatar" style="background:#8560b9;">SZ</div>
             <div>
-              <div class="review-name">Carolina M.</div>
-              <div class="review-date">hace 2 meses</div>
+              <div class="review-name">S Z</div>
+              <div class="review-date">Editado hace 3 meses</div>
             </div>
           </div>
           <div class="review-stars">
@@ -1518,19 +1619,19 @@ footer{
             <svg class="full" viewBox="0 0 16 16"><polygon points="8,1 10.2,5.4 15,6.1 11.5,9.5 12.4,14.3 8,12 3.6,14.3 4.5,9.5 1,6.1 5.8,5.4"/></svg>
             <svg class="full" viewBox="0 0 16 16"><polygon points="8,1 10.2,5.4 15,6.1 11.5,9.5 12.4,14.3 8,12 3.6,14.3 4.5,9.5 1,6.1 5.8,5.4"/></svg>
             <svg class="full" viewBox="0 0 16 16"><polygon points="8,1 10.2,5.4 15,6.1 11.5,9.5 12.4,14.3 8,12 3.6,14.3 4.5,9.5 1,6.1 5.8,5.4"/></svg>
-            <svg style="fill:#555" viewBox="0 0 16 16"><polygon points="8,1 10.2,5.4 15,6.1 11.5,9.5 12.4,14.3 8,12 3.6,14.3 4.5,9.5 1,6.1 5.8,5.4"/></svg>
+            <svg class="full" viewBox="0 0 16 16"><polygon points="8,1 10.2,5.4 15,6.1 11.5,9.5 12.4,14.3 8,12 3.6,14.3 4.5,9.5 1,6.1 5.8,5.4"/></svg>
           </div>
-          <div class="review-text">Noe me instaló Windows 11 con el Office y todo activado. Sin publicidades ni extras raros. Lo que pedí y nada más. Buen precio, buena onda. Ya los recomendé a varios del barrio.</div>
-          <div class="review-badge">🪟 Atendida por Noe</div>
+          <div class="review-text">Siempre de 10. Nunca un problema. Te asesora segun tu necesidad y disponibilidades la mejor opcion! No duden en consultarles!</div>
+          <div class="review-badge">Google Maps · 5 estrellas</div>
         </div>
 
         <!-- Reseña 5 -->
         <div class="review-card">
           <div class="review-top">
-            <div class="review-avatar" style="background:#cc6600;">RP</div>
+            <div class="review-avatar" style="background:#cc6b1d;">FZ</div>
             <div>
-              <div class="review-name">Rodrigo P.</div>
-              <div class="review-date">hace 5 días</div>
+              <div class="review-name">Facundo Z.</div>
+              <div class="review-date">Hace 11 meses</div>
             </div>
           </div>
           <div class="review-stars">
@@ -1540,17 +1641,17 @@ footer{
             <svg class="full" viewBox="0 0 16 16"><polygon points="8,1 10.2,5.4 15,6.1 11.5,9.5 12.4,14.3 8,12 3.6,14.3 4.5,9.5 1,6.1 5.8,5.4"/></svg>
             <svg class="full" viewBox="0 0 16 16"><polygon points="8,1 10.2,5.4 15,6.1 11.5,9.5 12.4,14.3 8,12 3.6,14.3 4.5,9.5 1,6.1 5.8,5.4"/></svg>
           </div>
-          <div class="review-text">PC gamer que se colgaba en los juegos. Lucas la revisó, le cambió la pasta y limpió todo el interior. Corre todo sin problemas ahora. El equipo sabe de lo que habla, se nota experiencia.</div>
-          <div class="review-badge">🎮 Atendido por Lucas</div>
+          <div class="review-text">Excelente servicio. Rápido y a buen precio, me revivió la compu, parece nueva.</div>
+          <div class="review-badge">Google Maps · 5 estrellas</div>
         </div>
 
         <!-- Reseña 6 -->
         <div class="review-card">
           <div class="review-top">
-            <div class="review-avatar" style="background:#116677;">AT</div>
+            <div class="review-avatar" style="background:#2f7d8c;">NA</div>
             <div>
-              <div class="review-name">Ana T.</div>
-              <div class="review-date">hace 1 mes</div>
+              <div class="review-name">Noelia G. A.</div>
+              <div class="review-date">Hace 11 meses</div>
             </div>
           </div>
           <div class="review-stars">
@@ -1560,37 +1661,37 @@ footer{
             <svg class="full" viewBox="0 0 16 16"><polygon points="8,1 10.2,5.4 15,6.1 11.5,9.5 12.4,14.3 8,12 3.6,14.3 4.5,9.5 1,6.1 5.8,5.4"/></svg>
             <svg class="full" viewBox="0 0 16 16"><polygon points="8,1 10.2,5.4 15,6.1 11.5,9.5 12.4,14.3 8,12 3.6,14.3 4.5,9.5 1,6.1 5.8,5.4"/></svg>
           </div>
-          <div class="review-text">Primera vez y quedé re contenta. Mica me formateó la notebook, instaló el Office y me explicó cómo hacer el backup yo sola. Muy buen precio para todo lo que hicieron.</div>
-          <div class="review-badge">💾 Atendida por Mica</div>
+          <div class="review-text">Todo bárbaro. Siempre atienden con rapidéz. ¡Recomendable!</div>
+          <div class="review-badge">Google Maps · 5 estrellas</div>
         </div>
 
         <!-- Reseña 7 -->
         <div class="review-card">
           <div class="review-top">
-            <div class="review-avatar" style="background:#994400;">FM</div>
+            <div class="review-avatar" style="background:#7b4b2f;">SE</div>
             <div>
-              <div class="review-name">Federico M.</div>
-              <div class="review-date">hace 3 meses</div>
+              <div class="review-name">Silva E.</div>
+              <div class="review-date">Hace 11 meses</div>
             </div>
           </div>
           <div class="review-stars">
             <svg class="full" viewBox="0 0 16 16"><polygon points="8,1 10.2,5.4 15,6.1 11.5,9.5 12.4,14.3 8,12 3.6,14.3 4.5,9.5 1,6.1 5.8,5.4"/></svg>
-            <svg class="full" viewBox="0 0 16 16"><polygon points="8,1 10.2,5.4 15,6.1 11.5,9.5 12.4,14.3 8,12 3.6,14.3 4.5,9.5 1,6.1 5.8,5.4"/></svg>
-            <svg class="full" viewBox="0 0 16 16"><polygon points="8,1 10.2,5.4 15,6.1 11.5,9.5 12.4,14.3 8,12 3.6,14.3 4.5,9.5 1,6.1 5.8,5.4"/></svg>
-            <svg class="full" viewBox="0 0 16 16"><polygon points="8,1 10.2,5.4 15,6.1 11.5,9.5 12.4,14.3 8,12 3.6,14.3 4.5,9.5 1,6.1 5.8,5.4"/></svg>
-            <svg class="full" viewBox="0 0 16 16"><polygon points="8,1 10.2,5.4 15,6.1 11.5,9.5 12.4,14.3 8,12 3.6,14.3 4.5,9.5 1,6.1 5.8,5.4"/></svg>
+            <svg style="fill:#555" viewBox="0 0 16 16"><polygon points="8,1 10.2,5.4 15,6.1 11.5,9.5 12.4,14.3 8,12 3.6,14.3 4.5,9.5 1,6.1 5.8,5.4"/></svg>
+            <svg style="fill:#555" viewBox="0 0 16 16"><polygon points="8,1 10.2,5.4 15,6.1 11.5,9.5 12.4,14.3 8,12 3.6,14.3 4.5,9.5 1,6.1 5.8,5.4"/></svg>
+            <svg style="fill:#555" viewBox="0 0 16 16"><polygon points="8,1 10.2,5.4 15,6.1 11.5,9.5 12.4,14.3 8,12 3.6,14.3 4.5,9.5 1,6.1 5.8,5.4"/></svg>
+            <svg style="fill:#555" viewBox="0 0 16 16"><polygon points="8,1 10.2,5.4 15,6.1 11.5,9.5 12.4,14.3 8,12 3.6,14.3 4.5,9.5 1,6.1 5.8,5.4"/></svg>
           </div>
-          <div class="review-text">Ya fui varias veces. Siempre rápido, precio justo, sin inventar problemas. Noe y Santi te atienden con ganas. Eso vale mucho. Mi técnico de referencia en el barrio.</div>
-          <div class="review-badge">⭐ Atendido por Noe y Santi</div>
+          <div class="review-text">Busqué el local y ni siquiera había nada y ni una referencia, tampoco responden los mensajes. Existe la función de actualizar la dirección o de eliminarla también</div>
+          <div class="review-badge">Google Maps · 1 estrella</div>
         </div>
 
         <!-- Reseña 8 -->
         <div class="review-card">
           <div class="review-top">
-            <div class="review-avatar" style="background:#445599;">SB</div>
+            <div class="review-avatar" style="background:#c53d2f;">EP</div>
             <div>
-              <div class="review-name">Sofía B.</div>
-              <div class="review-date">hace 2 semanas</div>
+              <div class="review-name">Elizabeth Pier S.</div>
+              <div class="review-date">Hace 2 semanas</div>
             </div>
           </div>
           <div class="review-stars">
@@ -1598,36 +1699,36 @@ footer{
             <svg class="full" viewBox="0 0 16 16"><polygon points="8,1 10.2,5.4 15,6.1 11.5,9.5 12.4,14.3 8,12 3.6,14.3 4.5,9.5 1,6.1 5.8,5.4"/></svg>
             <svg class="full" viewBox="0 0 16 16"><polygon points="8,1 10.2,5.4 15,6.1 11.5,9.5 12.4,14.3 8,12 3.6,14.3 4.5,9.5 1,6.1 5.8,5.4"/></svg>
             <svg class="full" viewBox="0 0 16 16"><polygon points="8,1 10.2,5.4 15,6.1 11.5,9.5 12.4,14.3 8,12 3.6,14.3 4.5,9.5 1,6.1 5.8,5.4"/></svg>
-            <svg style="fill:#555" viewBox="0 0 16 16"><polygon points="8,1 10.2,5.4 15,6.1 11.5,9.5 12.4,14.3 8,12 3.6,14.3 4.5,9.5 1,6.1 5.8,5.4"/></svg>
+            <svg class="full" viewBox="0 0 16 16"><polygon points="8,1 10.2,5.4 15,6.1 11.5,9.5 12.4,14.3 8,12 3.6,14.3 4.5,9.5 1,6.1 5.8,5.4"/></svg>
           </div>
-          <div class="review-text">Diego me ayudó a recuperar archivos de una PC que no prendía más. Pensé que había perdido todo. Muy buena predisposición y te explican qué pasó sin hacerse el técnico difícil.</div>
-          <div class="review-badge">🔍 Atendida por Diego</div>
+          <div class="review-text">Se nota que son muy profesionales. Muy claros y honestos al informar. Muy rápidos y cordiales. En todo momento me mantuvieron al tanto de las novedades. Super recomendado</div>
+          <div class="review-badge">Google Maps · 5 estrellas</div>
         </div>
 
         <!-- duplicados para loop -->
         <div class="review-card">
-          <div class="review-top"><div class="review-avatar" style="background:#cc3300;">MG</div><div><div class="review-name">Martín G.</div><div class="review-date">hace 2 semanas</div></div></div>
+          <div class="review-top"><div class="review-avatar" style="background:#2859a8;">FA</div><div><div class="review-name">Francisco Adrian F.</div><div class="review-date">Una semana atrás</div></div></div>
           <div class="review-stars"><svg class="full" viewBox="0 0 16 16"><polygon points="8,1 10.2,5.4 15,6.1 11.5,9.5 12.4,14.3 8,12 3.6,14.3 4.5,9.5 1,6.1 5.8,5.4"/></svg><svg class="full" viewBox="0 0 16 16"><polygon points="8,1 10.2,5.4 15,6.1 11.5,9.5 12.4,14.3 8,12 3.6,14.3 4.5,9.5 1,6.1 5.8,5.4"/></svg><svg class="full" viewBox="0 0 16 16"><polygon points="8,1 10.2,5.4 15,6.1 11.5,9.5 12.4,14.3 8,12 3.6,14.3 4.5,9.5 1,6.1 5.8,5.4"/></svg><svg class="full" viewBox="0 0 16 16"><polygon points="8,1 10.2,5.4 15,6.1 11.5,9.5 12.4,14.3 8,12 3.6,14.3 4.5,9.5 1,6.1 5.8,5.4"/></svg><svg class="full" viewBox="0 0 16 16"><polygon points="8,1 10.2,5.4 15,6.1 11.5,9.5 12.4,14.3 8,12 3.6,14.3 4.5,9.5 1,6.1 5.8,5.4"/></svg></div>
-          <div class="review-text">La notebook tardaba 10 minutos en abrir. Santi me la devolvió en el día como nueva. Limpieza + pasta térmica y arranca en segundos.</div>
-          <div class="review-badge">💻 Atendido por Santi</div>
+          <div class="review-text">Siempre nos asesoramos con Pclaf y la verdad no lo cambiamos. Económicos honestos y rápidos en los arreglos. Súper recomendables</div>
+          <div class="review-badge">Google Maps · 5 estrellas</div>
         </div>
         <div class="review-card">
-          <div class="review-top"><div class="review-avatar" style="background:#0066aa;">VR</div><div><div class="review-name">Valeria R.</div><div class="review-date">hace 1 mes</div></div></div>
+          <div class="review-top"><div class="review-avatar" style="background:#1e7d67;">CP</div><div><div class="review-name">Cristian P.</div><div class="review-date">Hace 2 meses</div></div></div>
           <div class="review-stars"><svg class="full" viewBox="0 0 16 16"><polygon points="8,1 10.2,5.4 15,6.1 11.5,9.5 12.4,14.3 8,12 3.6,14.3 4.5,9.5 1,6.1 5.8,5.4"/></svg><svg class="full" viewBox="0 0 16 16"><polygon points="8,1 10.2,5.4 15,6.1 11.5,9.5 12.4,14.3 8,12 3.6,14.3 4.5,9.5 1,6.1 5.8,5.4"/></svg><svg class="full" viewBox="0 0 16 16"><polygon points="8,1 10.2,5.4 15,6.1 11.5,9.5 12.4,14.3 8,12 3.6,14.3 4.5,9.5 1,6.1 5.8,5.4"/></svg><svg class="full" viewBox="0 0 16 16"><polygon points="8,1 10.2,5.4 15,6.1 11.5,9.5 12.4,14.3 8,12 3.6,14.3 4.5,9.5 1,6.1 5.8,5.4"/></svg><svg class="full" viewBox="0 0 16 16"><polygon points="8,1 10.2,5.4 15,6.1 11.5,9.5 12.4,14.3 8,12 3.6,14.3 4.5,9.5 1,6.1 5.8,5.4"/></svg></div>
-          <div class="review-text">Formateo rápido, Mica me guardó todos los archivos. Muy buena onda y precio justo.</div>
-          <div class="review-badge">💾 Atendida por Mica</div>
+          <div class="review-text">Excelente servicio y rapidez para solucionar el problema.</div>
+          <div class="review-badge">Google Maps · 5 estrellas</div>
         </div>
         <div class="review-card">
-          <div class="review-top"><div class="review-avatar" style="background:#227733;">DL</div><div><div class="review-name">Diego P.</div><div class="review-date">hace 3 semanas</div></div></div>
+          <div class="review-top"><div class="review-avatar" style="background:#8560b9;">SZ</div><div><div class="review-name">S Z</div><div class="review-date">Editado hace 3 meses</div></div></div>
           <div class="review-stars"><svg class="full" viewBox="0 0 16 16"><polygon points="8,1 10.2,5.4 15,6.1 11.5,9.5 12.4,14.3 8,12 3.6,14.3 4.5,9.5 1,6.1 5.8,5.4"/></svg><svg class="full" viewBox="0 0 16 16"><polygon points="8,1 10.2,5.4 15,6.1 11.5,9.5 12.4,14.3 8,12 3.6,14.3 4.5,9.5 1,6.1 5.8,5.4"/></svg><svg class="full" viewBox="0 0 16 16"><polygon points="8,1 10.2,5.4 15,6.1 11.5,9.5 12.4,14.3 8,12 3.6,14.3 4.5,9.5 1,6.1 5.8,5.4"/></svg><svg class="full" viewBox="0 0 16 16"><polygon points="8,1 10.2,5.4 15,6.1 11.5,9.5 12.4,14.3 8,12 3.6,14.3 4.5,9.5 1,6.1 5.8,5.4"/></svg><svg class="full" viewBox="0 0 16 16"><polygon points="8,1 10.2,5.4 15,6.1 11.5,9.5 12.4,14.3 8,12 3.6,14.3 4.5,9.5 1,6.1 5.8,5.4"/></svg></div>
-          <div class="review-text">Diagnóstico el mismo día, al otro me avisaron que estaba lista. Temperatura bajó 35 grados. Muy profesionales.</div>
-          <div class="review-badge">🖥️ Atendido por Diego</div>
+          <div class="review-text">Siempre de 10. Nunca un problema. Te asesora segun tu necesidad y disponibilidades la mejor opcion! No duden en consultarles!</div>
+          <div class="review-badge">Google Maps · 5 estrellas</div>
         </div>
         <div class="review-card">
-          <div class="review-top"><div class="review-avatar" style="background:#883399;">CM</div><div><div class="review-name">Carolina M.</div><div class="review-date">hace 2 meses</div></div></div>
-          <div class="review-stars"><svg class="full" viewBox="0 0 16 16"><polygon points="8,1 10.2,5.4 15,6.1 11.5,9.5 12.4,14.3 8,12 3.6,14.3 4.5,9.5 1,6.1 5.8,5.4"/></svg><svg class="full" viewBox="0 0 16 16"><polygon points="8,1 10.2,5.4 15,6.1 11.5,9.5 12.4,14.3 8,12 3.6,14.3 4.5,9.5 1,6.1 5.8,5.4"/></svg><svg class="full" viewBox="0 0 16 16"><polygon points="8,1 10.2,5.4 15,6.1 11.5,9.5 12.4,14.3 8,12 3.6,14.3 4.5,9.5 1,6.1 5.8,5.4"/></svg><svg class="full" viewBox="0 0 16 16"><polygon points="8,1 10.2,5.4 15,6.1 11.5,9.5 12.4,14.3 8,12 3.6,14.3 4.5,9.5 1,6.1 5.8,5.4"/></svg><svg style="fill:#555" viewBox="0 0 16 16"><polygon points="8,1 10.2,5.4 15,6.1 11.5,9.5 12.4,14.3 8,12 3.6,14.3 4.5,9.5 1,6.1 5.8,5.4"/></svg></div>
-          <div class="review-text">Noe me instaló Windows 11 con el Office. Sin publicidades ni extras. Lo que pedí y nada más. Ya los recomendé a varios del barrio.</div>
-          <div class="review-badge">🪟 Atendida por Noe</div>
+          <div class="review-top"><div class="review-avatar" style="background:#cc6b1d;">FZ</div><div><div class="review-name">Facundo Z.</div><div class="review-date">Hace 11 meses</div></div></div>
+          <div class="review-stars"><svg class="full" viewBox="0 0 16 16"><polygon points="8,1 10.2,5.4 15,6.1 11.5,9.5 12.4,14.3 8,12 3.6,14.3 4.5,9.5 1,6.1 5.8,5.4"/></svg><svg class="full" viewBox="0 0 16 16"><polygon points="8,1 10.2,5.4 15,6.1 11.5,9.5 12.4,14.3 8,12 3.6,14.3 4.5,9.5 1,6.1 5.8,5.4"/></svg><svg class="full" viewBox="0 0 16 16"><polygon points="8,1 10.2,5.4 15,6.1 11.5,9.5 12.4,14.3 8,12 3.6,14.3 4.5,9.5 1,6.1 5.8,5.4"/></svg><svg class="full" viewBox="0 0 16 16"><polygon points="8,1 10.2,5.4 15,6.1 11.5,9.5 12.4,14.3 8,12 3.6,14.3 4.5,9.5 1,6.1 5.8,5.4"/></svg><svg class="full" viewBox="0 0 16 16"><polygon points="8,1 10.2,5.4 15,6.1 11.5,9.5 12.4,14.3 8,12 3.6,14.3 4.5,9.5 1,6.1 5.8,5.4"/></svg></div>
+          <div class="review-text">Excelente servicio. Rápido y a buen precio, me revivió la compu, parece nueva.</div>
+          <div class="review-badge">Google Maps · 5 estrellas</div>
         </div>
 
       </div>
@@ -1683,6 +1784,35 @@ footer{
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 22s-8-7-8-13a8 8 0 0116 0c0 6-8 13-8 13z"/><circle cx="12" cy="9" r="3"/></svg>
         Cómo llegar
       </a>
+    </div>
+  </div>
+  <div class="map-transit reveal">
+    <div class="map-transit-head">
+      <div class="map-transit-title">Cómo llegar en transporte público</div>
+      <div class="map-transit-note">Referencia aprox. a unas 5 cuadras</div>
+    </div>
+    <div class="map-transit-grid">
+      <div class="map-transit-card">
+        <div class="map-transit-label">Subte</div>
+        <div class="map-transit-value">
+          Línea A · San Pedrito
+          <small>Queda en el límite entre Flores y Floresta, con llegada caminando en pocos minutos.</small>
+        </div>
+      </div>
+      <div class="map-transit-card">
+        <div class="map-transit-label">Tren</div>
+        <div class="map-transit-value">
+          Sarmiento · Estación Floresta
+          <small>Acceso rápido desde Once, Caballito, Liniers y zonas del oeste.</small>
+        </div>
+      </div>
+      <div class="map-transit-card">
+        <div class="map-transit-label">Colectivos</div>
+        <div class="map-transit-value">
+          1 · 2 · 8 · 49 · 63 · 85 · 88 · 92 · 96 · 113 · 114 · 136 · 153
+          <small>Líneas útiles por la zona de Estación Floresta, Rivadavia y San Pedrito, a unas pocas cuadras de PCLAF.</small>
+        </div>
+      </div>
     </div>
   </div>
 </div>
