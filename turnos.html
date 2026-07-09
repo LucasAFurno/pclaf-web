@@ -3,23 +3,23 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pedi tu turno de service tecnico en Floresta | PCLAF</title>
+<title>Pedí tu turno de service técnico en Floresta | PCLAF</title>
 <link rel="icon" type="image/png" href="favicon.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 
-<meta name="description" content="Reserva tu turno para service tecnico de PC y notebook en Floresta, CABA. Elegi horario, coordina por WhatsApp y trae tu equipo sin vueltas.">
+<meta name="description" content="Reservá tu turno para service técnico de PC y notebook en Floresta, CABA. Elegí horario, coordiná por WhatsApp y traé tu equipo sin vueltas.">
 <meta name="robots" content="index, follow">
 <link rel="canonical" href="https://www.pclaf.com.ar/turnos.html">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://www.pclaf.com.ar/turnos.html">
-<meta property="og:title" content="Pedi tu turno de service tecnico en Floresta | PCLAF">
-<meta property="og:description" content="Reserva tu turno para PC o notebook en Floresta, CABA. Elegi horario y coordina rapido por WhatsApp.">
+<meta property="og:title" content="Pedí tu turno de service técnico en Floresta | PCLAF">
+<meta property="og:description" content="Reservá tu turno para PC o notebook en Floresta, CABA. Elegí horario y coordiná rápido por WhatsApp.">
 <meta property="og:image" content="https://www.pclaf.com.ar/assets/social-post-2.png">
 <meta property="og:locale" content="es_AR">
 <meta property="og:site_name" content="PCLAF - Servicio técnico">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Pedi tu turno de service tecnico en Floresta | PCLAF">
-<meta name="twitter:description" content="Reserva tu turno para PC o notebook en Floresta, CABA. Elegi horario y coordina rapido por WhatsApp.">
+<meta name="twitter:title" content="Pedí tu turno de service técnico en Floresta | PCLAF">
+<meta name="twitter:description" content="Reservá tu turno para PC o notebook en Floresta, CABA. Elegí horario y coordiná rápido por WhatsApp.">
 <meta name="twitter:image" content="https://www.pclaf.com.ar/assets/social-post-2.png">
 <script type="application/ld+json">
 {
@@ -195,7 +195,7 @@ textarea.f-in{resize:none;height:80px;}
 </nav>
 
 <div class="hero">
-  <div class="hero-eyebrow">Floresta, CABA · Lunes a Viernes</div>
+  <div class="hero-eyebrow">Floresta, CABA · Lunes a viernes</div>
   <h1>Pedí tu <span>turno</span></h1>
   <p>Elegí el día y horario que mejor te quede. Te confirmamos por WhatsApp.</p>
 </div>
@@ -384,7 +384,7 @@ textarea.f-in{resize:none;height:80px;}
       <div class="confirm-title">¡Turno solicitado!</div>
       <div class="confirm-sub">Te vamos a confirmar por WhatsApp a la brevedad.<br>Tu número de turno:</div>
       <div class="confirm-code" id="confirmCode">#0000</div>
-      <div style="font-size:14px;color:var(--text2);margin-bottom:24px">📍 Campana 51, Floresta, CABA<br>Lunes a Viernes · 10 a 19hs</div>
+      <div style="font-size:14px;color:var(--text2);margin-bottom:24px">📍 Campana 51, Floresta, CABA<br>Lunes a viernes · 10 a 19 hs</div>
       <a href="index.html" style="display:inline-block;background:var(--red);color:#fff;padding:12px 28px;border-radius:8px;font-family:var(--display);font-size:17px;font-weight:800;text-decoration:none;text-transform:uppercase;letter-spacing:.04em;">Volver al inicio</a>
     </div>
   </div>
@@ -427,7 +427,7 @@ async function notifyTurnoCreado(payload){
   }
 }
 
-// ── STATE ──
+// â”€â”€ STATE â”€â”€
 let state={servicio:'',precio:'',urgencia:false,fecha:null,hora:'',calOffset:0,refCliente:null};
 
 function sanitizePlainText(value,maxLen=120){
@@ -496,7 +496,7 @@ async function lookupReferral(strict=false){
   }
 }
 
-// ── STEPS ──
+// â”€â”€ STEPS â”€â”€
 async function goTo(n){
   if(n===3){
     // validate paso 2
@@ -523,7 +523,7 @@ async function goTo(n){
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
-// ── SERVICIO ──
+// â”€â”€ SERVICIO â”€â”€
 let urgenciaOn = false;
 
 function selServicio(el){
@@ -569,10 +569,10 @@ function toggleUrgencia(){
   }
 }
 
-// ── CALENDARIO ──
+// â”€â”€ CALENDARIO â”€â”€
 const HORAS=['10:00','10:30','11:00','11:30','12:00','12:30','14:00','14:30','15:00','15:30','16:00','16:30','17:00','17:30','18:00','18:30'];
 
-// ── FERIADOS ARGENTINOS ──
+// â”€â”€ FERIADOS ARGENTINOS â”€â”€
 const FERIADOS = new Set([
   // 2025
   '2025-01-01','2025-02-03','2025-02-04','2025-03-24','2025-04-02',
@@ -664,7 +664,7 @@ function selHora(h,el){
   document.getElementById('btnNext2').disabled=false;
 }
 
-// ── RESUMEN ──
+// â”€â”€ RESUMEN â”€â”€
 function buildResumen(){
   const nom=sanitizePlainText(document.getElementById('tNom').value,60);
   const ape=sanitizePlainText(document.getElementById('tApe').value,60);
@@ -715,7 +715,7 @@ async function confirmarTurno(){
         state.refCliente=refCliente;
       }catch(e){
         btn.disabled=false; btn.textContent='Confirmar turno';
-        alert('No pudimos activar el 10% del usuario recomendado. IntentÃ¡ de nuevo.');
+        alert('No pudimos activar el 10% del usuario recomendado. Intentá de nuevo.');
         return;
       }
     }
@@ -755,7 +755,7 @@ async function confirmarTurno(){
     // Open WA to PCLAF (notify)
     setTimeout(()=>{
       const refNombre=refCliente?[refCliente.nombre,refCliente.apellido].filter(Boolean).join(' ').trim():'';
-      const msg=encodeURIComponent(`🗓️ *Nuevo turno solicitado*\n\n*${nom} ${ape}*\n📱 ${tel}\n${refCliente?.codigo?'🎁 Recomendo: '+(refNombre||refCliente.codigo)+' ('+refCliente.codigo+')\n🎁 10% activado para ese usuario\n':''}🔧 ${state.servicio}${state.urgencia?' ⚡ URGENTE':''}\n💰 ${state.precio}\n📅 ${state.fecha} a las ${state.hora}hs\n💻 ${eq||'Sin especificar'}\n${nota?'📝 '+nota+'\n':''}\nRef: ${shortId}`);
+      const msg=encodeURIComponent(`🗓️ *Nuevo turno solicitado*\n\n*${nom} ${ape}*\n📱 ${tel}\n${refCliente?.codigo?'🎁 Recomendó: '+(refNombre||refCliente.codigo)+' ('+refCliente.codigo+')\n🎁 10% activado para ese usuario\n':''}🔧 ${state.servicio}${state.urgencia?' ⚡ URGENTE':''}\n💰 ${state.precio}\n📆 ${state.fecha} a las ${state.hora}hs\n💻 ${eq||'Sin especificar'}\n${nota?'📝 '+nota+'\n':''}\nRef: ${shortId}`);
       window.open(`https://wa.me/5491135708345?text=${msg}`,'_blank');
     }, 800);
   }catch(e){

@@ -203,16 +203,16 @@ footer a:hover{color:var(--red);}
 </footer>
 
 <script>
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”
 //  PASO 1 — Pegá acá tus credenciales de Supabase
 //  (las conseguís en supabase.com > Settings > API)
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”
 const SUPABASE_URL     = 'https://bcmfzgjpqfjnudhgraan.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_I1oJLpCSeneeIw2SghABAw_GXrdLLWs';
 
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”
 //  Cliente Supabase (sin dependencias externas)
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”
 async function db(table, qs = '') {
   const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}${qs}`, {
     headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` }
@@ -224,7 +224,7 @@ async function db(table, qs = '') {
 function inferReportSlot(filename='') {
   const name = String(filename || '').toLowerCase();
   if (name.includes('admin_notas_internas') || name.includes('nota_interna')) return 'interno';
-  if (name.includes('auto_tecnico') || name.includes('tecnico')) return 'tecnico';
+  if (name.includes('auto_tecnico') || name.includes('técnico')) return 'técnico';
   if (name.includes('cliente_antes') || name.includes('reporte_antes') || name.includes('antes')) return 'antes';
   if (name.includes('cliente_despues') || name.includes('reporte_despues') || name.includes('despues')) return 'despues';
   return 'legacy';
@@ -234,7 +234,7 @@ function pickClientReports(reportes=[]) {
   const slots = { antes:null, despues:null, legacy:null };
   reportes.forEach(rep => {
     const slot = inferReportSlot(rep.filename);
-    if (slot === 'tecnico' || slot === 'interno') return;
+    if (slot === 'técnico' || slot === 'interno') return;
     if (!slots[slot]) slots[slot] = rep;
   });
   return slots;
@@ -447,7 +447,7 @@ async function showMachine(equipoId, evt) {
     // Fecha estimada
     const fechaEstHtml = r.fecha_entrega ? `
       <div style="display:flex;align-items:center;gap:8px;margin-top:12px;padding:10px 12px;background:var(--black3);border-radius:8px;border:1px solid var(--border)">
-        <span style="font-size:14px">📅</span>
+        <span style="font-size:14px">📆</span>
         <div>
           <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em">Entrega estimada</div>
           <div style="font-size:13px;font-weight:600;color:#fff">${r.fecha_entrega}</div>
@@ -455,7 +455,7 @@ async function showMachine(equipoId, evt) {
       </div>` : '';
 
     // Reporte de diagnóstico
-    const reportesCliente = (repArr || []).filter(rep => inferReportSlot(rep.filename) !== 'tecnico');
+    const reportesCliente = (repArr || []).filter(rep => inferReportSlot(rep.filename) !== 'técnico');
     const reportSlots = pickClientReports(reportesCliente);
     const latestClientReport = reportSlots.antes || reportSlots.despues || reportSlots.legacy;
     const reporteHtml = latestClientReport ? `
@@ -527,7 +527,7 @@ async function showMachine(equipoId, evt) {
 function toggleRepair(i) { document.getElementById('rep-'+i).classList.toggle('open'); }
 function volverMaquinas() { hide('panelHistory'); document.getElementById('panelMachines').scrollIntoView({behavior:'smooth',block:'start'}); }
 
-// ── VER REPORTE ──
+// â”€â”€ VER REPORTE â”€â”€
 let allReportes = {};
 function getReportCacheKey(reporteId, reparacionId='') {
   return `${reparacionId || 'sin-reparacion'}:${reporteId}`;
@@ -547,7 +547,7 @@ async function verReporte(reporteId, reparacionId='') {
     const data = await res.json();
     const reporte = data?.[0];
     if (reporte) {
-      if (inferReportSlot(reporte.filename) === 'tecnico') {
+      if (inferReportSlot(reporte.filename) === 'técnico') {
         alert('Este reporte técnico no está disponible en el historial del cliente.');
         return;
       }
@@ -566,7 +566,7 @@ async function verReporte(reporteId, reparacionId='') {
   }
 }
 
-// ── CALIFICACIÓN ──
+// â”€â”€ CALIFICACIÓN â”€â”€
 let selectedStars = {};
 
 function selectStar(repId, val) {
@@ -627,7 +627,7 @@ async function enviarCalif(repId) {
 
 document.getElementById('searchInput').addEventListener('keydown', e => { if(e.key==='Enter') buscar(); });
 
-// ── LIGHTBOX ──────────────────────────────────────────────
+// â”€â”€ LIGHTBOX â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function abrirFoto(url, tipo){
   const overlay=document.createElement('div');
   overlay.style.cssText='position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.92);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:zoom-out;';
