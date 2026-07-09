@@ -1,5 +1,6 @@
 User-agent: *
 Allow: /
 Disallow: /admin.html
+Disallow: /metricas.html
 
 Sitemap: https://www.pclaf.com.ar/sitemap.xml
