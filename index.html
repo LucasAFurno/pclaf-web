@@ -348,6 +348,9 @@ nav{
   height:24px;
 }
 .nav-live-text{
+  display:flex;
+  flex-direction:column;
+  gap:2px;
   min-width:0;
   font-family:var(--mono);
   font-size:12px;
@@ -2125,6 +2128,15 @@ window.addEventListener('scroll',()=>{
   document.querySelector('nav').style.borderBottomColor =
     window.scrollY > 20 ? 'var(--red)' : 'var(--border)';
 });
+
+// Header sports ticker copy
+const navLiveItems = document.querySelectorAll('.nav-live-item .nav-live-text');
+if (navLiveItems[0]) {
+  navLiveItems[0].innerHTML = '<strong>Argentina</strong><span>Subcampeon 2026</span>';
+}
+if (navLiveItems[1]) {
+  navLiveItems[1].innerHTML = '<strong>F. Colapinto</strong><span>P10</span>';
+}
 
 </script>
 </body>
