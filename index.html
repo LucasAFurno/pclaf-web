@@ -258,30 +258,6 @@ body{
   padding-top:64px; /* altura del nav fijo */
 }
 
-.celebration-layer{
-  position:fixed;
-  inset:64px 0 auto;
-  height:0;
-  pointer-events:none;
-  z-index:60;
-}
-.confetti{
-  position:absolute;
-  top:-12vh;
-  width:10px;
-  height:22px;
-  border-radius:3px;
-  opacity:.92;
-  animation:confetti-fall linear infinite;
-  will-change:transform,opacity;
-}
-.confetti.sky{background:linear-gradient(180deg,var(--arg-sky-soft),var(--arg-sky));}
-.confetti.white{background:linear-gradient(180deg,#ffffff,#dcecf7);}
-@keyframes confetti-fall{
-  0%{transform:translate3d(0,0,0) rotate(0deg);opacity:0;}
-  10%{opacity:.95;}
-  100%{transform:translate3d(var(--drift),110vh,0) rotate(680deg);opacity:0;}
-}
 
 /* â”€â”€â”€ NOISE OVERLAY â”€â”€â”€ */
 body::after{
@@ -1255,29 +1231,6 @@ footer{
 </style>
 </head>
 <body>
-<div class="celebration-layer" aria-hidden="true">
-  <span class="confetti sky" style="left:4%;--drift:36px;animation-duration:9.2s;animation-delay:-1.2s;"></span>
-  <span class="confetti white" style="left:11%;--drift:-28px;animation-duration:10.1s;animation-delay:-5.8s;"></span>
-  <span class="confetti sky" style="left:14%;--drift:22px;animation-duration:8.4s;animation-delay:-4.1s;"></span>
-  <span class="confetti sky" style="left:18%;--drift:44px;animation-duration:8.7s;animation-delay:-3.4s;"></span>
-  <span class="confetti white" style="left:24%;--drift:-38px;animation-duration:11.3s;animation-delay:-2.1s;"></span>
-  <span class="confetti white" style="left:27%;--drift:-20px;animation-duration:9.6s;animation-delay:-6.3s;"></span>
-  <span class="confetti sky" style="left:31%;--drift:26px;animation-duration:9.8s;animation-delay:-7.1s;"></span>
-  <span class="confetti white" style="left:39%;--drift:-42px;animation-duration:10.6s;animation-delay:-4.7s;"></span>
-  <span class="confetti sky" style="left:42%;--drift:30px;animation-duration:8.6s;animation-delay:-2.9s;"></span>
-  <span class="confetti sky" style="left:46%;--drift:34px;animation-duration:8.9s;animation-delay:-6.1s;"></span>
-  <span class="confetti white" style="left:53%;--drift:-30px;animation-duration:10.8s;animation-delay:-2.7s;"></span>
-  <span class="confetti white" style="left:57%;--drift:-18px;animation-duration:9.4s;animation-delay:-7.7s;"></span>
-  <span class="confetti sky" style="left:60%;--drift:40px;animation-duration:9.5s;animation-delay:-8.2s;"></span>
-  <span class="confetti white" style="left:67%;--drift:-26px;animation-duration:11.2s;animation-delay:-1.8s;"></span>
-  <span class="confetti sky" style="left:71%;--drift:24px;animation-duration:8.3s;animation-delay:-5.6s;"></span>
-  <span class="confetti sky" style="left:74%;--drift:31px;animation-duration:8.8s;animation-delay:-5.2s;"></span>
-  <span class="confetti white" style="left:81%;--drift:-36px;animation-duration:10.4s;animation-delay:-7.4s;"></span>
-  <span class="confetti white" style="left:85%;--drift:-22px;animation-duration:9.9s;animation-delay:-3.3s;"></span>
-  <span class="confetti sky" style="left:88%;--drift:29px;animation-duration:9.1s;animation-delay:-3.9s;"></span>
-  <span class="confetti sky" style="left:91%;--drift:18px;animation-duration:8.5s;animation-delay:-6.9s;"></span>
-  <span class="confetti white" style="left:94%;--drift:-24px;animation-duration:11.7s;animation-delay:-6.6s;"></span>
-</div>
 
 <!-- â”€â”€â”€ NAV â”€â”€â”€ -->
 <nav>
