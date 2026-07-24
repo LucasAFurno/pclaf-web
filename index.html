@@ -1257,9 +1257,9 @@ footer{
       </div>
       <div class="nav-live-item">
         <img class="nav-live-logo nav-live-logo--f1" src="assets/f1-logo.png" alt="F1">
-        <div class="nav-live-text">
-          <strong>F1</strong>
-          <span>GP Bélgica · 19/07</span>
+        <div class="nav-live-text" id="f1-live-status" aria-live="polite">
+          <strong>F. Colapinto</strong>
+          <span>Cargando agenda F1...</span>
         </div>
       </div>
     </div>
@@ -2082,14 +2082,97 @@ window.addEventListener('scroll',()=>{
     window.scrollY > 20 ? 'var(--red)' : 'var(--border)';
 });
 
-// Header sports ticker copy
 const navLiveItems = document.querySelectorAll('.nav-live-item .nav-live-text');
 if (navLiveItems[0]) {
   navLiveItems[0].innerHTML = '<strong>Argentina</strong><span>Subcampeon 2026</span>';
 }
-if (navLiveItems[1]) {
-  navLiveItems[1].innerHTML = '<strong>F. Colapinto</strong><span>P10</span>';
+
+// Datos de F1: calendario y posición de Franco Colapinto en una sesión activa.
+// OpenF1 publica los cambios de posición con pocos segundos de demora.
+const f1Status = document.getElementById('f1-live-status');
+const OPEN_F1_API = 'https://api.openf1.org/v1';
+const F1_REFRESH_LIVE_MS = 20_000;
+const F1_REFRESH_IDLE_MS = 60 * 60 * 1000;
+
+function setF1Status(title, detail){
+  if (!f1Status) return;
+  f1Status.querySelector('strong').textContent = title;
+  f1Status.querySelector('span').textContent = detail;
 }
+
+function formatRaceDate(isoDate){
+  return new Intl.DateTimeFormat('es-AR', {
+    day: '2-digit', month: 'short', timeZone: 'America/Argentina/Buenos_Aires'
+  }).format(new Date(isoDate)).replace('.', '');
+}
+
+async function getOpenF1Json(path){
+  const response = await fetch(`${OPEN_F1_API}${path}`);
+  if (!response.ok) throw new Error(`OpenF1 respondió ${response.status}`);
+  return response.json();
+}
+
+async function refreshF1Header(){
+  if (!f1Status) return;
+
+  try {
+    const now = new Date();
+    const currentYear = now.getUTCFullYear();
+    const meetings = (await Promise.all([
+      getOpenF1Json(`/meetings?year=${currentYear}`),
+      getOpenF1Json(`/meetings?year=${currentYear + 1}`)
+    ])).flat();
+    const grandPrix = meetings
+      .filter(meeting => !meeting.is_cancelled && /Grand Prix$/i.test(meeting.meeting_name))
+      .sort((a, b) => new Date(a.date_end) - new Date(b.date_end));
+    const currentMeeting = grandPrix.find(meeting =>
+      new Date(meeting.date_start) <= now && now <= new Date(meeting.date_end)
+    );
+    const nextRace = grandPrix.find(meeting => new Date(meeting.date_end) >= now);
+    const meeting = currentMeeting || nextRace;
+
+    if (!meeting) {
+      setF1Status('F. Colapinto', 'Calendario F1 próximamente');
+      window.setTimeout(refreshF1Header, F1_REFRESH_IDLE_MS);
+      return;
+    }
+
+    const sessions = await getOpenF1Json(`/sessions?meeting_key=${meeting.meeting_key}`);
+    const liveSession = sessions.find(session =>
+      new Date(session.date_start) <= now && now <= new Date(session.date_end)
+    );
+
+    if (!liveSession) {
+      setF1Status('F. Colapinto', `Próxima carrera: ${meeting.meeting_name.replace(' Grand Prix', '')} · ${formatRaceDate(meeting.date_end)}`);
+      window.setTimeout(refreshF1Header, F1_REFRESH_IDLE_MS);
+      return;
+    }
+
+    const drivers = await getOpenF1Json(`/drivers?session_key=${liveSession.session_key}`);
+    const colapinto = drivers.find(driver =>
+      driver.name_acronym === 'COL' || /colapinto/i.test(driver.full_name || '')
+    );
+
+    if (!colapinto) {
+      setF1Status('F. Colapinto', `${liveSession.session_name} · sin datos aún`);
+    } else {
+      const positions = await getOpenF1Json(`/position?session_key=${liveSession.session_key}&driver_number=${colapinto.driver_number}`);
+      const latestPosition = positions.sort((a, b) => new Date(b.date) - new Date(a.date))[0];
+      setF1Status(
+        'F. Colapinto · EN VIVO',
+        latestPosition ? `${liveSession.session_name} · P${latestPosition.position}` : `${liveSession.session_name} · sin vuelta registrada`
+      );
+    }
+
+    window.setTimeout(refreshF1Header, F1_REFRESH_LIVE_MS);
+  } catch (error) {
+    // Conserva un mensaje útil si el servicio externo no está disponible.
+    setF1Status('F. Colapinto', 'Datos F1 temporalmente no disponibles');
+    window.setTimeout(refreshF1Header, F1_REFRESH_IDLE_MS);
+  }
+}
+
+refreshF1Header();
 
 </script>
 </body>
