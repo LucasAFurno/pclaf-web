@@ -323,6 +323,21 @@ nav{
   width:48px;
   height:24px;
 }
+.nav-live-logo--f2{
+  width:34px;
+  height:24px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:#fff;
+  background:#e10600;
+  border-radius:3px;
+  font-family:var(--display);
+  font-size:16px;
+  font-weight:900;
+  font-style:italic;
+  line-height:1;
+}
 .nav-live-text{
   display:flex;
   flex-direction:column;
@@ -1249,10 +1264,10 @@ footer{
     </a>
     <div class="nav-live" aria-label="Agenda deportiva destacada">
       <div class="nav-live-item">
-        <img class="nav-live-logo nav-live-logo--afa" src="assets/afa-logo.png" alt="AFA">
-        <div class="nav-live-text">
-          <strong>Argentina</strong>
-          <span>vs España · 19/07 16h</span>
+        <div class="nav-live-logo nav-live-logo--f2" role="img" aria-label="Formula 2">F2</div>
+        <div class="nav-live-text" id="f2-varrone-status">
+          <strong>N. Varrone</strong>
+          <span>F2 · GP Hungría</span>
         </div>
       </div>
       <div class="nav-live-item">
@@ -2081,11 +2096,6 @@ window.addEventListener('scroll',()=>{
   document.querySelector('nav').style.borderBottomColor =
     window.scrollY > 20 ? 'var(--red)' : 'var(--border)';
 });
-
-const navLiveItems = document.querySelectorAll('.nav-live-item .nav-live-text');
-if (navLiveItems[0]) {
-  navLiveItems[0].innerHTML = '<strong>Argentina</strong><span>Subcampeon 2026</span>';
-}
 
 // Datos de F1: calendario y posición de Franco Colapinto en una sesión activa.
 // OpenF1 publica los cambios de posición con pocos segundos de demora.
