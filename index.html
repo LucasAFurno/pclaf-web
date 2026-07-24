@@ -2118,13 +2118,22 @@ async function refreshF1Header(){
   try {
     const now = new Date();
     const currentYear = now.getUTCFullYear();
-    const meetings = (await Promise.all([
-      getOpenF1Json(`/meetings?year=${currentYear}`),
-      getOpenF1Json(`/meetings?year=${currentYear + 1}`)
-    ])).flat();
-    const grandPrix = meetings
+    let meetings = await getOpenF1Json(`/meetings?year=${currentYear}`);
+    let grandPrix = meetings
       .filter(meeting => !meeting.is_cancelled && /Grand Prix$/i.test(meeting.meeting_name))
       .sort((a, b) => new Date(a.date_end) - new Date(b.date_end));
+    // OpenF1 todavía no publica todos los años futuros: solo se consulta el
+    // siguiente cuando ya no queda ninguna carrera en el calendario actual.
+    if (!grandPrix.some(meeting => new Date(meeting.date_end) >= now)) {
+      try {
+        meetings = meetings.concat(await getOpenF1Json(`/meetings?year=${currentYear + 1}`));
+        grandPrix = meetings
+          .filter(meeting => !meeting.is_cancelled && /Grand Prix$/i.test(meeting.meeting_name))
+          .sort((a, b) => new Date(a.date_end) - new Date(b.date_end));
+      } catch (error) {
+        // Se conserva el calendario del año disponible.
+      }
+    }
     const currentMeeting = grandPrix.find(meeting =>
       new Date(meeting.date_start) <= now && now <= new Date(meeting.date_end)
     );
