@@ -1258,7 +1258,7 @@ footer{
         <img class="nav-live-logo nav-live-logo--f2" src="assets/f2-logo.png" alt="F2">
         <div class="nav-live-text" id="f2-varrone-status">
           <strong>N. Varrone</strong>
-          <span>F2 · GP Hungría</span>
+          <span>F2 Sprint Hungría · P11</span>
         </div>
       </div>
       <div class="nav-live-item">
@@ -2153,6 +2153,28 @@ async function refreshF1Header(){
     );
 
     if (!liveSession) {
+      const lastFinishedSession = sessions
+        .filter(session => new Date(session.date_end) <= now)
+        .sort((a, b) => new Date(b.date_end) - new Date(a.date_end))[0];
+      if (lastFinishedSession) {
+        try {
+          const drivers = await getOpenF1Json(`/drivers?session_key=${lastFinishedSession.session_key}`);
+          const colapinto = drivers.find(driver =>
+            driver.name_acronym === 'COL' || /colapinto/i.test(driver.full_name || '')
+          );
+          if (colapinto) {
+            const positions = await getOpenF1Json(`/position?session_key=${lastFinishedSession.session_key}&driver_number=${colapinto.driver_number}`);
+            const finalPosition = positions.sort((a, b) => new Date(b.date) - new Date(a.date))[0];
+            if (finalPosition) {
+              setF1Status('F. Colapinto', `${lastFinishedSession.session_name} · P${finalPosition.position}`);
+              window.setTimeout(refreshF1Header, F1_REFRESH_IDLE_MS);
+              return;
+            }
+          }
+        } catch (error) {
+          // Si el resultado todavía no fue publicado, se muestra la próxima carrera.
+        }
+      }
       setF1Status('F. Colapinto', `Próxima carrera: ${meeting.meeting_name.replace(' Grand Prix', '')} · ${formatRaceDate(meeting.date_end)}`);
       window.setTimeout(refreshF1Header, F1_REFRESH_IDLE_MS);
       return;
