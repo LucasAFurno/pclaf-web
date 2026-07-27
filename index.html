@@ -255,7 +255,7 @@ body{
   color:var(--text);
   font-family:var(--body);
   overflow-x:hidden;
-  padding-top:64px; /* altura del nav fijo */
+  padding-top:76px; /* altura del nav fijo */
 }
 
 
@@ -277,7 +277,7 @@ nav{
 }
 .nav-inner{
   max-width:1100px;margin:0 auto;padding:0 24px;
-  height:64px;display:flex;align-items:center;gap:18px;
+  height:76px;display:flex;align-items:center;gap:18px;
 }
 .nav-logo{display:flex;align-items:center;gap:12px;text-decoration:none;}
 .logo-sq{
@@ -296,8 +296,9 @@ nav{
 }
 .nav-live{
   display:flex;
-  align-items:center;
-  gap:18px;
+  flex-direction:column;
+  align-items:flex-start;
+  gap:5px;
   min-width:0;
   flex:0 1 auto;
 }
@@ -320,13 +321,13 @@ nav{
   height:32px;
 }
 .nav-live-logo--f1{
-  width:48px;
+  width:44px;
   height:24px;
 }
 .nav-live-logo--f2{
-  width:48px;
+  width:44px;
   height:24px;
-  object-fit:cover;
+  object-fit:contain;
   object-position:center;
 }
 .nav-live-text{
@@ -346,6 +347,9 @@ nav{
 .nav-live-text strong{
   color:#fff;
   font-weight:800;
+}
+.nav-live-text span{
+  font-size:11px;
 }
 /* nav-links removed - landing page */
 .nav-wa{
@@ -1257,15 +1261,15 @@ footer{
       <div class="nav-live-item">
         <img class="nav-live-logo nav-live-logo--f2" src="assets/f2-logo.png" alt="F2">
         <div class="nav-live-text" id="f2-varrone-status">
-          <strong>N. Varrone</strong>
-          <span>F2 Feature Hungría · P12</span>
+          <strong>N. Varrone · 14 pts</strong>
+          <span>El domingo: 12º en Hungría · Próxima: Monza (Italia), 4–6 sep</span>
         </div>
       </div>
       <div class="nav-live-item">
         <img class="nav-live-logo nav-live-logo--f1" src="assets/f1-logo.png" alt="F1">
-        <div class="nav-live-text" id="f1-live-status" aria-live="polite">
-          <strong>F. Colapinto</strong>
-          <span>Cargando agenda F1...</span>
+        <div class="nav-live-text" id="f1-live-status">
+          <strong>F. Colapinto · 19 pts</strong>
+          <span>El domingo: 15º en Hungría · Próxima: Zandvoort (Países Bajos), 21–23 ago</span>
         </div>
       </div>
     </div>
@@ -2088,8 +2092,8 @@ window.addEventListener('scroll',()=>{
     window.scrollY > 20 ? 'var(--red)' : 'var(--border)';
 });
 
-// Datos de F1: calendario y posición de Franco Colapinto en una sesión activa.
-// OpenF1 publica los cambios de posición con pocos segundos de demora.
+/* Se mantiene el mismo resumen estático para F1 y F2; no se consulta timing en vivo. */
+/*
 const f1Status = document.getElementById('f1-live-status');
 const OPEN_F1_API = 'https://api.openf1.org/v1';
 const F1_REFRESH_LIVE_MS = 20_000;
@@ -2204,7 +2208,7 @@ async function refreshF1Header(){
   }
 }
 
-refreshF1Header();
+*/
 
 </script>
 </body>
