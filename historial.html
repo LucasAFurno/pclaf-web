@@ -364,10 +364,10 @@ function renderMachines(client, code) {
   const badgeMap = { proceso:BADGE.proceso, listo:BADGE.listo, espera:BADGE.espera, ok:`<span class="status-badge sb-entregado">Sin activas</span>` };
   const discountTitle = client.discountSource === 'referido'
     ? '10% descuento por referido activo'
-    : '10% descuento por resena Google activo';
+    : '10% descuento por reseña Google activo';
   const discountSub = client.discountSource === 'referido'
-    ? 'Se aplica automaticamente en tu proximo service por haber referido a un cliente.'
-    : 'Se aplica automaticamente en tu proximo service por tu resena.';
+    ? 'Se aplica automáticamente en tu próximo service por haber referido a un cliente.'
+    : 'Se aplica automáticamente en tu próximo service por tu reseña.';
 
   document.getElementById('panelMachines').innerHTML = `
     <div class="client-card">
