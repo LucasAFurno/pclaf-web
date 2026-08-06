@@ -16,7 +16,7 @@
 <link rel="icon" type="image/png" href="favicon.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 
-<meta name="description" content="Servicio técnico de PC y notebook en Floresta, Flores y CABA. Formateo, limpieza interna, pasta térmica y Windows con más de 15 años de experiencia. Turno rápido por WhatsApp.">
+<meta name="description" content="Servicio técnico de PC y notebook en Floresta, Flores y CABA. Formateo, limpieza interna, pasta térmica y Windows con más de 15 años de experiencia. También creamos diseño web y PCLAFControl.">
 <meta name="keywords" content="servicio técnico pc floresta, servicio técnico pc flores, formateo notebook floresta, formateo notebook flores, cambio pasta térmica, limpieza pc caba, service notebook floresta, reparacion computadora flores, técnico pc caba">
 <meta name="robots" content="index, follow">
 <meta name="author" content="PCLAF - Servicio técnico">
@@ -295,6 +295,7 @@ nav{
   line-height:1.2;
 }
 .nav-live{
+  display:none !important;
   display:flex;
   flex-direction:column;
   align-items:flex-start;
@@ -509,6 +510,55 @@ nav{
 }
 .stat-num span{color:var(--red);}
 .stat-label{font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;font-weight:600;}
+
+/* LÍNEAS DE NEGOCIO */
+.solutions{max-width:1100px;margin:0 auto;padding:84px 24px 36px;}
+.solutions-intro{display:flex;align-items:end;justify-content:space-between;gap:28px;margin-bottom:30px;}
+.solutions-intro p{max-width:420px;color:var(--text2);font-size:16px;line-height:1.65;}
+.solutions-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+.solution-card{position:relative;display:flex;flex-direction:column;min-height:330px;padding:28px;overflow:hidden;background:var(--black2);border:1px solid var(--border);border-radius:14px;color:var(--text);text-decoration:none;transition:transform .2s ease,border-color .2s ease,background .2s ease;}
+.solution-card:hover{transform:translateY(-5px);border-color:var(--red);background:var(--black3);}
+.solution-card--featured{background:var(--red);border-color:var(--red);}
+.solution-card--featured:hover{background:var(--red-dark);border-color:var(--red-dark);}
+.solution-card--service{border-color:var(--red);}
+.solution-card--service:hover{border-color:#ef3535;}
+.solution-card--web{border-color:#3b82f6;}
+.solution-card--web:hover{border-color:#65a2ff;}
+.solution-card--control{border-color:#f0bd2d;}
+.solution-card--control:hover{border-color:#ffd45b;}
+.solution-card--service .solution-kicker,.solution-card--service .solution-icon{color:var(--red);}
+.solution-card--web .solution-kicker,.solution-card--web .solution-icon{color:#5d96ff;}
+.solution-card--control .solution-kicker,.solution-card--control .solution-icon{color:#f0bd2d;}
+.solution-card--service .solution-link{background:var(--red);color:var(--white);}
+.solution-card--web .solution-link{background:#2463d4;color:var(--white);}
+.solution-card--control .solution-link{background:#f0bd2d;color:#16120a;}
+.solution-card--control::after{border-color:rgba(240,189,45,.22);}
+.solution-card::after{content:'';position:absolute;width:180px;height:180px;right:-70px;bottom:-85px;border:1px solid rgba(255,255,255,.12);border-radius:50%;}
+.solution-kicker{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--red);margin-bottom:44px;}
+.solution-card--featured .solution-kicker{color:rgba(255,255,255,.72);}
+.solution-icon{width:42px;height:42px;margin-bottom:20px;color:var(--red);}
+.solution-card--featured .solution-icon{color:var(--white);}
+.solution-name{font-family:var(--display);font-size:31px;line-height:.95;font-weight:900;color:var(--white);margin-bottom:13px;}
+.solution-desc{font-size:15px;line-height:1.65;color:var(--text2);max-width:270px;}
+.solution-card--featured .solution-desc{color:rgba(255,255,255,.8);}
+.solution-link{margin-top:auto;align-self:flex-start;display:inline-flex;align-items:center;gap:8px;padding:10px 12px;border-radius:6px;font-family:var(--display);font-size:15px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--white);}
+.solution-link svg{width:16px;height:16px;transition:transform .2s ease;}
+.solution-card:hover .solution-link svg{transform:translateX(4px);}
+
+/* SERVICIOS DEL TALLER: misma familia visual que las soluciones */
+.service-offers{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:40px;}
+.service-offer{position:relative;min-height:288px;padding:28px;display:flex;flex-direction:column;overflow:hidden;background:var(--black2);border:1px solid var(--border);border-radius:14px;}
+.service-offer::after{content:'';position:absolute;width:170px;height:170px;right:-74px;bottom:-95px;border:1px solid rgba(255,255,255,.11);border-radius:50%;}
+.service-offer--featured{background:var(--red);border-color:var(--red);}
+.service-offer .offer-kicker{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--red);margin-bottom:30px;}
+.service-offer--featured .offer-kicker{color:rgba(255,255,255,.74);}
+.service-offer .offer-icon{width:28px;height:28px;margin-bottom:18px;color:var(--red);}
+.service-offer--featured .offer-icon{color:var(--white);}
+.service-offer h3{font-family:var(--display);font-size:25px;line-height:1;font-weight:800;color:var(--white);margin:0 0 10px;}
+.service-offer p{font-size:14px;color:var(--text2);line-height:1.6;margin:0;max-width:270px;}
+.service-offer--featured p{color:rgba(255,255,255,.8);}
+.service-offer .offer-price{margin-top:auto;padding-top:20px;font-family:var(--mono);font-size:15px;color:var(--red);font-weight:600;}
+.service-offer--featured .offer-price{color:var(--white);}
 
 /* â”€â”€â”€ TICKER â”€â”€â”€ */
 .ticker-wrap{
@@ -1168,6 +1218,12 @@ footer{
 
 /* â”€â”€â”€ RESPONSIVE â”€â”€â”€ */
 @media(max-width:768px){
+  .solutions{padding-top:58px;}
+  .solutions-intro{align-items:start;flex-direction:column;gap:10px;}
+  .solutions-grid{grid-template-columns:1fr;}
+  .solution-card{min-height:275px;}
+  .service-offers{grid-template-columns:1fr;}
+  .service-offer{min-height:250px;}
   .hero-title{font-size:clamp(44px,12vw,80px);}
   .hero-bg-text{font-size:100px;}
   .services-grid{grid-template-columns:1fr;}
@@ -1337,7 +1393,7 @@ footer{
         <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a7.1 7.1 0 00-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479s1.065 2.875 1.213 3.074c.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
         Consultar por WhatsApp
       </a>
-      <a class="btn-secondary" href="#servicios">Ver servicios</a>
+      <a class="btn-secondary" href="#soluciones">Conocé PCLAF</a>
     </div>
     <div class="hero-stats">
       <div class="stat">
@@ -1358,6 +1414,39 @@ footer{
 
 
 <!-- â”€â”€â”€ TICKER â”€â”€â”€ -->
+<section id="soluciones" class="solutions">
+  <div class="solutions-intro reveal">
+    <div>
+      <div class="section-label">PCLAF también hace</div>
+      <h2 class="section-title">Soluciones para <span>tu negocio</span></h2>
+    </div>
+    <p>El taller sigue siendo nuestra base. Además, ayudamos a negocios a verse mejor online y a ordenar su operación.</p>
+  </div>
+  <div class="solutions-grid reveal">
+    <a class="solution-card solution-card--service" href="#servicios">
+      <div class="solution-kicker">01 · Taller</div>
+      <svg class="solution-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a4.5 4.5 0 0 0-5.9 5.9L3 18l3 3 5.8-5.8a4.5 4.5 0 0 0 5.9-5.9l-3 3-2.5-.5-.5-2.5 3-3Z"/></svg>
+      <h3 class="solution-name">Servicio técnico</h3>
+      <p class="solution-desc">Diagnóstico, mantenimiento, formateos y reparación de PCs y notebooks en Floresta.</p>
+      <span class="solution-link">Ver servicios <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+    </a>
+    <a class="solution-card solution-card--web" href="diseno-web.html">
+      <div class="solution-kicker">02 · Presencia digital</div>
+      <svg class="solution-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M7 7h.01M10 7h.01M8 14h3M8 17h7"/></svg>
+      <h3 class="solution-name">Diseño web<br>y landings</h3>
+      <p class="solution-desc">Sitios claros, rápidos y preparados para convertir consultas en clientes.</p>
+      <span class="solution-link">Contar mi proyecto <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+    </a>
+    <a class="solution-card solution-card--control" href="https://www.pclafcontrol.com.ar" target="_blank" rel="noopener noreferrer">
+      <div class="solution-kicker">03 · Gestión</div>
+      <svg class="solution-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M7 16v-3M12 16V8M17 16v-5"/></svg>
+      <h3 class="solution-name">PCLAFControl</h3>
+      <p class="solution-desc">Una herramienta propia para organizar clientes, trabajos, presupuestos y el seguimiento de cada equipo.</p>
+      <span class="solution-link">Conocer PCLAFControl <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+    </a>
+  </div>
+</section>
+
 <div class="ticker-wrap">
   <div class="ticker">
     <span class="ticker-item">Formateo PC / Notebook</span>
@@ -1387,25 +1476,28 @@ footer{
       <h2 class="section-title">Service técnico <span>con precio claro</span></h2>
       <p style="font-size:16px;color:var(--text2);max-width:560px;margin:0 auto 32px;line-height:1.65;">Formateo, limpieza, cambio de pasta térmica, instalación de software y más. Precios desde $70.000. Sin sorpresas al retirar.</p>
     </div>
-    <div class="reveal" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin-bottom:40px;">
-      <div style="background:var(--black2);border:1px solid var(--border);border-radius:14px;padding:28px;">
-        <div style="font-size:28px;margin-bottom:12px;">🧹</div>
-        <div style="font-family:var(--display);font-size:20px;font-weight:800;color:#fff;margin-bottom:8px;">Limpieza + pasta térmica</div>
-        <div style="font-size:14px;color:var(--text2);line-height:1.6;margin-bottom:14px;">Desarme completo, limpieza profunda y pasta Arctic MX-4. Bajamos la temperatura entre 20 y 40°C.</div>
-        <div style="font-family:var(--mono);font-size:16px;color:var(--red);font-weight:600;">desde $70.000</div>
-      </div>
-      <div style="background:var(--red);border-radius:14px;padding:28px;">
-        <div style="font-size:28px;margin-bottom:12px;">💾</div>
-        <div style="font-family:var(--display);font-size:20px;font-weight:800;color:#fff;margin-bottom:8px;">Formateo PC / Notebook</div>
-        <div style="font-size:14px;color:rgba(255,255,255,.8);line-height:1.6;margin-bottom:14px;">Windows limpio, drivers actualizados y programas básicos. Listo en el día.</div>
-        <div style="font-family:var(--mono);font-size:16px;color:#fff;font-weight:600;">desde $70.000</div>
-      </div>
-      <div style="background:var(--black2);border:1px solid var(--border);border-radius:14px;padding:28px;">
-        <div style="font-size:28px;margin-bottom:12px;">🖥️</div>
-        <div style="font-family:var(--display);font-size:20px;font-weight:800;color:#fff;margin-bottom:8px;">Service general</div>
-        <div style="font-size:14px;color:var(--text2);line-height:1.6;margin-bottom:14px;">Revisión completa de hardware, limpieza y diagnóstico de todos los componentes.</div>
-        <div style="font-family:var(--mono);font-size:16px;color:var(--red);font-weight:600;">desde $70.000</div>
-      </div>
+    <div class="service-offers reveal">
+      <article class="service-offer">
+        <div class="offer-kicker">01 · Mantenimiento</div>
+        <svg class="offer-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m14.7 6.3 3-3 .5 2.5 2.5.5-3 3a4.5 4.5 0 0 1-5.9 5.9L6 21l-3-3 5.8-5.8a4.5 4.5 0 0 1 5.9-5.9Z"/></svg>
+        <h3>Limpieza + pasta térmica</h3>
+        <p>Desarme completo, limpieza profunda y pasta Arctic MX-4. Bajamos la temperatura entre 20 y 40°C.</p>
+        <div class="offer-price">desde $70.000</div>
+      </article>
+      <article class="service-offer service-offer--featured">
+        <div class="offer-kicker">02 · Sistema operativo</div>
+        <svg class="offer-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M7 7h.01M10 7h.01M9 14h6M9 17h3"/></svg>
+        <h3>Formateo PC / Notebook</h3>
+        <p>Windows limpio, drivers actualizados y programas básicos. Listo en el día.</p>
+        <div class="offer-price">desde $70.000</div>
+      </article>
+      <article class="service-offer">
+        <div class="offer-kicker">03 · Diagnóstico</div>
+        <svg class="offer-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="13" rx="2"/><path d="M8 21h8M12 16v5M7 8h5M7 11h8"/></svg>
+        <h3>Service general</h3>
+        <p>Revisión completa de hardware, limpieza y diagnóstico de todos los componentes.</p>
+        <div class="offer-price">desde $70.000</div>
+      </article>
     </div>
     <div class="reveal" style="text-align:center;">
       <a href="precios.html" style="display:inline-flex;align-items:center;gap:8px;background:var(--black2);border:1.5px solid var(--border2);color:var(--text);padding:14px 28px;border-radius:8px;font-family:var(--display);font-size:17px;font-weight:700;text-decoration:none;letter-spacing:.04em;text-transform:uppercase;transition:all .15s;" onmouseover="this.style.borderColor='#CC0000';this.style.color='#CC0000'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--text)'">
@@ -1421,10 +1513,10 @@ footer{
   <div style="max-width:1100px;margin:0 auto;padding:0 24px;">
     <div class="reveal" style="display:flex;justify-content:space-between;align-items:end;gap:20px;flex-wrap:wrap;margin-bottom:26px;">
       <div>
-        <div class="section-label">Búsquedas útiles</div>
-        <h2 class="section-title" style="margin-bottom:0;">Paginas para <span>cada servicio</span></h2>
+        <div class="section-label">Guías de service</div>
+        <h2 class="section-title" style="margin-bottom:0;">Páginas para <span>cada servicio</span></h2>
       </div>
-      <p style="max-width:460px;color:var(--text2);font-size:15px;line-height:1.7;">Si llegaste buscando un problema puntual, armamos paginas especificas con precios orientativos, tiempos de entrega y cuando conviene cada service.</p>
+      <p style="max-width:460px;color:var(--text2);font-size:15px;line-height:1.7;">Si llegaste buscando un problema puntual, armamos guías con precios orientativos, tiempos de entrega y cuándo conviene cada service.</p>
     </div>
     <div class="reveal" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;">
       <a href="formateo-pc-floresta.html" style="display:block;background:var(--black2);border:1px solid var(--border);border-radius:16px;padding:24px;text-decoration:none;transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease;" onmouseover="this.style.transform='translateY(-4px)';this.style.borderColor='#CC0000';this.style.boxShadow='0 18px 40px rgba(0,0,0,.28)'" onmouseout="this.style.transform='translateY(0)';this.style.borderColor='var(--border)';this.style.boxShadow='none'">
