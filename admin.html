@@ -439,6 +439,8 @@ body{background:radial-gradient(900px 460px at 50% -220px,rgba(204,0,0,.16),tran
 /* Tarjetas de reparación: resumen compacto, igual de escaneable que Web. */
 .repair-client{flex:1;min-width:0;}.repair-client-name{font-size:15px;font-weight:750;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}.repair-equipment{display:flex;align-items:center;gap:5px;margin-top:4px;color:var(--text2);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}.repair-client-code{font:10px var(--mono);color:#a9cbff;border:1px solid rgba(59,130,246,.28);border-radius:999px;padding:2px 6px;flex:0 0 auto;}.repair-price{font:700 13px var(--mono);color:#fff;border:1px solid rgba(255,255,255,.11);border-radius:8px;background:rgba(255,255,255,.035);padding:7px 9px;white-space:nowrap;}.repair-price.empty{color:var(--text3);font-weight:500;}.rc .rch{cursor:pointer;}.rc.open .bsec-flow{padding:12px;}.rc.open .bsec-perks{padding:11px 12px;}.rc.open .bsec-perks h4{font-size:10px;margin-bottom:9px;}.rc.open .perks-stack{gap:8px;}.rc.open .descuento-banner{padding:9px 10px;gap:9px;border-radius:10px;}.rc.open .descuento-title{font-size:11px;}.rc.open .descuento-subline{font-size:10px;}.rc.open .descuento-actions{gap:5px;}.rc.open .descuento-toggle{min-height:30px;padding:4px 7px;font-size:10px;}.rc.open .descuento-state{font-size:9px;}.rc.open .section-inline-actions{gap:6px;}.rc.open .section-inline-actions .pdf-btn{min-height:34px;font-size:10px;padding:6px 8px;}.rc.open .wab{min-height:36px;font-size:11px;padding:8px 10px;}
 @media(max-width:650px){.repair-price{display:none;}.repair-client-name{font-size:14px;}.repair-equipment{font-size:11px;}.repair-client-code{font-size:9px;}.rc.open .flow-split{grid-template-columns:1fr!important;}.rc.open .descuento-banner{align-items:flex-start;flex-direction:column;}.rc.open .descuento-actions{width:100%;}.rc.open .descuento-toggle{flex:1;justify-content:space-between;}}
+/* El resumen cerrado usa exactamente la jerarquía de una tarjeta de Proyectos Web. */
+.rc .rch.repair-card-summary{display:block;min-height:0;padding:17px;cursor:pointer;}.repair-card-summary .repair-card-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:13px;}.repair-card-summary .rcn{min-width:0;padding:0;border:0;background:none;color:#a9cbff;text-align:left;font:11px var(--mono);}.repair-card-summary .sb{margin:0!important;}.repair-card-summary .repair-summary-name{font-size:16px;font-weight:700;color:#fff;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}.repair-card-summary .repair-summary-equipment{font-size:12px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}.repair-card-summary .repair-summary-meta{display:flex;gap:7px;flex-wrap:wrap;margin:14px 0 15px;}.repair-card-summary .repair-summary-chip{font:10px var(--mono);color:var(--text2);border:1px solid var(--border2);border-radius:999px;padding:4px 8px;background:rgba(255,255,255,.025);}.repair-card-summary .repair-summary-chip.code{color:#9bc5ff;border-color:rgba(59,130,246,.35);}.repair-card-summary .repair-summary-chip.money{color:#fff;border-color:rgba(34,197,94,.28);}.repair-card-summary .repair-summary-chip.money.empty{color:var(--text3);border-color:var(--border);}.repair-card-summary .repair-card-foot{display:flex;justify-content:space-between;align-items:center;gap:8px;padding-top:12px;border-top:1px solid rgba(255,255,255,.06);font-size:11px;color:var(--text3);}.repair-card-summary .repair-card-foot strong{color:#a9cbff;font:10px var(--mono);font-weight:500;}.repair-card-summary .rcch{display:flex;align-items:center;justify-content:center;width:23px;height:23px;border:1px solid var(--border);border-radius:7px;}.rc.open .rch.repair-card-summary{border-bottom:1px solid rgba(255,255,255,.07);background:linear-gradient(90deg,rgba(255,255,255,.025),transparent 58%);}.rc.open .repair-card-summary .rcch{border-color:rgba(204,0,0,.38);color:#ffaaaa;}
 </style>
 </head>
 <body>
@@ -1815,6 +1817,32 @@ function formatRepairCardHeaders(repairs){
     const amount=String(repair.presupuesto||'').trim();
     const price=document.createElement('div');price.className=`repair-price${amount?'':' empty'}`;price.textContent=amount||'Sin monto';
     const status=header.querySelector('.sb');if(status)header.insertBefore(price,status);else header.appendChild(price);
+  });
+}
+
+/* Override: repair summary follows the exact Web-card layout. */
+function formatRepairCardHeaders(repairs){
+  (repairs||[]).forEach(repair=>{
+    const card=document.getElementById(`c-${repair.id}`);const header=card?.querySelector('.rch');
+    if(!header)return;
+    const equipment=repair.equipos||{},client=equipment.clientes||{};
+    const name=[client.nombre,client.apellido].filter(Boolean).join(' ')||'Sin cliente';
+    const model=equipment.modelo?` · ${equipment.modelo}`:'';
+    const amount=String(repair.presupuesto||'').trim();
+    const status=header.querySelector('.sb');
+    header.classList.add('repair-card-summary');header.replaceChildren();
+    const top=document.createElement('div');top.className='repair-card-top';
+    const number=document.createElement('span');number.className='rcn';number.textContent=`#${repair.numero||'–'}`;
+    top.append(number);if(status)top.append(status);
+    const title=document.createElement('div');title.className='repair-summary-name';title.textContent=name;
+    const detail=document.createElement('div');detail.className='repair-summary-equipment';detail.textContent=`${equipment.icono||'💻'} ${equipment.nombre||'Equipo'}${model}`;
+    const meta=document.createElement('div');meta.className='repair-summary-meta';
+    if(client.codigo){const code=document.createElement('span');code.className='repair-summary-chip code';code.textContent=client.codigo;meta.append(code);}
+    const price=document.createElement('span');price.className=`repair-summary-chip money${amount?'':' empty'}`;price.textContent=amount||'Sin presupuesto';meta.append(price);
+    const foot=document.createElement('div');foot.className='repair-card-foot';
+    const hint=document.createElement('strong');hint.textContent='Ver detalles';
+    const arrow=document.createElement('div');arrow.className='rcch';arrow.innerHTML='<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6l4 4 4-4"/></svg>';
+    foot.append(hint,arrow);header.append(top,title,detail,meta,foot);
   });
 }
 
