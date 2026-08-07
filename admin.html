@@ -441,6 +441,18 @@ body{background:radial-gradient(900px 460px at 50% -220px,rgba(204,0,0,.16),tran
 @media(max-width:650px){.repair-price{display:none;}.repair-client-name{font-size:14px;}.repair-equipment{font-size:11px;}.repair-client-code{font-size:9px;}.rc.open .flow-split{grid-template-columns:1fr!important;}.rc.open .descuento-banner{align-items:flex-start;flex-direction:column;}.rc.open .descuento-actions{width:100%;}.rc.open .descuento-toggle{flex:1;justify-content:space-between;}}
 /* El resumen cerrado usa exactamente la jerarquía de una tarjeta de Proyectos Web. */
 .rc .rch.repair-card-summary{display:block;min-height:0;padding:17px;cursor:pointer;}.repair-card-summary .repair-card-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:13px;}.repair-card-summary .rcn{min-width:0;padding:0;border:0;background:none;color:#a9cbff;text-align:left;font:11px var(--mono);}.repair-card-summary .sb{margin:0!important;}.repair-card-summary .repair-summary-name{font-size:16px;font-weight:700;color:#fff;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}.repair-card-summary .repair-summary-equipment{font-size:12px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}.repair-card-summary .repair-summary-meta{display:flex;gap:7px;flex-wrap:wrap;margin:14px 0 15px;}.repair-card-summary .repair-summary-chip{font:10px var(--mono);color:var(--text2);border:1px solid var(--border2);border-radius:999px;padding:4px 8px;background:rgba(255,255,255,.025);}.repair-card-summary .repair-summary-chip.code{color:#9bc5ff;border-color:rgba(59,130,246,.35);}.repair-card-summary .repair-summary-chip.money{color:#fff;border-color:rgba(34,197,94,.28);}.repair-card-summary .repair-summary-chip.money.empty{color:var(--text3);border-color:var(--border);}.repair-card-summary .repair-card-foot{display:flex;justify-content:space-between;align-items:center;gap:8px;padding-top:12px;border-top:1px solid rgba(255,255,255,.06);font-size:11px;color:var(--text3);}.repair-card-summary .repair-card-foot strong{color:#a9cbff;font:10px var(--mono);font-weight:500;}.repair-card-summary .rcch{display:flex;align-items:center;justify-content:center;width:23px;height:23px;border:1px solid var(--border);border-radius:7px;}.rc.open .rch.repair-card-summary{border-bottom:1px solid rgba(255,255,255,.07);background:linear-gradient(90deg,rgba(255,255,255,.025),transparent 58%);}.rc.open .repair-card-summary .rcch{border-color:rgba(204,0,0,.38);color:#ffaaaa;}
+/* Desktop: las reparaciones cerradas se leen en dos columnas, como Proyectos Web. */
+@media(min-width:851px){
+  #view-rep .rlist{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:start;}
+  #view-rep .rlist>.rc.open,#view-rep .rlist>div:not(.rc){grid-column:1/-1;}
+  .rc.open .bgrid{grid-template-columns:minmax(0,1.12fr) minmax(330px,.88fr);gap:12px;}
+  .rc.open .btop{grid-column:1/-1;}.rc.open .bmid{display:contents;}
+  .rc.open .bsec-flow{grid-column:1;}.rc.open .bsec-perks{grid-column:2;align-self:stretch;display:flex;flex-direction:column;}
+  .rc.open .bsec-perks .perks-stack{height:100%;display:flex;flex-direction:column;}.rc.open .bsec-perks .perks-actions{margin-top:auto;}
+  .rc.open .bsec-main{padding:16px 17px;}.rc.open .details-grid{gap:4px 22px;}.rc.open .main-state{padding:11px 12px;margin-top:11px;}
+  .rc.open .flow-split{grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:10px;}.rc.open .flow-col .internal-notes-wrap{min-height:232px;}.rc.open .stl{max-height:114px;}
+}
+@media(max-width:850px){.rc.open .bmid{display:grid;}.rc.open .bsec-flow,.rc.open .bsec-perks{grid-column:auto;}}
 </style>
 </head>
 <body>
@@ -1083,7 +1095,7 @@ async function loadPage(){
   if(fSt!=='todos') filter+=`&estado=eq.${fSt}`;
   if(q && q.match(/^\d+$/)) filter+=`&numero=eq.${q.padStart(4,'0')}`;
 
-  const select=`select=id,numero,problema,presupuesto,estado,urgente,fecha_entrega,created_at,equipo_id,equipos(id,nombre,icono,modelo,cliente_id,clientes(id,codigo,nombre,apellido,telefono,descuento_resena))`;
+  const select=`select=id,numero,problema,presupuesto,estado,urgente,fecha_entrega,created_at,equipo_id,equipos(id,nombre,icono,modelo,cliente_id,clientes(id,codigo,nombre,apellido,telefono,descuento_resena,descuento_resena_usado,descuento_origen))`;
 
   try{
     document.getElementById('rlist').innerHTML='<div class="empty"><div class="spinner"></div>Cargando...</div>';
@@ -1107,7 +1119,7 @@ async function loadPage(){
 
 async function loadAllData(force=false){
   if(allDataPromise && !force) return allDataPromise;
-  const select='select=id,numero,problema,presupuesto,estado,urgente,fecha_entrega,created_at,equipo_id,equipos(id,nombre,icono,modelo,cliente_id,clientes(id,codigo,nombre,apellido,telefono,descuento_resena))&order=numero.desc';
+  const select='select=id,numero,problema,presupuesto,estado,urgente,fecha_entrega,created_at,equipo_id,equipos(id,nombre,icono,modelo,cliente_id,clientes(id,codigo,nombre,apellido,telefono,descuento_resena,descuento_resena_usado,descuento_origen))&order=numero.desc';
   const pasosSelect='select=reparacion_id,created_at,orden,fecha';
   const batchSize=1000;
   allDataPromise=(async()=>{
@@ -1630,15 +1642,20 @@ function renderCards(data){
     const wm=encodeURIComponent(`Hola ${(c.nombre||'').split(' ')[0]}, te escribimos de PCLAF. Tu ${e.nombre||'equipo'} (#${r.numero}) está ${LB[r.estado]||r.estado}.`);
     const urgente=r.urgente||false;
     const descuentoActivo=!!c.descuento_resena;
+    const descuentoGoogleUsado=!!c.descuento_resena_usado;
     const referralTurn=getReferralTurnForClient(c);
     const clienteReferido=[referralTurn?.nombre,referralTurn?.apellido].filter(Boolean).join(' ').trim();
     const tieneReferido=!!referralTurn;
-    const descuentoOrigen=descuentoActivo?(tieneReferido?'referido':'resena'):'';
+    const descuentoOrigen=descuentoActivo?(c.descuento_origen||(tieneReferido?'referido':'resena')):'';
     const descuentoStripTexto=descuentoOrigen==='referido'
       ? '10% descuento por referido - aplicar al cobrar'
       : '10% descuento por reseña Google - aplicar al cobrar';
-    const descuentoBannerTitulo=tieneReferido?'Descuento por referido':'Descuento por reseña Google';
-    const descuentoBannerDetalle=tieneReferido
+    const descuentoBannerTitulo=descuentoGoogleUsado&&!descuentoActivo&&!tieneReferido
+      ? 'Descuento por reseña Google utilizado'
+      : tieneReferido?'Descuento por referido':'Descuento por reseña Google';
+    const descuentoBannerDetalle=descuentoGoogleUsado&&!descuentoActivo&&!tieneReferido
+      ? 'La reseña de Google acredita un único descuento por cliente.'
+      : tieneReferido
       ? '10% off en la próxima reparación por cliente referido'
       : '10% off en la próxima reparación';
     const descuentoPendiente=tieneReferido&&!descuentoActivo;
@@ -1728,10 +1745,10 @@ function renderCards(data){
                   ${descuentoPendiente&&clienteReferido?`<div class="inline-note">Se acredito por ${clienteReferido}.</div>`:''}
                 </div>
                 <div class="descuento-actions">
-                  <button class="descuento-toggle ${c.descuento_resena&&tieneReferido?'':'off'}" onclick="toggleDescuento('${c.id||''}',this,'referido')"><span class="descuento-toggle-label">Referido</span><div class="toggle-track ${c.descuento_resena&&tieneReferido?'on':''}" id="dTrackRef-${c.id||'x'}"><div class="toggle-knob"></div></div></button>
-                  <button class="descuento-toggle ${(!tieneReferido&&c.descuento_resena)?'':'off'}" onclick="toggleDescuento('${c.id||''}',this,'resena')">
+                  <button class="descuento-toggle ${descuentoOrigen==='referido'?'':'off'}" onclick="toggleDescuento('${c.id||''}',this,'referido')"><span class="descuento-toggle-label">Referido</span><div class="toggle-track ${descuentoOrigen==='referido'?'on':''}" id="dTrackRef-${c.id||'x'}"><div class="toggle-knob"></div></div></button>
+                  <button class="descuento-toggle ${descuentoOrigen==='resena'?'':'off'}" ${descuentoGoogleUsado?'disabled title="Este descuento ya fue utilizado"':''} onclick="toggleDescuento('${c.id||''}',this,'resena')">
                     <span class="descuento-toggle-label">Google</span>
-                    <div class="toggle-track ${!tieneReferido&&c.descuento_resena?'on':''}" id="dTrackRes-${c.id||'x'}"><div class="toggle-knob"></div></div>
+                    <div class="toggle-track ${descuentoOrigen==='resena'?'on':''}" id="dTrackRes-${c.id||'x'}"><div class="toggle-knob"></div></div>
                   </button>
                   <span class="descuento-state" id="dLbl-${c.id||'x'}" style="color:${c.descuento_resena?'var(--green)':'var(--text3)'}">${c.descuento_resena?'ACTIVO':'inactivo'}</span>
                 </div>
@@ -2645,17 +2662,27 @@ async function toggleDescuento(clienteId, btn, source='resena'){
   const trackRes = document.getElementById(`dTrackRes-${clienteId}`);
   const cl = aC.find(c=>c.id===clienteId);
   if(!cl) return;
-  const nuevo = !cl.descuento_resena;
-  await db('PATCH','clientes',`?id=eq.${clienteId}`,{descuento_resena:nuevo});
-  cl.descuento_resena = nuevo;
+  if(source==='resena' && cl.descuento_resena_usado && !cl.descuento_resena){
+    toast('El descuento por reseña Google ya fue utilizado');
+    return;
+  }
+  const origenActual=cl.descuento_origen||(getReferralTurnForClient(cl)?'referido':'resena');
+  const desactivar=cl.descuento_resena && origenActual===source;
+  const nuevo=!desactivar;
+  const changes={descuento_resena:nuevo,descuento_origen:nuevo?source:null};
+  // Al apagar Google se entiende que ya fue aplicado al cobro: no puede acreditarse otra vez.
+  if(desactivar && source==='resena') changes.descuento_resena_usado=true;
+  await db('PATCH','clientes',`?id=eq.${clienteId}`,changes);
+  Object.assign(cl,changes);
   if(trackRef) trackRef.classList.toggle('on', nuevo && source==='referido');
-  if(trackRes) trackRes.classList.toggle('on', nuevo && source!=='referido');
+  if(trackRes) trackRes.classList.toggle('on', nuevo && source==='resena');
   document.querySelectorAll(`#descBanner-${clienteId} .descuento-toggle`).forEach(el=>el.classList.add('off'));
   if(nuevo && btn) btn.classList.remove('off');
   lbl.textContent = nuevo ? 'ACTIVO' : 'inactivo';
   lbl.style.color = nuevo ? 'var(--green)' : 'var(--text3)';
-  toast(nuevo ? `Descuento activado por ${source==='referido'?'referido':'Google'}` : 'Descuento desactivado');
+  toast(nuevo ? `Descuento activado por ${source==='referido'?'referido':'Google'}` : source==='resena'?'Descuento Google aplicado y marcado como utilizado':'Descuento desactivado');
   playSound('action');
+  if(desactivar) loadPage();
 }
 
 // ── FECHA ESTIMADA ──
