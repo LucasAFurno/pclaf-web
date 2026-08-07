@@ -458,6 +458,8 @@ body{background:radial-gradient(900px 460px at 50% -220px,rgba(204,0,0,.16),tran
 @media(max-width:650px){.rc.open .bsec-main .details-grid{grid-template-columns:1fr;}.repair-track-tabs{margin-top:2px;}.rc.open .bsec-perks h4{display:block;}.rc.open .bsec-perks{justify-content:flex-start;}}
 /* Glow y esfera de estado, alineados con las tarjetas de Proyectos Web. */
 .rc{position:relative;isolation:isolate;overflow:hidden;transition:transform .16s,border-color .16s,box-shadow .16s;}.rc::after{content:'';position:absolute;width:124px;height:124px;border-radius:50%;right:-58px;bottom:-78px;opacity:.85;pointer-events:none;z-index:0;transition:transform .22s,opacity .22s;}.rc>.rch,.rc>.rcb{position:relative;z-index:1;}.rc:hover::after{transform:scale(1.16);opacity:1;}.rc[data-estado="espera"]::after{background:rgba(59,130,246,.10);}.rc[data-estado="proceso"]::after{background:rgba(245,158,11,.11);}.rc[data-estado="listo"]::after{background:rgba(34,197,94,.10);}.rc[data-estado="entregado"]::after{background:rgba(148,163,184,.08);}.rc[data-estado="cancelado"]::after{background:rgba(204,0,0,.09);}.rc[data-estado="espera"]:hover{border-color:rgba(59,130,246,.75);box-shadow:0 0 0 1px rgba(59,130,246,.16),0 14px 30px rgba(59,130,246,.10);}.rc[data-estado="proceso"]:hover{border-color:rgba(245,158,11,.78);box-shadow:0 0 0 1px rgba(245,158,11,.17),0 14px 30px rgba(245,158,11,.10);}.rc[data-estado="listo"]:hover{border-color:rgba(34,197,94,.75);box-shadow:0 0 0 1px rgba(34,197,94,.15),0 14px 30px rgba(34,197,94,.10);}.rc[data-estado="entregado"]:hover{border-color:rgba(148,163,184,.52);box-shadow:0 0 0 1px rgba(148,163,184,.10),0 14px 30px rgba(0,0,0,.22);}.rc[data-estado="cancelado"]:hover{border-color:rgba(204,0,0,.7);box-shadow:0 0 0 1px rgba(204,0,0,.15),0 14px 30px rgba(204,0,0,.10);}
+/* Controles operativos compactos: descuentos bajo estado y acciones en menú. */
+.repair-menu-wrap{position:relative;}.repair-menu-btn{width:29px;height:29px;border:1px solid var(--border2);border-radius:8px;background:rgba(255,255,255,.025);color:var(--text2);font-size:20px;line-height:1;cursor:pointer;padding:0 0 4px;}.repair-menu-btn:hover{color:#fff;border-color:currentColor;background:rgba(255,255,255,.08);}.repair-menu{display:none;position:absolute;right:0;top:35px;width:145px;padding:5px;background:#202020;border:1px solid var(--border2);border-radius:9px;box-shadow:0 12px 28px rgba(0,0,0,.45);z-index:20;}.repair-menu.open{display:block;}.repair-menu button{display:block;width:100%;border:0;border-radius:6px;background:transparent;color:var(--text);font:12px var(--sans);text-align:left;padding:8px 9px;cursor:pointer;}.repair-menu button:hover{background:rgba(59,130,246,.14);}.repair-discount-inline{display:flex;align-items:center;justify-content:flex-end;gap:5px;padding-top:8px;margin-top:8px;border-top:1px solid rgba(255,255,255,.06);}.repair-discount-inline::before{content:'Beneficio';margin-right:auto;color:var(--text3);font:9px var(--mono);text-transform:uppercase;letter-spacing:.07em;}.repair-discount-inline .descuento-actions{display:flex;align-items:center;gap:4px;}.repair-discount-inline .descuento-toggle{min-height:25px;padding:3px 6px;border-radius:999px;font-size:9px;gap:5px;}.repair-discount-inline .descuento-toggle-label{font-size:9px;}.repair-discount-inline .toggle-track{width:27px;height:15px;}.repair-discount-inline .toggle-knob{width:11px;height:11px;}.repair-discount-inline .toggle-track.on .toggle-knob{transform:translateX(12px);}.repair-discount-inline .descuento-state{font:9px var(--mono);margin-left:2px;}.repair-quick-wa{display:block;text-align:center;margin-top:7px;padding:8px 10px;border-radius:9px;background:#20c65a;color:#fff;font-size:11px;font-weight:800;text-decoration:none;}.repair-quick-wa:hover{background:#25d366;}.rc.open .bsec-flow.repair-no-actions{grid-column:1/-1;}.rc.open .main-state{padding:8px 10px;margin-top:8px;}.rc.open .main-state .subcap{margin-bottom:6px;}.rc.open .sgrid{gap:5px!important;}.rc.open .so{min-height:32px;padding:4px 5px;font-size:9px;border-radius:8px;}.rc.open .prin,.rc.open .fest-in{height:30px;font-size:11px;}.rc.open .budget-input-wrap .smbtn,.rc.open .fest-row .smbtn{height:30px;padding:4px 7px!important;font-size:10px!important;}
 </style>
 </head>
 <body>
@@ -1883,6 +1885,43 @@ function simplifyRepairDetail(card){
   const tabs=document.createElement('div');tabs.className='repair-track-tabs';
   const makeTab=(key,label,active)=>{const button=document.createElement('button');button.type='button';button.className=`repair-track-tab${active?' active':''}`;button.textContent=label;button.onclick=()=>{tabs.querySelectorAll('.repair-track-tab').forEach(tab=>tab.classList.toggle('active',tab===button));columns.forEach(column=>column.classList.toggle('active',column.dataset.track===key));};return button;};
   tabs.append(makeTab('history','Historial',true),makeTab('notes','Notas internas',false));heading.insertAdjacentElement('afterend',tabs);
+}
+
+/* Override: leave only operational controls in the expanded repair. */
+function simplifyRepairDetail(card){
+  const details=card.querySelector('.bsec-main .details-grid');
+  details?.querySelectorAll('.cir').forEach(row=>{
+    const raw=row.querySelector('.cil')?.textContent?.trim().toLowerCase()||'';
+    const label=raw.normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+    if(['nombre','telefono','codigo','equipo'].includes(label))row.classList.add('repair-duplicate');
+  });
+  simplifyRepairQuickActions(card);
+  const flow=card.querySelector('.bsec-flow .flow-split'),heading=card.querySelector('.bsec-flow h4');
+  if(!flow||!heading||flow.dataset.simplified)return;
+  flow.dataset.simplified='1';flow.classList.add('repair-tracking');
+  const columns=[...flow.querySelectorAll('.flow-col')];if(columns.length<2)return;
+  const notes=columns[0],history=columns[1];notes.dataset.track='notes';history.dataset.track='history';history.classList.add('active');
+  const tabs=document.createElement('div');tabs.className='repair-track-tabs';
+  const makeTab=(key,label,active)=>{const button=document.createElement('button');button.type='button';button.className=`repair-track-tab${active?' active':''}`;button.textContent=label;button.onclick=()=>{tabs.querySelectorAll('.repair-track-tab').forEach(tab=>tab.classList.toggle('active',tab===button));columns.forEach(column=>column.classList.toggle('active',column.dataset.track===key));};return button;};
+  tabs.append(makeTab('history','Historial',true),makeTab('notes','Notas internas',false));heading.insertAdjacentElement('afterend',tabs);
+}
+
+function simplifyRepairQuickActions(card){
+  const mainState=card.querySelector('.main-state'),perks=card.querySelector('.bsec-perks');if(!mainState||!perks)return;
+  const discountActions=perks.querySelector('.descuento-actions');
+  if(discountActions&&!card.querySelector('.repair-discount-inline')){const inline=document.createElement('div');inline.className='repair-discount-inline';inline.append(discountActions);mainState.append(inline);perks.querySelector('.descuento-banner')?.remove();}
+  const whatsapp=perks.querySelector('.wab');
+  if(whatsapp){whatsapp.className='repair-quick-wa';whatsapp.textContent=`WhatsApp a ${whatsapp.textContent.replace(/^.*WhatsApp a\s*/,'').trim()||'cliente'}`;mainState.append(whatsapp);}
+  const sourceActions=perks.querySelector('.section-inline-actions'),headerTop=card.querySelector('.repair-card-top');
+  if(sourceActions&&headerTop&&!headerTop.querySelector('.repair-menu-wrap')){
+    const wrap=document.createElement('div');wrap.className='repair-menu-wrap';
+    const toggle=document.createElement('button');toggle.type='button';toggle.className='repair-menu-btn';toggle.title='Acciones';toggle.setAttribute('aria-label','Acciones de reparación');toggle.textContent='⋮';
+    const menu=document.createElement('div');menu.className='repair-menu';
+    sourceActions.querySelectorAll('button').forEach(button=>{button.className='';button.removeAttribute('style');menu.append(button);});sourceActions.remove();
+    toggle.onclick=(event)=>{event.stopPropagation();document.querySelectorAll('.repair-menu.open').forEach(item=>{if(item!==menu)item.classList.remove('open');});menu.classList.toggle('open');};menu.onclick=event=>event.stopPropagation();wrap.append(toggle,menu);headerTop.append(wrap);
+  }
+  perks.remove();card.querySelector('.bsec-flow')?.classList.add('repair-no-actions');
+  if(!document.body.dataset.repairMenus){document.body.dataset.repairMenus='1';document.addEventListener('click',()=>document.querySelectorAll('.repair-menu.open').forEach(menu=>menu.classList.remove('open')));}
 }
 
 function renderList(){ loadPage(); } // backwards compat
