@@ -461,6 +461,9 @@ body{background:radial-gradient(900px 460px at 50% -220px,rgba(204,0,0,.16),tran
 /* Controles operativos compactos: descuentos bajo estado y acciones en menú. */
 .repair-menu-wrap{position:relative;}.repair-menu-btn{width:29px;height:29px;border:1px solid var(--border2);border-radius:8px;background:rgba(255,255,255,.025);color:var(--text2);font-size:20px;line-height:1;cursor:pointer;padding:0 0 4px;}.repair-menu-btn:hover{color:#fff;border-color:currentColor;background:rgba(255,255,255,.08);}.repair-menu{display:none;position:absolute;right:0;top:35px;width:145px;padding:5px;background:#202020;border:1px solid var(--border2);border-radius:9px;box-shadow:0 12px 28px rgba(0,0,0,.45);z-index:20;}.repair-menu.open{display:block;}.repair-menu button{display:block;width:100%;border:0;border-radius:6px;background:transparent;color:var(--text);font:12px var(--sans);text-align:left;padding:8px 9px;cursor:pointer;}.repair-menu button:hover{background:rgba(59,130,246,.14);}.repair-discount-inline{display:flex;align-items:center;justify-content:flex-end;gap:5px;padding-top:8px;margin-top:8px;border-top:1px solid rgba(255,255,255,.06);}.repair-discount-inline::before{content:'Beneficio';margin-right:auto;color:var(--text3);font:9px var(--mono);text-transform:uppercase;letter-spacing:.07em;}.repair-discount-inline .descuento-actions{display:flex;align-items:center;gap:4px;}.repair-discount-inline .descuento-toggle{min-height:25px;padding:3px 6px;border-radius:999px;font-size:9px;gap:5px;}.repair-discount-inline .descuento-toggle-label{font-size:9px;}.repair-discount-inline .toggle-track{width:27px;height:15px;}.repair-discount-inline .toggle-knob{width:11px;height:11px;}.repair-discount-inline .toggle-track.on .toggle-knob{transform:translateX(12px);}.repair-discount-inline .descuento-state{font:9px var(--mono);margin-left:2px;}.repair-quick-wa{display:block;text-align:center;margin-top:7px;padding:8px 10px;border-radius:9px;background:#20c65a;color:#fff;font-size:11px;font-weight:800;text-decoration:none;}.repair-quick-wa:hover{background:#25d366;}.rc.open .bsec-flow.repair-no-actions{grid-column:1/-1;}.rc.open .main-state{padding:8px 10px;margin-top:8px;}.rc.open .main-state .subcap{margin-bottom:6px;}.rc.open .sgrid{gap:5px!important;}.rc.open .so{min-height:32px;padding:4px 5px;font-size:9px;border-radius:8px;}.rc.open .prin,.rc.open .fest-in{height:30px;font-size:11px;}.rc.open .budget-input-wrap .smbtn,.rc.open .fest-row .smbtn{height:30px;padding:4px 7px!important;font-size:10px!important;}
 .repair-card-summary .repair-card-top{justify-content:flex-start;}.repair-card-summary .repair-card-top .rcn{margin-right:auto;}.repair-card-summary .repair-card-top .sb{margin-left:0!important;}.repair-card-summary .repair-menu-wrap{margin-left:0;}
+.repair-status-wrap{position:relative;}.repair-status-button{cursor:pointer;appearance:none;}.repair-status-menu{display:none;position:absolute;right:0;top:31px;width:150px;padding:5px;background:#202020;border:1px solid var(--border2);border-radius:9px;box-shadow:0 12px 28px rgba(0,0,0,.45);z-index:21;}.repair-status-menu.open{display:block;}.repair-status-menu button{display:flex;align-items:center;gap:6px;width:100%;border:0;border-radius:6px;background:transparent;color:var(--text2);font:11px var(--sans);text-align:left;padding:8px 9px;cursor:pointer;}.repair-status-menu button:hover{background:rgba(255,255,255,.06);color:#fff;}
+/* Los desplegables nativos usan paleta oscura; evita opciones claras con texto claro. */
+select.web-status,select.f-sel,select.sse{color-scheme:dark;}select.web-status option,select.f-sel option,select.sse option{background:#1a1a1a;color:#f0f0f0;}
 </style>
 </head>
 <body>
@@ -1894,7 +1897,7 @@ function simplifyRepairDetail(card){
   details?.querySelectorAll('.cir').forEach(row=>{
     const raw=row.querySelector('.cil')?.textContent?.trim().toLowerCase()||'';
     const label=raw.normalize('NFD').replace(/[\u0300-\u036f]/g,'');
-    if(['nombre','telefono','codigo','equipo'].includes(label))row.classList.add('repair-duplicate');
+    if(['nombre','telefono','codigo','equipo','entrega est.'].includes(label))row.classList.add('repair-duplicate');
   });
   simplifyRepairQuickActions(card);
   const flow=card.querySelector('.bsec-flow .flow-split'),heading=card.querySelector('.bsec-flow h4');
@@ -1909,6 +1912,8 @@ function simplifyRepairDetail(card){
 
 function simplifyRepairQuickActions(card){
   const mainState=card.querySelector('.main-state'),perks=card.querySelector('.bsec-perks');if(!mainState||!perks)return;
+  mainState.querySelector('.sgrid')?.remove();
+  mainState.querySelector('.subcap')?.remove();
   const discountActions=perks.querySelector('.descuento-actions');
   if(discountActions&&!card.querySelector('.repair-discount-inline')){const inline=document.createElement('div');inline.className='repair-discount-inline';inline.append(discountActions);mainState.append(inline);perks.querySelector('.descuento-banner')?.remove();}
   const whatsapp=perks.querySelector('.wab');
@@ -1923,6 +1928,38 @@ function simplifyRepairQuickActions(card){
   }
   perks.remove();card.querySelector('.bsec-flow')?.classList.add('repair-no-actions');
   if(!document.body.dataset.repairMenus){document.body.dataset.repairMenus='1';document.addEventListener('click',()=>document.querySelectorAll('.repair-menu.open').forEach(menu=>menu.classList.remove('open')));}
+}
+
+/* Final repair header: status changes from its pill, outside the detail panel. */
+function formatRepairCardHeaders(repairs){
+  (repairs||[]).forEach(repair=>{
+    const card=document.getElementById(`c-${repair.id}`),header=card?.querySelector('.rch');if(!header)return;
+    const equipment=repair.equipos||{},client=equipment.clientes||{};
+    const name=[client.nombre,client.apellido].filter(Boolean).join(' ')||'Sin cliente';
+    const model=equipment.modelo?` · ${equipment.modelo}`:'',amount=String(repair.presupuesto||'').trim();
+    const originalStatus=header.querySelector('.sb');
+    header.classList.add('repair-card-summary');header.replaceChildren();
+    const top=document.createElement('div');top.className='repair-card-top';
+    const number=document.createElement('span');number.className='rcn';number.textContent=`#${repair.numero||'–'}`;top.append(number);
+    const statusWrap=document.createElement('div');statusWrap.className='repair-status-wrap';
+    const status=document.createElement('button');status.type='button';status.className=`repair-status-button ${originalStatus?.className||`sb sb-${repair.estado}`}`;status.innerHTML=originalStatus?.innerHTML||repair.estado;status.onclick=event=>toggleRepairStatusMenu(repair.id,statusWrap,event);
+    statusWrap.append(status);top.append(statusWrap);
+    const title=document.createElement('div');title.className='repair-summary-name';title.textContent=name;
+    const detail=document.createElement('div');detail.className='repair-summary-equipment';detail.textContent=`${equipment.icono||'💻'} ${equipment.nombre||'Equipo'}${model}`;
+    const meta=document.createElement('div');meta.className='repair-summary-meta';
+    if(client.codigo){const code=document.createElement('span');code.className='repair-summary-chip code';code.textContent=client.codigo;meta.append(code);}
+    const price=document.createElement('span');price.className=`repair-summary-chip money${amount?'':' empty'}`;price.textContent=amount||'Sin presupuesto';meta.append(price);
+    const foot=document.createElement('div');foot.className='repair-card-foot';const hint=document.createElement('strong');hint.textContent='Ver detalles';const arrow=document.createElement('div');arrow.className='rcch';arrow.innerHTML='<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6l4 4 4-4"/></svg>';foot.append(hint,arrow);
+    header.append(top,title,detail,meta,foot);simplifyRepairDetail(card);
+  });
+}
+
+function toggleRepairStatusMenu(id,wrap,event){
+  event.stopPropagation();if(!document.body.dataset.repairStatusMenus){document.body.dataset.repairStatusMenus='1';document.addEventListener('click',()=>document.querySelectorAll('.repair-status-menu.open').forEach(menu=>menu.remove()));}document.querySelectorAll('.repair-status-menu.open').forEach(menu=>menu.remove());
+  const menu=document.createElement('div');menu.className='repair-status-menu open';
+  const options=[['espera','⌛ Espera'],['proceso','🔧 Proceso'],['listo','✅ Listo'],['entregado','📦 Entregado'],['cancelado','❌ Cancelado']];
+  options.forEach(([state,label])=>{const button=document.createElement('button');button.type='button';button.textContent=label;button.onclick=async(e)=>{e.stopPropagation();await chEst(id,state,wrap.querySelector('.sb'));menu.remove();};menu.append(button);});
+  menu.onclick=e=>e.stopPropagation();wrap.append(menu);
 }
 
 function renderList(){ loadPage(); } // backwards compat
@@ -2068,8 +2105,8 @@ async function chEst(id,st,btn){
   }
   const d=aR.find(r=>r.id===id); if(d) d.estado=st;
   loadStats().catch(()=>{});
-  btn.closest('.sgrid').querySelectorAll('.so').forEach(b=>b.className='so');
-  btn.classList.add('a'+st[0]);
+  const stateGrid=btn?.closest('.sgrid');
+  if(stateGrid){stateGrid.querySelectorAll('.so').forEach(b=>b.className='so');btn.classList.add('a'+st[0]);}
   const card=document.getElementById(`c-${id}`);
   if(card) card.setAttribute('data-estado',st);
   const b=document.querySelector(`#c-${id} .sb`);
