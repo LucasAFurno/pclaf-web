@@ -366,6 +366,7 @@ body{background:radial-gradient(900px 460px at 50% -220px,rgba(204,0,0,.16),tran
 .web-card.plan-esencial{border-top:2px solid var(--blue);}.web-card.plan-comercial{border-top:2px solid #8b7cff;}.web-card.plan-institucional{border-top:2px solid var(--amber);}.web-card.plan-medida{border-top:2px solid var(--red);}.plan-esencial .web-chip:first-child{color:#9bc5ff;border-color:rgba(59,130,246,.35);}.plan-comercial .web-chip:first-child{color:#c8c0ff;border-color:rgba(139,124,255,.4);}.plan-institucional .web-chip:first-child{color:#ffd18b;border-color:rgba(245,158,11,.4);}.plan-medida .web-chip:first-child{color:#ffadad;border-color:rgba(204,0,0,.4);}
 .infra-row{position:relative;z-index:1;display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:13px;padding-top:12px;border-top:1px solid rgba(255,255,255,.06);}.infra-btn{min-width:0;border:1px solid var(--border2);border-radius:8px;background:rgba(255,255,255,.02);color:var(--text2);padding:7px 5px;cursor:pointer;font:9px var(--mono);text-transform:uppercase;letter-spacing:.04em;display:flex;align-items:center;justify-content:center;gap:5px;}.infra-dot{width:8px;height:8px;flex:0 0 8px;border-radius:50%;background:var(--amber);box-shadow:0 0 0 3px rgba(245,158,11,.11);}.infra-btn.ok .infra-dot{background:var(--green);box-shadow:0 0 0 3px rgba(34,197,94,.11);}.infra-btn.error .infra-dot{background:var(--red);box-shadow:0 0 0 3px rgba(204,0,0,.13);}.infra-btn:hover{border-color:#aaa;color:#fff;}
 .plan-price{font:11px var(--mono);color:#fff;margin:-4px 0 12px;}
+.web-actions{display:flex;align-items:center;gap:7px;position:relative;}.web-menu-btn{width:29px;height:29px;border:1px solid var(--border2);border-radius:8px;background:rgba(255,255,255,.025);color:var(--text2);font-size:20px;line-height:1;cursor:pointer;padding:0 0 4px;}.web-menu-btn:hover{color:#fff;border-color:#8b7cff;background:rgba(124,92,255,.12);}.web-menu{display:none;position:absolute;right:0;top:35px;width:126px;padding:5px;background:#202020;border:1px solid var(--border2);border-radius:9px;box-shadow:0 12px 28px rgba(0,0,0,.45);z-index:10;}.web-menu.open{display:block;}.web-menu button{display:block;width:100%;border:0;border-radius:6px;background:transparent;color:var(--text);font:12px var(--sans);text-align:left;padding:8px 9px;cursor:pointer;}.web-menu button:hover{background:rgba(124,92,255,.15);}.web-menu button.danger{color:#ffaaaa;}.web-menu button.danger:hover{background:rgba(204,0,0,.13);}
 /* ── RESPONSIVE ─────────────────────────────── */
 @media(max-width:900px){
   .kgrid,.sbar{grid-template-columns:1fr 1fr;}
@@ -435,6 +436,9 @@ body{background:radial-gradient(900px 460px at 50% -220px,rgba(204,0,0,.16),tran
 .rc.open .rch{background:linear-gradient(90deg,rgba(255,255,255,.025),transparent 58%);border-bottom:1px solid rgba(255,255,255,.07);}.rc.open .rcn{box-shadow:0 6px 16px rgba(204,0,0,.1);}.rc.open .bsec-main{background:linear-gradient(145deg,rgba(255,255,255,.035),rgba(255,255,255,.012));}.rc.open .bsec-main h4{display:flex;align-items:center;gap:8px;color:#9ca6b6;}.rc.open .bsec-main h4::after{content:'Resumen del ingreso';font-size:9px;font-weight:600;color:var(--text3);letter-spacing:0;text-transform:none;}.rc.open .details-grid{margin-bottom:0;}.rc.open .details-grid .cir{min-height:42px;align-items:center;}.rc.open .details-grid .civ{font-size:12px;}.rc.open .details-grid .field-span-2{padding:10px 0!important;}.rc.open .budget-input-wrap,.rc.open .fest-row{justify-content:flex-start;}.rc.open .prin,.rc.open .fest-in{height:34px;background:rgba(255,255,255,.045);}.rc.open .main-state{background:rgba(0,0,0,.16);border:1px solid rgba(255,255,255,.06);border-radius:11px;padding:10px 11px;margin-top:12px;}.rc.open .main-state .subcap{margin:0 0 8px;}.rc.open .sgrid{grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:7px;}.rc.open .so{min-height:40px;border-radius:9px;font-size:10px;}.rc.open .so.ae,.rc.open .so.ap,.rc.open .so.al,.rc.open .so.ad,.rc.open .so.ac{box-shadow:inset 0 0 0 1px currentColor,0 5px 12px rgba(0,0,0,.16);}.rc.open .bsec-flow{margin-top:1px;}.rc.open .flow-col .subcap{color:#cdd5df;}.rc.open .internal-notes-wrap{background:rgba(0,0,0,.13);border-color:rgba(255,255,255,.07);}.rc.open .stl .str{background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.045);}.rc.open .bsec-perks{margin-top:1px;}.rc.open .descuento-banner{background:rgba(34,197,94,.055);}
 @media(max-width:650px){.rc.open .sgrid{grid-template-columns:1fr 1fr!important;}.rc.open .details-grid{grid-template-columns:1fr!important;}.rc.open .details-grid .field-span-2{grid-column:auto;}.rc.open .rch{padding:13px 12px;}.rc.open .rcp{display:none;}.rc.open .bsec-flow .flow-split{grid-template-columns:1fr;}.rc.open .bsec{padding:12px;}}
 .rc.open .internal-notes-list{max-height:78px;min-height:0;}.rc.open .flow-col .internal-notes-wrap{min-height:0;}.rc.open .stl{min-height:0;max-height:146px;}.rc.open .stl .str{max-height:68px;overflow:hidden;}.rc.open .stl .str:nth-child(n+3){display:none;}.rc.open .internal-notes-input{min-height:52px;}.rc.open .sf{margin-top:6px;}
+/* Tarjetas de reparación: resumen compacto, igual de escaneable que Web. */
+.repair-client{flex:1;min-width:0;}.repair-client-name{font-size:15px;font-weight:750;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}.repair-equipment{display:flex;align-items:center;gap:5px;margin-top:4px;color:var(--text2);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}.repair-client-code{font:10px var(--mono);color:#a9cbff;border:1px solid rgba(59,130,246,.28);border-radius:999px;padding:2px 6px;flex:0 0 auto;}.repair-price{font:700 13px var(--mono);color:#fff;border:1px solid rgba(255,255,255,.11);border-radius:8px;background:rgba(255,255,255,.035);padding:7px 9px;white-space:nowrap;}.repair-price.empty{color:var(--text3);font-weight:500;}.rc .rch{cursor:pointer;}.rc.open .bsec-flow{padding:12px;}.rc.open .bsec-perks{padding:11px 12px;}.rc.open .bsec-perks h4{font-size:10px;margin-bottom:9px;}.rc.open .perks-stack{gap:8px;}.rc.open .descuento-banner{padding:9px 10px;gap:9px;border-radius:10px;}.rc.open .descuento-title{font-size:11px;}.rc.open .descuento-subline{font-size:10px;}.rc.open .descuento-actions{gap:5px;}.rc.open .descuento-toggle{min-height:30px;padding:4px 7px;font-size:10px;}.rc.open .descuento-state{font-size:9px;}.rc.open .section-inline-actions{gap:6px;}.rc.open .section-inline-actions .pdf-btn{min-height:34px;font-size:10px;padding:6px 8px;}.rc.open .wab{min-height:36px;font-size:11px;padding:8px 10px;}
+@media(max-width:650px){.repair-price{display:none;}.repair-client-name{font-size:14px;}.repair-equipment{font-size:11px;}.repair-client-code{font-size:9px;}.rc.open .flow-split{grid-template-columns:1fr!important;}.rc.open .descuento-banner{align-items:flex-start;flex-direction:column;}.rc.open .descuento-actions{width:100%;}.rc.open .descuento-toggle{flex:1;justify-content:space-between;}}
 </style>
 </head>
 <body>
@@ -662,7 +666,7 @@ body{background:radial-gradient(900px 460px at 50% -220px,rgba(204,0,0,.16),tran
 <!-- MODAL WEB -->
 <div class="mov" id="modalWeb">
   <div class="modal modal-web">
-    <h3>Nuevo proyecto web</h3>
+    <h3 id="webModalTitle">Nuevo proyecto web</h3>
     <div class="web-form-grid">
       <div><label class="f-lbl">Nombre de contacto *</label><input class="f-in" id="wNombre" placeholder="Ej: Lucía Pérez"></div>
       <div><label class="f-lbl">Empresa / marca</label><input class="f-in" id="wEmpresa" placeholder="Ej: Estudio Norte"></div>
@@ -679,7 +683,7 @@ body{background:radial-gradient(900px 460px at 50% -220px,rgba(204,0,0,.16),tran
       <div><label class="f-lbl">Próximo cobro mensual</label><input class="f-in" id="wProximoCobro" type="date"><div class="plan-price">Aparece en alertas al vencer</div></div>
       <div class="full"><label class="f-lbl">Notas internas</label><textarea class="f-area" id="wNotas" placeholder="Material recibido, estilo elegido, próximos pasos..."></textarea></div>
     </div>
-    <div class="mfoot"><button class="smbtn s" onclick="closeWebModal()">Cancelar</button><button class="smbtn" onclick="createWebProject()">Crear proyecto</button></div>
+    <div class="mfoot"><button class="smbtn s" onclick="closeWebModal()">Cancelar</button><button class="smbtn" id="webSaveBtn" onclick="saveWebProject()">Crear proyecto</button></div>
   </div>
 </div>
 
@@ -1030,6 +1034,7 @@ function switchTab(name,btn){
 let aR=[],aE=[],aC=[];
 let webProjects=[];
 let webFilter='todos';
+let webEditingId=null;
 let pageRepairMap={};
 const equipmentSpecsCache={};
 const equipmentManualCache={};
@@ -1247,15 +1252,49 @@ function renderWebProjects(){
   if(billingAlerts)billingAlerts.innerHTML=billsDue.length?billsDue.slice(0,3).map(p=>`<b>${escapeHtml(p.cliente_empresa||p.cliente_nombre)}</b> · ${webMoney(p.monto_mensual_usd)||'cobro'} ${p.proximo_cobro?`(${webDate(p.proximo_cobro)})`:''}`).join('<br>'):'No hay cobros mensuales pendientes en los próximos 30 días.';
   if(!visible.length){list.innerHTML='<div class="web-empty">No hay proyectos para este filtro.</div>';return;}
   list.innerHTML=visible.map(p=>{const plan=WEB_PLAN_PRESETS[p.plan]||WEB_PLAN_PRESETS['A medida'];return `<article class="web-card ${plan.className}"><div class="web-card-top"><span class="web-code">${escapeHtml(p.codigo||'WEB-…')}</span><select class="web-status" onchange="updateWebStatus(${Number(p.id)},this.value)">${Object.entries(WEB_STATUS).map(([key,label])=>`<option value="${key}" ${p.estado===key?'selected':''}>${label}</option>`).join('')}</select></div><div class="web-name">${escapeHtml(p.cliente_nombre)}</div><div class="web-company">${escapeHtml(p.cliente_empresa||'Sin empresa cargada')}</div><div class="web-meta"><span class="web-chip">${escapeHtml(p.plan||'A medida')}</span>${p.importe_usd?`<span class="web-chip">${webMoney(p.importe_usd)}</span>`:''}${p.dominio?`<span class="web-chip">${escapeHtml(p.dominio)}</span>`:''}</div><div class="infra-row">${Object.keys(INFRA_LABELS).map(field=>{const state=p[`${field}_estado`]||'pendiente';return `<button class="infra-btn ${state}" title="${escapeHtml(infraTitle(p,field))}" onclick="cycleInfraStatus(${Number(p.id)},'${field}')"><i class="infra-dot"></i>${INFRA_LABELS[field]}</button>`;}).join('')}</div><div class="web-card-foot"><span>${p.fecha_entrega?`Entrega: ${webDate(p.fecha_entrega)}`:'Sin fecha de entrega'}</span><span>${p.proxima_renovacion?`Renueva: ${webDate(p.proxima_renovacion)}`:''}</span></div></article>`;}).join('');
+  wireWebCardMenus(list,visible);
 }
-function openWebModal(){document.getElementById('modalWeb').classList.add('open');}
-function closeWebModal(){document.getElementById('modalWeb').classList.remove('open');['wRenovacion','wMensualUsd','wProximoCobro'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});}
+function wireWebCardMenus(list,projects){
+  list.querySelectorAll('.web-card').forEach((card,index)=>{
+    const project=projects[index],top=card.querySelector('.web-card-top'),status=top?.querySelector('.web-status');
+    if(!project||!top||!status)return;
+    const actions=document.createElement('div');actions.className='web-actions';
+    status.replaceWith(actions);actions.appendChild(status);
+    const button=document.createElement('button');button.className='web-menu-btn';button.type='button';button.title='Acciones';button.setAttribute('aria-label','Acciones del proyecto');button.textContent='⋮';
+    button.onclick=(event)=>toggleWebMenu(Number(project.id),event);
+    const menu=document.createElement('div');menu.className='web-menu';menu.id=`webMenu-${Number(project.id)}`;
+    const edit=document.createElement('button');edit.type='button';edit.textContent='Editar proyecto';edit.onclick=()=>editWebProject(Number(project.id));
+    const remove=document.createElement('button');remove.type='button';remove.className='danger';remove.textContent='Eliminar proyecto';remove.onclick=()=>deleteWebProject(Number(project.id));
+    menu.append(edit,remove);actions.append(button,menu);
+  });
+}
+function toggleWebMenu(id,event){event?.stopPropagation();document.querySelectorAll('.web-menu.open').forEach(menu=>{if(menu.id!==`webMenu-${id}`)menu.classList.remove('open');});document.getElementById(`webMenu-${id}`)?.classList.toggle('open');}
+function clearWebForm(){['wNombre','wEmpresa','wTelefono','wEmail','wImporteUsd','wSenaUsd','wDominio','wEntrega','wRenovacion','wMensualUsd','wProximoCobro','wNotas'].forEach(id=>document.getElementById(id).value='');document.getElementById('wPlan').value='Landing esencial';document.getElementById('wEstado').value='consulta';applyWebPlanPreset();}
+function openWebModal(){webEditingId=null;clearWebForm();document.getElementById('webModalTitle').textContent='Nuevo proyecto web';document.getElementById('webSaveBtn').textContent='Crear proyecto';document.getElementById('modalWeb').classList.add('open');}
+function editWebProject(id){const project=webProjects.find(p=>Number(p.id)===Number(id));if(!project)return;webEditingId=Number(id);document.querySelectorAll('.web-menu.open').forEach(menu=>menu.classList.remove('open'));const values={wNombre:project.cliente_nombre,wEmpresa:project.cliente_empresa,wTelefono:project.cliente_telefono,wEmail:project.cliente_email,wImporteUsd:project.importe_usd,wSenaUsd:project.sena_usd,wDominio:project.dominio,wEntrega:project.fecha_entrega,wRenovacion:project.proxima_renovacion,wMensualUsd:project.monto_mensual_usd,wProximoCobro:project.proximo_cobro,wNotas:project.notas};Object.entries(values).forEach(([id,value])=>document.getElementById(id).value=value??'');document.getElementById('wPlan').value=project.plan||'A medida';const status=document.getElementById('wEstado');if(![...status.options].some(option=>option.value===project.estado))status.add(new Option(WEB_STATUS[project.estado]||project.estado,project.estado));status.value=project.estado||'consulta';document.getElementById('wPlanHint').textContent=(WEB_PLAN_PRESETS[project.plan]||WEB_PLAN_PRESETS['A medida']).label;document.getElementById('webModalTitle').textContent=`Editar ${project.codigo||'proyecto web'}`;document.getElementById('webSaveBtn').textContent='Guardar cambios';document.getElementById('modalWeb').classList.add('open');}
+function closeWebModal(){document.getElementById('modalWeb').classList.remove('open');webEditingId=null;}
 async function createWebProject(){
   const name=document.getElementById('wNombre').value.trim();if(!name){toast('Ingresá el nombre del contacto',true);return;}
   const usd=Number(document.getElementById('wImporteUsd').value)||null;const sena=Number(document.getElementById('wSenaUsd').value)||null;
   const data={cliente_nombre:name,cliente_empresa:document.getElementById('wEmpresa').value.trim()||null,cliente_telefono:normalizePhoneInput(document.getElementById('wTelefono').value)||null,cliente_email:document.getElementById('wEmail').value.trim()||null,plan:document.getElementById('wPlan').value,estado:document.getElementById('wEstado').value,importe_usd:usd,sena_usd:sena,saldo_usd:usd!==null?Math.max(usd-(sena||0),0):null,dominio:document.getElementById('wDominio').value.trim()||null,fecha_entrega:document.getElementById('wEntrega').value||null,notas:document.getElementById('wNotas').value.trim()||null};
   try{const row=await db('POST','web_proyectos','',data);closeWebModal();['wNombre','wEmpresa','wTelefono','wEmail','wImporteUsd','wSenaUsd','wDominio','wEntrega','wNotas'].forEach(id=>document.getElementById(id).value='');webProjects.unshift(row?.[0]||data);toast(`Proyecto ${row?.[0]?.codigo||'web'} creado ✓`);renderWebProjects();}catch(e){toast('Error creando el proyecto: '+e.message,true);}
 }
+async function saveWebProject(){
+  const name=document.getElementById('wNombre').value.trim();if(!name){toast('Ingresá el nombre del contacto',true);return;}
+  const usd=Number(document.getElementById('wImporteUsd').value)||null;const sena=Number(document.getElementById('wSenaUsd').value)||null;
+  const data={cliente_nombre:name,cliente_empresa:document.getElementById('wEmpresa').value.trim()||null,cliente_telefono:normalizePhoneInput(document.getElementById('wTelefono').value)||null,cliente_email:document.getElementById('wEmail').value.trim()||null,plan:document.getElementById('wPlan').value,estado:document.getElementById('wEstado').value,importe_usd:usd,sena_usd:sena,saldo_usd:usd!==null?Math.max(usd-(sena||0),0):null,dominio:document.getElementById('wDominio').value.trim()||null,fecha_entrega:document.getElementById('wEntrega').value||null,proxima_renovacion:document.getElementById('wRenovacion').value||null,monto_mensual_usd:Number(document.getElementById('wMensualUsd').value)||null,proximo_cobro:document.getElementById('wProximoCobro').value||null,notas:document.getElementById('wNotas').value.trim()||null};
+  try{
+    if(webEditingId!==null){await db('PATCH','web_proyectos',`?id=eq.${webEditingId}`,data);const project=webProjects.find(p=>Number(p.id)===webEditingId);if(project)Object.assign(project,data);toast('Proyecto actualizado ✓');}
+    else{const row=await db('POST','web_proyectos','',data);webProjects.unshift(row?.[0]||data);toast(`Proyecto ${row?.[0]?.codigo||'web'} creado ✓`);}
+    closeWebModal();renderWebProjects();
+  }catch(e){toast('No se pudo guardar el proyecto: '+e.message,true);}
+}
+async function deleteWebProject(id){
+  const project=webProjects.find(p=>Number(p.id)===Number(id));if(!project)return;
+  if(!window.confirm(`¿Eliminar ${project.codigo||'este proyecto'}? Esta acción no se puede deshacer.`))return;
+  try{await db('DELETE','web_proyectos',`?id=eq.${id}`);webProjects=webProjects.filter(p=>Number(p.id)!==Number(id));renderWebProjects();toast('Proyecto eliminado');}catch(e){toast('No se pudo eliminar el proyecto',true);}
+}
+document.addEventListener('click',()=>document.querySelectorAll('.web-menu.open').forEach(menu=>menu.classList.remove('open')));
 async function updateWebStatus(id,estado){try{await db('PATCH','web_proyectos',`?id=eq.${id}`,{estado});const project=webProjects.find(p=>p.id===id);if(project)project.estado=estado;renderWebProjects();toast(`Estado actualizado: ${WEB_STATUS[estado]}`);}catch(e){toast('No se pudo actualizar el estado',true);loadWebProjects();}}
 async function cycleInfraStatus(id,field){
   const project=webProjects.find(p=>p.id===id);if(!project)return;
@@ -1753,7 +1792,30 @@ function renderCards(data){
     </div>`:'';
 
   document.getElementById('rlist').innerHTML=cards+paginacion;
+  formatRepairCardHeaders(data);
   restoreOpenRepairCard().catch(()=>{});
+}
+
+function formatRepairCardHeaders(repairs){
+  (repairs||[]).forEach(repair=>{
+    const card=document.getElementById(`c-${repair.id}`);const header=card?.querySelector('.rch');
+    if(!header)return;
+    const equipment=repair.equipos||{},client=equipment.clientes||{};
+    const name=[client.nombre,client.apellido].filter(Boolean).join(' ')||'Sin cliente';
+    const model=equipment.modelo?` · ${equipment.modelo}`:'';
+    const content=header.querySelector('.rcd');if(!content)return;
+    content.className='repair-client';content.replaceChildren();
+    const title=document.createElement('div');title.className='repair-client-name';title.textContent=name;
+    const detail=document.createElement('div');detail.className='repair-equipment';
+    const equipmentName=document.createElement('span');equipmentName.textContent=`${equipment.icono||'💻'} ${equipment.nombre||'Equipo'}${model}`;detail.appendChild(equipmentName);
+    if(client.codigo){const code=document.createElement('span');code.className='repair-client-code';code.textContent=client.codigo;detail.appendChild(code);}
+    content.append(title,detail);
+    header.querySelector('.rcp')?.remove();
+    const existing=header.querySelector('.repair-price');if(existing)existing.remove();
+    const amount=String(repair.presupuesto||'').trim();
+    const price=document.createElement('div');price.className=`repair-price${amount?'':' empty'}`;price.textContent=amount||'Sin monto';
+    const status=header.querySelector('.sb');if(status)header.insertBefore(price,status);else header.appendChild(price);
+  });
 }
 
 function renderList(){ loadPage(); } // backwards compat
