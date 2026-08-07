@@ -453,6 +453,11 @@ body{background:radial-gradient(900px 460px at 50% -220px,rgba(204,0,0,.16),tran
   .rc.open .flow-split{grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:10px;}.rc.open .flow-col .internal-notes-wrap{min-height:232px;}.rc.open .stl{max-height:114px;}
 }
 @media(max-width:850px){.rc.open .bmid{display:grid;}.rc.open .bsec-flow,.rc.open .bsec-perks{grid-column:auto;}}
+/* Detalle simplificado: una sola zona de seguimiento y acciones secundarias. */
+.rc.open .bsec-main h4::after{content:'Información operativa';}.rc.open .repair-duplicate{display:none!important;}.rc.open .bsec-main .details-grid{grid-template-columns:1fr 1fr;}.rc.open .bsec-main .field-span-2{grid-column:1/-1;background:rgba(59,130,246,.055);border:1px solid rgba(59,130,246,.14);border-radius:10px;padding:10px!important;margin:3px 0 7px;}.rc.open .bsec-main .field-span-2 .cil{color:#9bc5ff;}.rc.open .bsec-main .field-span-2 .civ{font-size:13px!important;line-height:1.45;}.rc.open .bsec-flow h4{margin-bottom:8px;}.repair-track-tabs{display:flex;gap:5px;padding:4px;background:rgba(0,0,0,.18);border:1px solid rgba(255,255,255,.06);border-radius:9px;margin:0 0 10px;}.repair-track-tab{flex:1;border:0;border-radius:6px;background:transparent;color:var(--text3);font:10px var(--mono);padding:7px 8px;cursor:pointer;}.repair-track-tab.active{background:rgba(59,130,246,.15);color:#afd0ff;box-shadow:inset 0 0 0 1px rgba(59,130,246,.2);}.repair-tracking .flow-col{display:none;}.repair-tracking .flow-col.active{display:flex;}.repair-tracking{display:block!important;}.repair-tracking .flow-col .internal-notes-wrap{margin:0;min-height:0!important;}.repair-tracking .flow-col .internal-notes-list{min-height:74px;max-height:120px;}.repair-tracking .flow-col .stl{min-height:0;max-height:188px;}.rc.open .bsec-perks h4{display:none;}.rc.open .bsec-perks{justify-content:center;}.rc.open .descuento-banner{margin:0 0 8px;}.rc.open .perks-actions{gap:7px;}.rc.open .section-inline-actions .pdf-btn{min-height:38px;}.rc.open .wab{margin-top:0;}.rc.open .main-state{margin-bottom:0;}
+@media(max-width:650px){.rc.open .bsec-main .details-grid{grid-template-columns:1fr;}.repair-track-tabs{margin-top:2px;}.rc.open .bsec-perks h4{display:block;}.rc.open .bsec-perks{justify-content:flex-start;}}
+/* Glow y esfera de estado, alineados con las tarjetas de Proyectos Web. */
+.rc{position:relative;isolation:isolate;overflow:hidden;transition:transform .16s,border-color .16s,box-shadow .16s;}.rc::after{content:'';position:absolute;width:124px;height:124px;border-radius:50%;right:-58px;bottom:-78px;opacity:.85;pointer-events:none;z-index:0;transition:transform .22s,opacity .22s;}.rc>.rch,.rc>.rcb{position:relative;z-index:1;}.rc:hover::after{transform:scale(1.16);opacity:1;}.rc[data-estado="espera"]::after{background:rgba(59,130,246,.10);}.rc[data-estado="proceso"]::after{background:rgba(245,158,11,.11);}.rc[data-estado="listo"]::after{background:rgba(34,197,94,.10);}.rc[data-estado="entregado"]::after{background:rgba(148,163,184,.08);}.rc[data-estado="cancelado"]::after{background:rgba(204,0,0,.09);}.rc[data-estado="espera"]:hover{border-color:rgba(59,130,246,.75);box-shadow:0 0 0 1px rgba(59,130,246,.16),0 14px 30px rgba(59,130,246,.10);}.rc[data-estado="proceso"]:hover{border-color:rgba(245,158,11,.78);box-shadow:0 0 0 1px rgba(245,158,11,.17),0 14px 30px rgba(245,158,11,.10);}.rc[data-estado="listo"]:hover{border-color:rgba(34,197,94,.75);box-shadow:0 0 0 1px rgba(34,197,94,.15),0 14px 30px rgba(34,197,94,.10);}.rc[data-estado="entregado"]:hover{border-color:rgba(148,163,184,.52);box-shadow:0 0 0 1px rgba(148,163,184,.10),0 14px 30px rgba(0,0,0,.22);}.rc[data-estado="cancelado"]:hover{border-color:rgba(204,0,0,.7);box-shadow:0 0 0 1px rgba(204,0,0,.15),0 14px 30px rgba(204,0,0,.10);}
 </style>
 </head>
 <body>
@@ -824,8 +829,8 @@ function sanitizeReportHtml(html){
 }
 
 // LOGIN
-const SESSION_IDLE_LIMIT_MS = 15*60*1000;
-const SESSION_HIDDEN_LIMIT_MS = 60*1000;
+const SESSION_IDLE_LIMIT_MS = 60*60*1000;
+const SESSION_HIDDEN_LIMIT_MS = 60*60*1000;
 let _loginLocked=false;
 let _turnstileWidgetId=null, _turnstileToken='';
 let _sessionListenersBound=false;
@@ -1859,8 +1864,25 @@ function formatRepairCardHeaders(repairs){
     const foot=document.createElement('div');foot.className='repair-card-foot';
     const hint=document.createElement('strong');hint.textContent='Ver detalles';
     const arrow=document.createElement('div');arrow.className='rcch';arrow.innerHTML='<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6l4 4 4-4"/></svg>';
-    foot.append(hint,arrow);header.append(top,title,detail,meta,foot);
+    foot.append(hint,arrow);header.append(top,title,detail,meta,foot);simplifyRepairDetail(card);
   });
+}
+
+function simplifyRepairDetail(card){
+  const details=card.querySelector('.bsec-main .details-grid');
+  details?.querySelectorAll('.cir').forEach(row=>{
+    const label=row.querySelector('.cil')?.textContent?.trim().toLowerCase();
+    if(['nombre','telefono','código','codigo','equipo'].includes(label||''))row.classList.add('repair-duplicate');
+  });
+  const flow=card.querySelector('.bsec-flow .flow-split');
+  const heading=card.querySelector('.bsec-flow h4');
+  if(!flow||!heading||flow.dataset.simplified)return;
+  flow.dataset.simplified='1';flow.classList.add('repair-tracking');
+  const columns=[...flow.querySelectorAll('.flow-col')];if(columns.length<2)return;
+  const notes=columns[0],history=columns[1];notes.dataset.track='notes';history.dataset.track='history';history.classList.add('active');
+  const tabs=document.createElement('div');tabs.className='repair-track-tabs';
+  const makeTab=(key,label,active)=>{const button=document.createElement('button');button.type='button';button.className=`repair-track-tab${active?' active':''}`;button.textContent=label;button.onclick=()=>{tabs.querySelectorAll('.repair-track-tab').forEach(tab=>tab.classList.toggle('active',tab===button));columns.forEach(column=>column.classList.toggle('active',column.dataset.track===key));};return button;};
+  tabs.append(makeTab('history','Historial',true),makeTab('notes','Notas internas',false));heading.insertAdjacentElement('afterend',tabs);
 }
 
 function renderList(){ loadPage(); } // backwards compat

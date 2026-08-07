@@ -684,8 +684,9 @@ async function confirmarTurno(){
         return;
       }
       try{
-        await db('PATCH','clientes',`?id=eq.${refCliente.id}`,{descuento_resena:true});
+        await db('PATCH','clientes',`?id=eq.${refCliente.id}`,{descuento_resena:true,descuento_origen:'referido'});
         refCliente.descuento_resena=true;
+        refCliente.descuento_origen='referido';
         state.refCliente=refCliente;
       }catch(e){
         btn.disabled=false; btn.textContent='Confirmar turno';
