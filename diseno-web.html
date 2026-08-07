@@ -59,10 +59,20 @@
       const message = `Hola PCLAF, quiero el diseño "${style}". Contame sobre los planes y cómo seguimos.`;
       button.href = `https://wa.me/5491135708345?text=${encodeURIComponent(message)}`;
     });
-    document.querySelectorAll('.design').forEach((design, index) => {
+    const demoUrls = {
+      cafe: 'demos/demo.html?tipo=cafe',
+      libreria: 'demos/casa-amapola.html',
+      ropa: 'demos/bruma.html',
+      estudio: 'demos/estudio-23.html',
+      arquitectura: 'demos/forme.html',
+      bienestar: 'demos/alma.html',
+      inmobiliaria: 'demos/altura.html',
+      bici: 'demos/movi.html'
+    };
+    document.querySelectorAll('.design').forEach(design => {
       const type = design.dataset.demo;
       const demo = design.querySelector('.demo-link');
-      const url = `demos/demo.html?tipo=${type}`;
+      const url = demoUrls[type];
       demo.href = url;
       const overlay = document.createElement('a');
       overlay.className = 'demo-overlay';
