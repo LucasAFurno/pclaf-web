@@ -459,7 +459,7 @@ body{background:radial-gradient(900px 460px at 50% -220px,rgba(204,0,0,.16),tran
     <label class="f-lbl">Contraseña</label>
     <input class="f-in" type="password" id="loginPass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"/>
     <div id="turnstileWidget" class="turnstile-wrap"></div>
-    <div id="loginSecurity" class="login-security">Cargando verificaciÃ³n de seguridad...</div>
+    <div id="loginSecurity" class="login-security">Cargando verificación de seguridad...</div>
     <button class="login-btn" id="loginBtn" onclick="doLogin()">Entrar</button>
     <div class="login-err" id="loginErr">Contraseña incorrecta</div>
   </div>
@@ -820,20 +820,20 @@ function setLoginSecurity(message,ready=false){
 function resetTurnstile(){
   _turnstileToken='';
   if(window.turnstile&&_turnstileWidgetId!==null) window.turnstile.reset(_turnstileWidgetId);
-  setLoginSecurity('CompletÃ¡ la verificaciÃ³n de seguridad para entrar.');
+  setLoginSecurity('Completá la verificación de seguridad para entrar.');
 }
 function initTurnstile(retries=0){
   if(_turnstileWidgetId!==null) return;
   if(!window.turnstile){
     if(retries<30) return setTimeout(()=>initTurnstile(retries+1),250);
-    setLoginSecurity('No se pudo cargar la verificaciÃ³n. RevisÃ¡ tu conexiÃ³n.',false);
+    setLoginSecurity('No se pudo cargar la verificación. Revisá tu conexión.',false);
     return;
   }
   _turnstileWidgetId=window.turnstile.render('#turnstileWidget',{
     sitekey:TURNSTILE_SITE_KEY,theme:'dark',action:'pclaf_admin_login',
-    callback:(token)=>{_turnstileToken=token;setLoginSecurity('VerificaciÃ³n lista.',true);},
-    'expired-callback':()=>{_turnstileToken='';setLoginSecurity('La verificaciÃ³n expirÃ³. Completala nuevamente.');},
-    'error-callback':()=>{_turnstileToken='';setLoginSecurity('No se pudo validar la verificaciÃ³n. IntentÃ¡ nuevamente.');}
+    callback:(token)=>{_turnstileToken=token;setLoginSecurity('Verificación lista.',true);},
+    'expired-callback':()=>{_turnstileToken='';setLoginSecurity('La verificación expiró. Completala nuevamente.');},
+    'error-callback':()=>{_turnstileToken='';setLoginSecurity('No se pudo validar la verificación. Intentá nuevamente.');}
   });
 }
 window.addEventListener('load',()=>initTurnstile());
@@ -864,22 +864,22 @@ async function doLogin(){
   const passInput=document.getElementById('loginPass');
   const err=document.getElementById('loginErr');
   const btn=document.getElementById('loginBtn');
-  if(_loginLocked){err.textContent='Inicio bloqueado temporalmente. EsperÃ¡ unos minutos.';err.classList.add('show');return;}
+  if(_loginLocked){err.textContent='Inicio bloqueado temporalmente. Esperá unos minutos.';err.classList.add('show');return;}
   if(!window.isSecureContext && location.hostname!=='localhost' && location.hostname!=='127.0.0.1'){
-    err.textContent='AbrÃ­ el admin usando HTTPS para ingresar de forma segura.';
+    err.textContent='Abrí el admin usando HTTPS para ingresar de forma segura.';
     err.classList.add('show');
     passInput.classList.add('err');
     return;
   }
   const val=document.getElementById('loginPass').value.trim();
   if(!val){
-    err.textContent='IngresÃ¡ la contraseÃ±a para continuar.';
+    err.textContent='Ingresá la contraseña para continuar.';
     err.classList.add('show');
     passInput.classList.add('err');
     return;
   }
   if(!_turnstileToken){
-    err.textContent='CompletÃ¡ la verificaciÃ³n de seguridad.';
+    err.textContent='Completá la verificación de seguridad.';
     err.classList.add('show');
     return;
   }
@@ -906,16 +906,16 @@ async function doLogin(){
     if(result.error==='temporarily_locked'){
       _loginLocked=true;
       const until=result.lockedUntil?new Date(result.lockedUntil).toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'}):'';
-      err.textContent=`Demasiados intentos. ProbÃ¡ de nuevo ${until?'a las '+until:'mÃ¡s tarde'}.`;
+      err.textContent=`Demasiados intentos. Probá de nuevo ${until?'a las '+until:'más tarde'}.`;
     }else if(result.error==='invalid_credentials'){
-      err.textContent=`ContraseÃ±a incorrecta.${typeof result.remaining==='number'?' Quedan '+result.remaining+' intento(s).':''}`;
+      err.textContent=`Contraseña incorrecta.${typeof result.remaining==='number'?' Quedan '+result.remaining+' intento(s).':''}`;
     }else if(result.error==='verification_failed'){
-      err.textContent='No se pudo verificar Turnstile. IntentÃ¡ nuevamente.';
+      err.textContent='No se pudo verificar Turnstile. Intentá nuevamente.';
     }else{
-      err.textContent='No se pudo iniciar sesiÃ³n. IntentÃ¡ nuevamente.';
+      err.textContent='No se pudo iniciar sesión. Intentá nuevamente.';
     }
   }catch(_){
-    err.textContent='No hay conexiÃ³n con el servidor de acceso.';
+    err.textContent='No hay conexión con el servidor de acceso.';
     err.classList.add('show');
     passInput.classList.add('err');
   }finally{
