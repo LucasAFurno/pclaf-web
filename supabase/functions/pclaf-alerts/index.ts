@@ -65,6 +65,18 @@ async function sendTelegram(text: string) {
   if (!response.ok) throw new Error(await response.text());
 }
 
+async function sendDiscord(text: string) {
+  if (Deno.env.get("PCLAF_WEB_DISCORD_ENABLED") !== "true") return { skipped: true };
+  const url = Deno.env.get("PCLAF_WEB_DISCORD_RESUMEN_WEBHOOK_URL");
+  if (!url) return { skipped: true };
+  const response = await fetch(url, {
+    method: "POST", headers: { "Content-Type": "application/json" }, signal: AbortSignal.timeout(8_000),
+    body: JSON.stringify({ embeds: [{ title: "PCLAF Web | Resumen diario", description: text.slice(0, 4000), color: 0x2563eb }] }),
+  });
+  if (!response.ok) throw new Error(`Discord send failed: HTTP ${response.status}`);
+  return { sent: true };
+}
+
 function daysAgoIso(days: number) {
   const date = new Date(`${todayBuenosAires()}T12:00:00-03:00`);
   date.setDate(date.getDate() - days);
@@ -172,7 +184,7 @@ async function buildDailySummaryV2() {
     supa(`reparaciones?select=numero,equipos(clientes(nombre,apellido))&estado=eq.listo&created_at=lt.${daysAgoIso(3)}&order=numero.desc&limit=6`),
     supa(`reparaciones?select=numero,equipos(clientes(nombre,apellido))&estado=eq.espera&created_at=lt.${daysAgoIso(7)}&order=numero.desc&limit=6`),
     supa(`turnos?select=nombre,apellido,servicio,hora,urgente&fecha=eq.${tomorrow}&estado=neq.cancelado&order=hora.asc&limit=6`),
-    supa(`turnos?select=nombre,apellido,servicio,fecha,hora&urgente=eq.true&estado=neq.cancelado&order=fecha.asc,hora.asc&limit=6`),
+    supa(`turnos?select=nombre,apellido,servicio,fecha,hora&urgente=eq.true&fecha=gte.${today}&estado=neq.cancelado&order=fecha.asc,hora.asc&limit=6`),
   ]);
 
   const lines = [
@@ -243,13 +255,14 @@ Deno.serve(async (req) => {
     }
 
     const text = await buildDailySummaryV2();
-    await sendTelegram(text);
-    return new Response(JSON.stringify({ ok: true }), {
+    const [telegram, discord] = await Promise.allSettled([sendTelegram(text), sendDiscord(text)]);
+    if (telegram.status === "rejected" && discord.status === "rejected") throw new Error("daily_summary_delivery_failed");
+    return new Response(JSON.stringify({ ok: true, telegram: telegram.status === "fulfilled" ? "sent" : "failed", discord: discord.status === "fulfilled" ? "sent" : "failed" }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {
-    console.error(error);
-    return new Response(JSON.stringify({ ok: false, error: error instanceof Error ? error.message : String(error) }), {
+    console.error("pclaf_alerts_failed", { message: error instanceof Error ? error.message : "unknown" });
+    return new Response(JSON.stringify({ ok: false, error: "daily_summary_failed" }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

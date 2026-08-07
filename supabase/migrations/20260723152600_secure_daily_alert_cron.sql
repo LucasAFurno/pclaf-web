@@ -1,12 +1,8 @@
+-- Keep the existing daily schedule while moving its authentication secret to Vault.
 create extension if not exists pg_cron with schema extensions;
 create extension if not exists pg_net with schema extensions;
 
-do $$
-begin
-  if exists (select 1 from cron.job where jobname = 'pclaf_daily_alerts') then
-    perform cron.unschedule('pclaf_daily_alerts');
-  end if;
-end $$;
+select cron.unschedule('pclaf_daily_alerts');
 
 select cron.schedule(
   'pclaf_daily_alerts',

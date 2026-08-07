@@ -2,7 +2,7 @@
 
 Alertas automaticas internas de PCLAF.
 
-Actualmente envia un resumen diario por Telegram con:
+Actualmente envia el mismo resumen diario por Telegram y Discord con:
 
 - turnos de hoy
 - reparaciones en espera, proceso y listo

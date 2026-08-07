@@ -1,9 +1,3 @@
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-};
-
 type TurnoPayload = {
   turnoId?: string;
   shortId?: string;
@@ -19,6 +13,13 @@ type TurnoPayload = {
   nota?: string;
   referidoCodigo?: string;
   referidoNombre?: string;
+};
+
+type DatabaseEvent = {
+  table?: string;
+  type?: string;
+  record?: Record<string, unknown>;
+  old_record?: Record<string, unknown>;
 };
 
 function clean(value: unknown, maxLen = 240) {
@@ -69,6 +70,62 @@ function buildTelegramMessage(payload: TurnoPayload) {
   ].filter(Boolean);
 
   return lines.join("\n");
+}
+
+function maskPhone(value: unknown) {
+  const phone = clean(value, 40);
+  return phone.length > 4 ? `${phone.slice(0, 2)}••••${phone.slice(-2)}` : phone || "-";
+}
+
+function estimatedPrice(servicio: unknown, urgente: unknown) {
+  const prices: Record<string, [string, string]> = {
+    "Limpieza interna PC + pasta térmica": ["$70.000", "$105.000"],
+    "Limpieza interna Notebook": ["$90.000", "$135.000"],
+    "Formateo Windows 11 + drivers": ["$70.000", "$105.000"],
+    "Formateo Windows 11 + drivers + Office + apps": ["$85.000", "$128.000"],
+    "Optimización sin formateo": ["$50.000", "$75.000"],
+    "Optimización sin formateo GAMER": ["$120.000", "$180.000"],
+    "Service GPU / Placa de video": ["$70.000", "$105.000"],
+    "Backup de archivos": ["desde $20.000", "desde $30.000"],
+    "Atención remota": ["$30.000", ""],
+    "Reparación motherboard": ["desde $95.000", ""],
+    "Revisión y diagnóstico": ["Sin cargo", ""],
+    "Otro / No sé qué tiene": ["Presupuesto sin cargo", ""],
+  };
+  const [base, express] = prices[clean(servicio, 140)] || ["", ""];
+  return (urgente && express) || base;
+}
+
+function parseTurnoRecord(record: Record<string, unknown>): TurnoPayload {
+  const note = clean(record.nota, 700);
+  const part = (label: string) => clean(note.match(new RegExp(`(?:^|\\|\\s*)${label}:\\s*([^|]+)`, "i"))?.[1] || "", 300);
+  const turnoId = clean(record.id, 80);
+  return {
+    turnoId,
+    shortId: turnoId ? `#T${turnoId.slice(0, 6).toUpperCase()}` : "",
+    nombre: clean(record.nombre, 80), apellido: clean(record.apellido, 80), telefono: clean(record.telefono, 40),
+    servicio: clean(record.servicio, 140), urgente: Boolean(record.urgente), fecha: clean(record.fecha, 40), hora: clean(record.hora, 20),
+    precio: estimatedPrice(record.servicio, record.urgente), equipo: part("Equipo"), nota: part("Problema"), referidoCodigo: part("Referido por"),
+  };
+}
+
+function buildDiscordTurnoMessage(payload: TurnoPayload) {
+  const fullName = [clean(payload.nombre, 80), clean(payload.apellido, 80)].filter(Boolean).join(" ");
+  const referido = clean(payload.referidoNombre, 120) || clean(payload.referidoCodigo, 60);
+  return [
+    `Código: ${clean(payload.shortId, 24) || "-"}`,
+    `Cliente: ${fullName || "-"}`,
+    `Teléfono: ${maskPhone(payload.telefono)}`,
+    `Servicio: ${clean(payload.servicio, 140) || "-"}`,
+    `Urgencia: ${payload.urgente ? "Sí" : "No"}`,
+    `Precio estimado: ${clean(payload.precio, 40) || "-"}`,
+    `Fecha y hora: ${clean(payload.fecha, 40)} ${clean(payload.hora, 20)}hs`.trim(),
+    `Equipo: ${clean(payload.equipo, 180) || "-"}`,
+    `Problema: ${clean(payload.nota, 400) || "-"}`,
+    `Referido: ${referido || "-"}`,
+    "Estado: pendiente",
+    buildWhatsappReplyUrl(payload) ? `WhatsApp: ${buildWhatsappReplyUrl(payload)}` : "",
+  ].filter(Boolean).join("\n");
 }
 
 function normalizeWhatsappPhone(value: unknown) {
@@ -169,6 +226,7 @@ async function sendTelegram(payload: TurnoPayload) {
   const response = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
+    signal: AbortSignal.timeout(8_000),
     body: JSON.stringify({
       chat_id: chatId,
       text: buildTelegramMessage(payload),
@@ -176,12 +234,37 @@ async function sendTelegram(payload: TurnoPayload) {
     }),
   });
 
-  if (!response.ok) {
-    const text = await response.text();
-    throw new Error(`Telegram send failed: ${text}`);
-  }
+  if (!response.ok) throw new Error(`Telegram send failed: HTTP ${response.status}`);
 
   return await response.json();
+}
+
+async function sendDiscord(destination: "TURNOS" | "GENERAL" | "DESCUENTOS", title: string, message: string) {
+  if (Deno.env.get("PCLAF_WEB_DISCORD_ENABLED") !== "true") return { skipped: true, reason: "disabled" };
+  const url = Deno.env.get(`PCLAF_WEB_DISCORD_${destination}_WEBHOOK_URL`);
+  if (!url) return { skipped: true, reason: "not_configured" };
+  const response = await fetch(url, {
+    method: "POST", headers: { "Content-Type": "application/json" }, signal: AbortSignal.timeout(8_000),
+    body: JSON.stringify({ embeds: [{ title: `PCLAF Web | ${title}`, description: message.slice(0, 4000), color: 0x2563eb }] }),
+  });
+  if (!response.ok) throw new Error(`Discord send failed: HTTP ${response.status}`);
+  return { sent: true };
+}
+
+function databaseDiscordEvent(event: DatabaseEvent) {
+  const table = clean(event.table, 40).toLowerCase();
+  const type = clean(event.type, 20).toUpperCase();
+  const record = event.record || {};
+  const old = event.old_record || {};
+  if (table === "clientes") {
+    if (type === "INSERT") return { destination: "GENERAL" as const, title: "Nuevo cliente", message: `Cliente: ${clean(record.nombre, 80)} ${clean(record.apellido, 80)}\nCódigo: ${clean(record.codigo, 40) || "-"}` };
+    if (record.descuento_resena !== old.descuento_resena) return { destination: "DESCUENTOS" as const, title: "Descuento actualizado", message: `Cliente: ${clean(record.nombre, 80)} ${clean(record.apellido, 80)}\nDescuento: 10%\nEstado: ${record.descuento_resena ? "activo" : "inactivo"}\nInicio: no registrado\nVencimiento: no registrado` };
+  }
+  if (table === "reparaciones") {
+    if (type === "INSERT") return { destination: "GENERAL" as const, title: "Nueva reparación registrada", message: `Reparación: #${clean(record.numero, 30) || clean(record.id, 40)}\nEstado: ${clean(record.estado, 40) || "-"}` };
+    if (record.estado !== old.estado && clean(record.estado, 40) === "entregado") return { destination: "GENERAL" as const, title: "Reparación entregada", message: `Reparación: #${clean(record.numero, 30) || clean(record.id, 40)}\nEstado: entregado` };
+  }
+  return null;
 }
 
 async function sendEmail(payload: TurnoPayload) {
@@ -217,19 +300,22 @@ async function sendEmail(payload: TurnoPayload) {
 }
 
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
+  if (req.method !== "POST") {
+    return new Response(JSON.stringify({ error: "Method not allowed" }), { status: 405, headers: { "Content-Type": "application/json" } });
   }
 
-  if (req.method !== "POST") {
-    return new Response(JSON.stringify({ error: "Method not allowed" }), {
-      status: 405,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
-  }
+  const triggerSecret = Deno.env.get("PCLAF_WEB_TURNO_ALERT_TRIGGER_SECRET") || "";
+  if (!triggerSecret || req.headers.get("x-pclaf-turno-alert-secret") !== triggerSecret) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { "Content-Type": "application/json" } });
 
   try {
-    const payload = (await req.json()) as TurnoPayload;
+    const body = (await req.json()) as TurnoPayload | DatabaseEvent;
+    if ("table" in body && body.table !== "turnos") {
+      const event = databaseDiscordEvent(body);
+      if (!event) return Response.json({ ok: true, ignored: true });
+      try { await sendDiscord(event.destination, event.title, event.message); return Response.json({ ok: true, discord: "sent" }); }
+      catch (error) { console.error("discord_delivery_failed", { message: error instanceof Error ? error.message : "unknown" }); return Response.json({ ok: false }, { status: 502 }); }
+    }
+    const payload = "record" in body ? parseTurnoRecord(body.record || {}) : body as TurnoPayload;
     const nombre = clean(payload.nombre, 80);
     const telefono = clean(payload.telefono, 40);
     const servicio = clean(payload.servicio, 140);
@@ -238,7 +324,7 @@ Deno.serve(async (req) => {
     if (!nombre || !telefono || !servicio || !fecha) {
       return new Response(JSON.stringify({ error: "Missing required turno fields" }), {
         status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json" },
       });
     }
 
@@ -246,24 +332,27 @@ Deno.serve(async (req) => {
 
     let telegramOk = false;
     let telegramError = "";
+    let discordOk = false;
+    let discordError = "";
     let emailAttempted = false;
     let emailDelivered = false;
     let emailResult: unknown = null;
 
-    try {
-      await sendTelegram(payload);
-      telegramOk = true;
-    } catch (error) {
-      telegramError = error instanceof Error ? error.message : String(error);
-    }
+    const [telegram, discord] = await Promise.allSettled([
+      sendTelegram(payload),
+      sendDiscord("TURNOS", "Nuevo turno solicitado", buildDiscordTurnoMessage(payload)),
+    ]);
+    telegramOk = telegram.status === "fulfilled";
+    discordOk = discord.status === "fulfilled";
+    if (telegram.status === "rejected") telegramError = telegram.reason instanceof Error ? telegram.reason.message : String(telegram.reason);
+    if (discord.status === "rejected") discordError = discord.reason instanceof Error ? discord.reason.message : String(discord.reason);
 
     if (emailMode === "always" || !telegramOk) {
       emailAttempted = true;
-      emailResult = await sendEmail(payload);
-      emailDelivered = !(emailResult && typeof emailResult === "object" && "skipped" in emailResult);
+      try { emailResult = await sendEmail(payload); emailDelivered = !(emailResult && typeof emailResult === "object" && "skipped" in emailResult); } catch (error) { emailResult = { error: error instanceof Error ? error.message : "email_failed" }; }
     }
 
-    if (!telegramOk && !emailDelivered) {
+    if (!telegramOk && !discordOk && !emailDelivered) {
       throw new Error(telegramError || "No notification channel could deliver the alert");
     }
 
@@ -271,23 +360,25 @@ Deno.serve(async (req) => {
       JSON.stringify({
         ok: true,
         telegram: telegramOk ? "sent" : "failed",
-        telegramError: telegramOk ? null : telegramError,
+        telegramError: telegramOk ? null : "delivery_failed",
+        discord: discordOk ? "sent" : "failed",
+        discordError: discordOk ? null : "delivery_failed",
         email: emailAttempted ? emailResult : { skipped: true, reason: "not_needed" },
       }),
       {
         status: 200,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json" },
       },
     );
   } catch (error) {
     return new Response(
       JSON.stringify({
         ok: false,
-        error: error instanceof Error ? error.message : String(error),
+        error: "notification_delivery_failed",
       }),
       {
         status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json" },
       },
     );
   }
