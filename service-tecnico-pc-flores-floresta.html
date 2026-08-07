@@ -82,12 +82,15 @@ nav{background:var(--black2);border-bottom:2px solid var(--red);padding:0 24px;h
 .cta-box p{font-size:15px;color:rgba(255,255,255,.82);line-height:1.7;max-width:720px;}
 .cta-links{display:flex;flex-wrap:wrap;gap:12px;margin-top:18px;}
 .cta-links a{display:inline-flex;align-items:center;justify-content:center;padding:12px 16px;border-radius:10px;background:#fff;color:var(--red);text-decoration:none;font-weight:800;text-transform:uppercase;letter-spacing:.05em;font-size:12px;}
+.proof-section{max-width:1100px;margin:0 auto;padding:30px 24px 56px;}
+.proof-head{display:flex;align-items:end;justify-content:space-between;gap:22px;margin-bottom:22px;flex-wrap:wrap;}.proof-head h2{font-family:var(--display);font-size:clamp(31px,5vw,48px);line-height:.95;letter-spacing:-.035em;}.proof-head h2 span{color:var(--red);}.google-score{display:flex;align-items:center;gap:9px;color:#f7b731;font-size:19px;font-weight:800;}.google-score small{color:var(--text2);font-size:12px;font-weight:500;}.review-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;}.review-card{background:var(--black2);border:1px solid var(--border);border-radius:14px;padding:20px;}.review-stars{color:#f7b731;font-size:14px;letter-spacing:2px;}.review-card blockquote{margin:15px 0;color:var(--text2);font-size:14px;line-height:1.65;}.review-card cite{font-style:normal;font-size:13px;font-weight:800;color:#fff;}.review-card cite small{display:block;color:var(--text3);font-weight:500;margin-top:3px;}.google-link{display:inline-flex;margin-top:18px;color:#fff;text-decoration:none;border-bottom:1px solid var(--red);font-weight:700;font-size:13px;}.google-link:hover{color:var(--red);}
+.location-section{max-width:1100px;margin:0 auto;padding:0 24px 56px;}.location-wrap{display:grid;grid-template-columns:1.25fr .75fr;overflow:hidden;border:1px solid var(--border);border-radius:16px;background:var(--black2);}.location-map{min-height:330px;}.location-map iframe{display:block;width:100%;height:100%;border:0;filter:grayscale(35%) contrast(1.08);}.location-info{padding:28px;display:flex;flex-direction:column;justify-content:center;}.location-info .eyebrow{margin-bottom:10px;}.location-info h2{font-family:var(--display);font-size:38px;line-height:.93;letter-spacing:-.035em;}.location-info p{margin-top:14px;color:var(--text2);line-height:1.65;font-size:15px;}.location-info strong{color:#fff;}.map-button{display:inline-flex;align-self:flex-start;margin-top:22px;padding:12px 15px;border-radius:8px;background:var(--red);color:#fff;text-decoration:none;font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;}
 footer{background:var(--black2);border-top:2px solid var(--red);padding:20px 24px;text-align:center;}
 footer span{font-family:var(--mono);font-size:11px;color:var(--text3);}
 footer a{color:var(--text2);text-decoration:none;}
 footer a:hover{color:var(--red);}
 @media(max-width:860px){
-  .grid,.strip{grid-template-columns:1fr;}
+  .grid,.strip,.review-grid,.location-wrap{grid-template-columns:1fr;}.location-map{min-height:260px;}
 }
 @media(max-width:520px){
   nav{padding:12px 14px;height:auto;align-items:flex-start;flex-wrap:wrap;}
@@ -130,7 +133,7 @@ footer a:hover{color:var(--red);}
 <section class="strip">
   <div class="mini">
     <strong>Formateo y software</strong>
-    <p>Windows limpio, drivers, Office y programas basicos para dejar el equipo listo para usar.</p>
+    <p>Windows limpio, drivers, Office y programas básicos para dejar el equipo listo para usar.</p>
   </div>
   <div class="mini">
     <strong>Limpieza y temperatura</strong>
@@ -167,6 +170,26 @@ footer a:hover{color:var(--red);}
         <li>Querés mantenimiento preventivo antes de que falle</li>
       </ul>
     </div>
+  </div>
+</section>
+
+<section class="proof-section">
+  <div class="proof-head">
+    <h2>Opiniones de <span>clientes reales</span></h2>
+    <div class="google-score">★ 4.4 <small>en Google Maps</small></div>
+  </div>
+  <div class="review-grid">
+    <article class="review-card"><div class="review-stars">★★★★★</div><blockquote>“Se nota que son muy profesionales. Muy claros y honestos al informar. Muy rápidos y cordiales.”</blockquote><cite>Elizabeth Pier S.<small>Google Maps</small></cite></article>
+    <article class="review-card"><div class="review-stars">★★★★★</div><blockquote>“Económicos, honestos y rápidos en los arreglos. Súper recomendables.”</blockquote><cite>Francisco Adrián F.<small>Google Maps</small></cite></article>
+    <article class="review-card"><div class="review-stars">★★★★★</div><blockquote>“Excelente servicio. Rápido y a buen precio, me revivió la compu, parece nueva.”</blockquote><cite>Facundo Z.<small>Google Maps</small></cite></article>
+  </div>
+  <a class="google-link" href="https://www.google.com/maps?q=PCLAF%20Servicio%20Tecnico%20Campana%2051%20Floresta" target="_blank" rel="noopener noreferrer">Ver todas las reseñas en Google →</a>
+</section>
+
+<section class="location-section">
+  <div class="location-wrap">
+    <div class="location-map"><iframe title="Ubicación de PCLAF en Campana 51, Floresta" src="https://www.google.com/maps?q=PCLAF%20-%20Servicio%20Tecnico%2C%20Campana%2051%2C%20Floresta%2C%20Buenos%20Aires&output=embed" loading="lazy"></iframe></div>
+    <div class="location-info"><div class="eyebrow">PCLAF · FLORESTA</div><h2>Estamos cerca<br>de vos</h2><p><strong>Campana 51, Floresta, CABA.</strong><br>Atendemos clientes de Flores, Villa Luro, Caballito y zonas cercanas.</p><p>Lunes a viernes de 10:00 a 19:00 hs.</p><a class="map-button" href="https://www.google.com/maps?q=PCLAF%20Servicio%20Tecnico%20Campana%2051%20Floresta" target="_blank" rel="noopener noreferrer">Abrir en Google Maps →</a></div>
   </div>
 </section>
 
