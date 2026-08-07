@@ -553,10 +553,9 @@ select.web-status,select.f-sel,select.sse{color-scheme:dark;}select.web-status o
     </div>
 
     <div class="view" id="view-web">
-      <div class="web-hero"><div><div class="web-eyebrow">Estudio digital · independiente del taller</div><h2>Proyectos web</h2><p>Consultas, presupuestos, entregas y renovaciones en un circuito separado de las reparaciones.</p></div><button class="abtn" onclick="openWebModal()">+ Nuevo proyecto</button></div>
       <div class="web-kpis"><div class="web-kpi purple"><b id="wTotal">–</b><span>Total de proyectos</span></div><div class="web-kpi"><b id="wActivos">–</b><span>En producción</span></div><div class="web-kpi green"><b id="wPublicados">–</b><span>Publicados</span></div><div class="web-kpi amber"><b id="wRenovaciones">–</b><span>Renuevan en 30 días</span></div></div>
       <div class="web-alerts"><div class="web-alert"><div class="web-alert-title">Dominios por renovar</div><div class="web-alert-copy" id="wDomainAlerts">Cargando alertas…</div></div><div class="web-alert billing"><div class="web-alert-title">Cobros mensuales</div><div class="web-alert-copy" id="wBillingAlerts">Cargando alertas…</div></div></div>
-      <div class="frow"><button class="fbtn active" onclick="setWebFilter('todos',this)">Todos</button><button class="fbtn" onclick="setWebFilter('activos',this)">En producción</button><button class="fbtn" onclick="setWebFilter('publicado',this)">Publicados</button><button class="fbtn" onclick="setWebFilter('mantenimiento',this)">Mantenimiento</button><input class="srch" id="webSearch" placeholder="Buscar proyecto, cliente o dominio..." oninput="renderWebProjects()"></div>
+      <div class="frow"><button class="fbtn active" onclick="setWebFilter('todos',this)">Todos</button><button class="fbtn" onclick="setWebFilter('activos',this)">En producción</button><button class="fbtn" onclick="setWebFilter('publicado',this)">Publicados</button><button class="fbtn" onclick="setWebFilter('mantenimiento',this)">Mantenimiento</button><input class="srch" id="webSearch" placeholder="Buscar proyecto, cliente o dominio..." oninput="renderWebProjects()"><button class="abtn" onclick="openWebModal()"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M8 2v12M2 8h12"/></svg> Nuevo proyecto</button></div>
       <div class="web-list" id="webList"><div class="web-empty">Cargando proyectos web...</div></div>
     </div>
 
@@ -1902,7 +1901,7 @@ function simplifyRepairDetail(card){
   details?.querySelectorAll('.cir').forEach(row=>{
     const raw=row.querySelector('.cil')?.textContent?.trim().toLowerCase()||'';
     const label=raw.normalize('NFD').replace(/[\u0300-\u036f]/g,'');
-    if(['nombre','telefono','codigo','equipo','entrega est.','problema'].includes(label))row.classList.add('repair-duplicate');
+    if(['nombre','telefono','codigo','equipo','entrega est.','problema','presupuesto'].includes(label))row.classList.add('repair-duplicate');
   });
   simplifyRepairQuickActions(card);
   const flow=card.querySelector('.bsec-flow .flow-split'),heading=card.querySelector('.bsec-flow h4');
