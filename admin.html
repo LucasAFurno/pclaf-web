@@ -464,6 +464,8 @@ body{background:radial-gradient(900px 460px at 50% -220px,rgba(204,0,0,.16),tran
 .repair-status-wrap{position:relative;}.repair-status-button{cursor:pointer;appearance:none;}.repair-status-menu{display:none;position:absolute;right:0;top:31px;width:150px;padding:5px;background:#202020;border:1px solid var(--border2);border-radius:9px;box-shadow:0 12px 28px rgba(0,0,0,.45);z-index:21;}.repair-status-menu.open{display:block;}.repair-status-menu button{display:flex;align-items:center;gap:6px;width:100%;border:0;border-radius:6px;background:transparent;color:var(--text2);font:11px var(--sans);text-align:left;padding:8px 9px;cursor:pointer;}.repair-status-menu button:hover{background:rgba(255,255,255,.06);color:#fff;}
 /* Los desplegables nativos usan paleta oscura; evita opciones claras con texto claro. */
 select.web-status,select.f-sel,select.sse{color-scheme:dark;}select.web-status option,select.f-sel option,select.sse option{background:#1a1a1a;color:#f0f0f0;}
+.web-status-wrap{position:relative;}.web-status-button{appearance:none;border:1px solid rgba(124,92,255,.28);border-radius:999px;background:rgba(124,92,255,.13);color:#d7d1ff;padding:5px 8px;font:10px var(--mono);outline:none;cursor:pointer;white-space:nowrap;}.web-status-button:hover{border-color:#8b7cff;color:#fff;}.web-status-menu{display:none;position:absolute;right:0;top:32px;width:158px;padding:5px;background:#202020;border:1px solid var(--border2);border-radius:9px;box-shadow:0 12px 28px rgba(0,0,0,.45);z-index:20;}.web-status-menu.open{display:block;}.web-status-menu button{display:flex;width:100%;align-items:center;gap:7px;border:0;border-radius:6px;background:transparent;color:var(--text2);font:11px var(--sans);text-align:left;padding:8px 9px;cursor:pointer;}.web-status-menu button:hover{background:rgba(124,92,255,.14);color:#fff;}
+.repair-whatsapp-icon{display:inline-flex;align-items:center;justify-content:center;width:29px;height:29px;border-radius:8px;background:rgba(34,197,94,.13);border:1px solid rgba(34,197,94,.38);color:#3ee67a;text-decoration:none;flex:0 0 auto;}.repair-whatsapp-icon:hover{background:#25d366;color:#fff;border-color:#25d366;}.repair-whatsapp-icon svg{width:14px;height:14px;}.repair-card-summary .repair-problem-preview{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text2);font-size:11px;}.repair-card-summary .repair-card-foot strong{flex:0 0 auto;}.repair-discount-inline{padding-top:6px;margin-top:6px;}.repair-discount-inline .descuento-toggle{min-height:22px;padding:2px 5px;font-size:8px;gap:4px;}.repair-discount-inline .descuento-toggle-label,.repair-discount-inline .descuento-state{font-size:8px;}.repair-discount-inline .toggle-track{width:24px;height:13px;}.repair-discount-inline .toggle-knob{width:9px;height:9px;}.repair-discount-inline .toggle-track.on .toggle-knob{transform:translateX(11px);}.rc.open .bsec-main h4{margin-bottom:6px;}.rc.open .bsec-main .details-grid{grid-template-columns:1fr;}.rc.open .bsec-main .details-grid .cir{min-height:32px;padding:4px 0;}.rc.open .bsec-main .budget-input-wrap{gap:4px;}.rc.open .bsec-main .prin{height:28px;width:86px!important;}.rc.open .bsec-main .budget-input-wrap .smbtn{height:28px;}
 </style>
 </head>
 <body>
@@ -1897,7 +1899,7 @@ function simplifyRepairDetail(card){
   details?.querySelectorAll('.cir').forEach(row=>{
     const raw=row.querySelector('.cil')?.textContent?.trim().toLowerCase()||'';
     const label=raw.normalize('NFD').replace(/[\u0300-\u036f]/g,'');
-    if(['nombre','telefono','codigo','equipo','entrega est.'].includes(label))row.classList.add('repair-duplicate');
+    if(['nombre','telefono','codigo','equipo','entrega est.','problema'].includes(label))row.classList.add('repair-duplicate');
   });
   simplifyRepairQuickActions(card);
   const flow=card.querySelector('.bsec-flow .flow-split'),heading=card.querySelector('.bsec-flow h4');
@@ -1917,7 +1919,7 @@ function simplifyRepairQuickActions(card){
   const discountActions=perks.querySelector('.descuento-actions');
   if(discountActions&&!card.querySelector('.repair-discount-inline')){const inline=document.createElement('div');inline.className='repair-discount-inline';inline.append(discountActions);mainState.append(inline);perks.querySelector('.descuento-banner')?.remove();}
   const whatsapp=perks.querySelector('.wab');
-  if(whatsapp){whatsapp.className='repair-quick-wa';whatsapp.textContent=`WhatsApp a ${whatsapp.textContent.replace(/^.*WhatsApp a\s*/,'').trim()||'cliente'}`;mainState.append(whatsapp);}
+  if(whatsapp){const icon=whatsapp.querySelector('svg');whatsapp.className='repair-whatsapp-icon';whatsapp.title='Abrir WhatsApp';whatsapp.setAttribute('aria-label','Abrir WhatsApp');whatsapp.replaceChildren();if(icon)whatsapp.append(icon);const headerTop=card.querySelector('.repair-card-top'),menu=headerTop?.querySelector('.repair-menu-wrap');if(headerTop)headerTop.insertBefore(whatsapp,menu||null);}
   const sourceActions=perks.querySelector('.section-inline-actions'),headerTop=card.querySelector('.repair-card-top');
   if(sourceActions&&headerTop&&!headerTop.querySelector('.repair-menu-wrap')){
     const wrap=document.createElement('div');wrap.className='repair-menu-wrap';
@@ -1949,7 +1951,7 @@ function formatRepairCardHeaders(repairs){
     const meta=document.createElement('div');meta.className='repair-summary-meta';
     if(client.codigo){const code=document.createElement('span');code.className='repair-summary-chip code';code.textContent=client.codigo;meta.append(code);}
     const price=document.createElement('span');price.className=`repair-summary-chip money${amount?'':' empty'}`;price.textContent=amount||'Sin presupuesto';meta.append(price);
-    const foot=document.createElement('div');foot.className='repair-card-foot';const hint=document.createElement('strong');hint.textContent='Ver detalles';const arrow=document.createElement('div');arrow.className='rcch';arrow.innerHTML='<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6l4 4 4-4"/></svg>';foot.append(hint,arrow);
+    const foot=document.createElement('div');foot.className='repair-card-foot';const preview=document.createElement('span');preview.className='repair-problem-preview';preview.textContent=repair.problema||'Sin problema cargado';const hint=document.createElement('strong');hint.textContent='Detalles';const arrow=document.createElement('div');arrow.className='rcch';arrow.innerHTML='<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6l4 4 4-4"/></svg>';foot.append(preview,hint,arrow);
     header.append(top,title,detail,meta,foot);simplifyRepairDetail(card);
   });
 }
@@ -1960,6 +1962,29 @@ function toggleRepairStatusMenu(id,wrap,event){
   const options=[['espera','⌛ Espera'],['proceso','🔧 Proceso'],['listo','✅ Listo'],['entregado','📦 Entregado'],['cancelado','❌ Cancelado']];
   options.forEach(([state,label])=>{const button=document.createElement('button');button.type='button';button.textContent=label;button.onclick=async(e)=>{e.stopPropagation();await chEst(id,state,wrap.querySelector('.sb'));menu.remove();};menu.append(button);});
   menu.onclick=e=>e.stopPropagation();wrap.append(menu);
+}
+
+/* Web uses the same compact status picker with icons as Reparaciones. */
+function wireWebCardMenus(list,projects){
+  const icons={consulta:'⌛',presupuesto:'📨',sena_pendiente:'💳',diseno:'🎨',desarrollo:'🛠',revision:'🔎',publicado:'✅',mantenimiento:'🔧',cancelado:'❌'};
+  list.querySelectorAll('.web-card').forEach((card,index)=>{
+    const project=projects[index],top=card.querySelector('.web-card-top'),oldStatus=top?.querySelector('.web-status');
+    if(!project||!top||!oldStatus)return;
+    const actions=document.createElement('div');actions.className='web-actions';oldStatus.replaceWith(actions);
+    const statusWrap=document.createElement('div');statusWrap.className='web-status-wrap';
+    const statusButton=document.createElement('button');statusButton.type='button';statusButton.className='web-status-button';statusButton.textContent=`${icons[project.estado]||'•'} ${WEB_STATUS[project.estado]||project.estado}`;statusButton.onclick=event=>toggleWebStatusMenu(project.id,statusWrap,event,icons);
+    statusWrap.append(statusButton);actions.append(statusWrap);
+    const button=document.createElement('button');button.className='web-menu-btn';button.type='button';button.title='Acciones';button.setAttribute('aria-label','Acciones del proyecto');button.textContent='⋮';button.onclick=(event)=>toggleWebMenu(Number(project.id),event);
+    const menu=document.createElement('div');menu.className='web-menu';menu.id=`webMenu-${Number(project.id)}`;
+    const edit=document.createElement('button');edit.type='button';edit.textContent='Editar proyecto';edit.onclick=()=>editWebProject(Number(project.id));
+    const remove=document.createElement('button');remove.type='button';remove.className='danger';remove.textContent='Eliminar proyecto';remove.onclick=()=>deleteWebProject(Number(project.id));
+    menu.append(edit,remove);actions.append(button,menu);
+  });
+}
+function toggleWebStatusMenu(id,wrap,event,icons){
+  event.stopPropagation();if(!document.body.dataset.webStatusMenus){document.body.dataset.webStatusMenus='1';document.addEventListener('click',()=>document.querySelectorAll('.web-status-menu.open').forEach(menu=>menu.remove()));}document.querySelectorAll('.web-status-menu.open').forEach(menu=>menu.remove());
+  const menu=document.createElement('div');menu.className='web-status-menu open';
+  Object.entries(WEB_STATUS).forEach(([state,label])=>{const button=document.createElement('button');button.type='button';button.textContent=`${icons[state]||'•'} ${label}`;button.onclick=async(e)=>{e.stopPropagation();await updateWebStatus(Number(id),state);menu.remove();};menu.append(button);});menu.onclick=e=>e.stopPropagation();wrap.append(menu);
 }
 
 function renderList(){ loadPage(); } // backwards compat
@@ -2111,7 +2136,7 @@ async function chEst(id,st,btn){
   if(card) card.setAttribute('data-estado',st);
   const b=document.querySelector(`#c-${id} .sb`);
   const LB={espera:'En espera',proceso:'En reparación',listo:'Listo para retirar',entregado:'Entregado',cancelado:'Cancelado'};
-  if(b){b.className=`sb sb-${st}`;b.innerHTML=`<span class="dot"></span>${LB[st]}`;}
+  if(b){b.className=b.tagName==='BUTTON'?`repair-status-button sb sb-${st}`:`sb sb-${st}`;b.innerHTML=`<span class="dot"></span>${LB[st]}`;}
 
   // WhatsApp automático según estado
   const rep=aR.find(r=>r.id===id)||{};
