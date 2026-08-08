@@ -95,6 +95,7 @@ nav{background:var(--black2);border-bottom:2px solid var(--red);padding:0 24px;h
 .srv-icon{font-size:24px;margin-bottom:8px;}
 .srv-name{font-size:14px;font-weight:600;color:#fff;margin-bottom:3px;}
 .srv-price{font-family:var(--mono);font-size:12px;color:var(--red);}
+.srv-card.urgent .srv-price{color:var(--amber);}
 
 /* CALENDAR */
 .cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
@@ -516,9 +517,7 @@ function selServicio(el){
   const precio = el.dataset.precio;
   const urgencia = el.dataset.urgencia;
 
-  // Show urgencia price on selected card if applicable
   if(urgenciaOn && urgencia){
-    el.querySelector('.srv-urgencia').style.display='block';
     state.precio = urgencia;
   } else {
     state.precio = precio;
@@ -532,19 +531,26 @@ function selServicio(el){
 function toggleUrgencia(){
   urgenciaOn = !urgenciaOn;
   document.getElementById('urgTrack').classList.toggle('on', urgenciaOn);
+  updateServicePrices();
   const card = document.querySelector('.srv-card.selected');
   if(!card) return;
   const urgencia = card.dataset.urgencia;
-  const u = card.querySelector('.srv-urgencia');
   if(urgenciaOn && urgencia){
-    if(u) u.style.display='block';
     state.precio = urgencia;
     state.urgencia = true;
   } else {
-    if(u) u.style.display='none';
     state.precio = card.dataset.precio;
     state.urgencia = false;
   }
+}
+
+function updateServicePrices(){
+  document.querySelectorAll('.srv-card').forEach(card=>{
+    const urgencia = card.dataset.urgencia;
+    const urgente = urgenciaOn && !!urgencia;
+    card.querySelector('.srv-price').textContent = urgente ? urgencia : card.dataset.precio;
+    card.classList.toggle('urgent', urgente);
+  });
 }
 
 // â”€â”€ CALENDARIO â”€â”€
