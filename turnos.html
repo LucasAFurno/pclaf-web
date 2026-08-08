@@ -165,9 +165,11 @@ textarea.f-in{resize:none;height:80px;}
 .referral-inline.err{background:rgba(245,158,11,0.08);border-bottom-color:rgba(245,158,11,0.22);color:var(--amber);}
 .referral-inline-badge{display:inline-flex;align-items:center;gap:5px;background:var(--green-dim);color:var(--green);border:1px solid rgba(34,197,94,.3);border-radius:6px;padding:3px 9px;font-size:11px;font-weight:700;font-family:var(--mono);white-space:nowrap;}
 .srv-card .srv-urgencia{display:none;font-family:var(--mono);font-size:11px;color:var(--amber);margin-top:2px;}
-.urgencia-toggle{display:flex;align-items:center;gap:14px;background:rgba(245,158,11,0.1);border:1.5px solid rgba(245,158,11,0.35);border-radius:12px;padding:16px 20px;margin-bottom:20px;}
+.urgencia-toggle{display:flex;align-items:center;gap:14px;background:rgba(245,158,11,0.1);border:1.5px solid rgba(245,158,11,0.35);border-radius:12px;padding:16px 20px;margin-bottom:20px;animation:urgencia-pulse 1.8s ease-in-out infinite;}
 .ut-label{font-size:15px;color:var(--text);flex:1;line-height:1.5;}
 .ut-label strong{color:var(--amber);}
+@keyframes urgencia-pulse{0%,100%{border-color:rgba(245,158,11,.35);box-shadow:0 0 0 rgba(245,158,11,0);}50%{border-color:rgba(245,158,11,.9);box-shadow:0 0 22px rgba(245,158,11,.24);}}
+@media(prefers-reduced-motion:reduce){.urgencia-toggle{animation:none;}}
 .toggle-track{width:52px;height:28px;border-radius:14px;background:var(--border2);position:relative;transition:background .2s;flex-shrink:0;cursor:pointer;}
 .toggle-track.on{background:var(--amber);}
 .toggle-knob{width:22px;height:22px;border-radius:50%;background:#fff;position:absolute;top:3px;left:3px;transition:transform .2s;}
