@@ -545,6 +545,24 @@ function toggleUrgencia(){
 
 // â”€â”€ CALENDARIO â”€â”€
 const HORAS=['10:00','10:30','11:00','11:30','12:00','12:30','14:00','14:30','15:00','15:30','16:00','16:30','17:00','17:30','18:00','18:30'];
+const BLOQUEOS_SIMULADOS_POR_DIA=4;
+
+// Genera siempre los mismos cuatro bloqueos para una fecha: se ven aleatorios,
+// pero no cambian al recargar ni entre visitantes.
+function horariosSimuladosOcupados(dateStr){
+  let seed=2166136261;
+  for(let i=0;i<dateStr.length;i++){
+    seed^=dateStr.charCodeAt(i);
+    seed=Math.imul(seed,16777619)>>>0;
+  }
+  const slots=[...HORAS];
+  for(let i=slots.length-1;i>0;i--){
+    seed=(Math.imul(seed,1664525)+1013904223)>>>0;
+    const j=seed%(i+1);
+    [slots[i],slots[j]]=[slots[j],slots[i]];
+  }
+  return slots.slice(0,BLOQUEOS_SIMULADOS_POR_DIA);
+}
 
 // â”€â”€ FERIADOS ARGENTINOS â”€â”€
 const FERIADOS = new Set([
@@ -622,10 +640,11 @@ async function selFecha(dateStr,d){
   const lbl=date.toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long'});
   document.getElementById('horasLabel').textContent=lbl.charAt(0).toUpperCase()+lbl.slice(1);
   const occupied=occupiedSlots[dateStr]||[];
+  const simulatedOccupied=horariosSimuladosOcupados(dateStr);
   // Max 2 per slot for simplicity
   document.getElementById('horasGrid').innerHTML=HORAS.map(h=>{
     const occ=occupied.filter(x=>x===h).length;
-    const full=occ>=2;
+    const full=occ>=2||simulatedOccupied.includes(h);
     return `<div class="hora-btn${full?' ocupado':''}" onclick="${full?'':'selHora(\''+h+'\',this)'}">${h}${full?'<br><span style="font-size:9px">Ocupado</span>':''}</div>`;
   }).join('');
   sec.style.display='block';
@@ -664,6 +683,11 @@ function buildResumen(){
 async function confirmarTurno(){
   const btn=document.getElementById('btnConfirm');
   btn.disabled=true; btn.textContent='Enviando...';
+  if(!state.fecha||!HORAS.includes(state.hora)||horariosSimuladosOcupados(state.fecha).includes(state.hora)){
+    btn.disabled=false; btn.textContent='Confirmar turno';
+    alert('Ese horario ya no está disponible. Elegí otro, por favor.');
+    return;
+  }
   const nom=sanitizePlainText(document.getElementById('tNom').value,60);
   const ape=sanitizePlainText(document.getElementById('tApe').value,60);
   const tel=normalizePhone(document.getElementById('tTel').value);
