@@ -86,8 +86,11 @@ nav{background:var(--black2);border-bottom:2px solid var(--red);padding:0 24px;h
 
 /* SERVICIO SELECTOR */
 .service-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:24px;}
-.srv-card{background:var(--black2);border:2px solid var(--border);border-radius:12px;padding:16px;cursor:pointer;transition:all .15s;}
-.srv-card:hover{border-color:var(--border2);}
+.srv-card{position:relative;isolation:isolate;overflow:hidden;background:var(--black2);border:2px solid var(--border);border-radius:12px;padding:16px;cursor:pointer;transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease,background .2s ease;}
+.srv-card::before{content:'';position:absolute;inset:0;z-index:0;opacity:0;background:radial-gradient(circle at 85% 10%,rgba(204,0,0,.18),transparent 48%);transition:opacity .2s ease;pointer-events:none;}
+.srv-card>*{position:relative;z-index:1;}
+.srv-card:hover{transform:translateY(-4px);border-color:#ef2923;box-shadow:0 14px 30px rgba(204,0,0,.18);background:var(--black3);}
+.srv-card:hover::before{opacity:1;}
 .srv-card.selected{border-color:var(--red);background:rgba(204,0,0,0.06);}
 .srv-icon{font-size:24px;margin-bottom:8px;}
 .srv-name{font-size:14px;font-weight:600;color:#fff;margin-bottom:3px;}
@@ -281,10 +284,11 @@ textarea.f-in{resize:none;height:80px;}
         <div class="srv-urgencia">⚡ Urgencia: desde $30.000</div>
       </div>
 
-      <div class="srv-card" data-nombre="Atención remota" data-precio="$30.000" data-urgencia="" onclick="selServicio(this)">
+      <div class="srv-card" data-nombre="Atención remota" data-precio="$90.000" data-urgencia="$135.000" onclick="selServicio(this)">
         <div class="srv-icon">🌐</div>
         <div class="srv-name">Atención remota</div>
-        <div class="srv-price">$30.000</div>
+        <div class="srv-price">$90.000</div>
+        <div class="srv-urgencia">⚡ Urgencia: $135.000</div>
       </div>
 
       <div class="srv-card" data-nombre="Reparación motherboard" data-precio="desde $95.000" data-urgencia="" onclick="selServicio(this)">

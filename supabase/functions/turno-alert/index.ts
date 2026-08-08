@@ -87,7 +87,7 @@ function estimatedPrice(servicio: unknown, urgente: unknown) {
     "Optimización sin formateo GAMER": ["$120.000", "$180.000"],
     "Service GPU / Placa de video": ["$70.000", "$105.000"],
     "Backup de archivos": ["desde $20.000", "desde $30.000"],
-    "Atención remota": ["$30.000", ""],
+    "Atención remota": ["$90.000", "$135.000"],
     "Reparación motherboard": ["desde $95.000", ""],
     "Revisión y diagnóstico": ["Sin cargo", ""],
     "Otro / No sé qué tiene": ["Presupuesto sin cargo", ""],
