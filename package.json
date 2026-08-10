@@ -10,7 +10,8 @@
     "verify:output": "node scripts/verify-static-output.mjs",
     "verify:catalog": "node scripts/verify-service-catalog.mjs",
     "verify:sitemap": "node scripts/verify-sitemap.mjs",
-    "check": "npm run build && npm run verify:output && npm run verify:catalog && npm run verify:sitemap"
+    "verify:links": "node scripts/verify-local-links.mjs",
+    "check": "npm run build && npm run verify:output && npm run verify:catalog && npm run verify:sitemap && npm run verify:links"
   },
   "devDependencies": {
     "astro": "^5.16.0"
