@@ -4,7 +4,8 @@ const sitemap = readFileSync('sitemap.xml', 'utf8');
 const expected = [
   '', 'diseno-web.html', 'precios.html', 'turnos.html', 'ubicacion.html',
   'service-tecnico-pc-flores-floresta.html', 'formateo-pc-floresta.html',
-  'cambio-pasta-termica-notebook-caba.html', 'limpieza-pc-gamer-floresta.html', 'instalacion-windows-floresta.html'
+  'cambio-pasta-termica-notebook-caba.html', 'limpieza-pc-gamer-floresta.html', 'instalacion-windows-floresta.html',
+  'diagnostico-pc-notebook-floresta.html', 'optimizacion-pc-lenta-floresta.html'
 ];
 for (const path of expected) {
   const url = `https://www.pclaf.com.ar/${path}`;
