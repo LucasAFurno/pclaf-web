@@ -1,0 +1,13 @@
+---
+import LegacyDocument from './LegacyDocument.astro';
+import { legacyHtml } from '../lib/legacy-html';
+
+interface Props {
+  filename: string;
+}
+
+const { filename } = Astro.props;
+const html = legacyHtml(filename);
+---
+
+<LegacyDocument {html} />
