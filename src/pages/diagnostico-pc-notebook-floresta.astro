@@ -1,4 +1,7 @@
 ---
-import LegacyPage from '../components/LegacyPage.astro';
+import ServiceArticleLayout from '../layouts/ServiceArticleLayout.astro';
+import { serviceArticleParts } from '../lib/service-article';
+
+const parts = serviceArticleParts('diagnostico-pc-notebook-floresta.html');
 ---
-<LegacyPage filename="diagnostico-pc-notebook-floresta.html" />
+<ServiceArticleLayout {...parts} />

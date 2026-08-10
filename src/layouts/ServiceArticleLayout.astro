@@ -1,0 +1,17 @@
+---
+/**
+ * Layout de compatibilidad para artículos de servicio. Conserva las cabeceras
+ * SEO, el contenido y los scripts de cada URL mientras centraliza su montaje.
+ */
+interface Props {
+  beforeMain: string;
+  main: string;
+  afterMain: string;
+}
+
+const { beforeMain, main, afterMain } = Astro.props;
+---
+
+<Fragment set:html={beforeMain} />
+<Fragment set:html={main} />
+<Fragment set:html={afterMain} />
