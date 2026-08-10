@@ -1,0 +1,11 @@
+---
+/** Paso reutilizable del flujo de turnos. El marcado se preserva tal cual
+ * mientras el formulario mantiene su JavaScript existente. */
+interface Props {
+  html: string;
+}
+
+const { html } = Astro.props;
+---
+
+<Fragment set:html={html} />

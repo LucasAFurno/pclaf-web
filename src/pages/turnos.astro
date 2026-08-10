@@ -1,4 +1,9 @@
 ---
-import LegacyPage from '../components/LegacyPage.astro';
+import AppointmentStep from '../components/AppointmentStep.astro';
+import { appointmentPageParts } from '../lib/appointment-page';
+
+const { before, steps, after } = appointmentPageParts();
 ---
-<LegacyPage filename="turnos.html" />
+<Fragment set:html={before} />
+{steps.map(html => <AppointmentStep {html} />)}
+<Fragment set:html={after} />
