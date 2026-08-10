@@ -1,9 +1,10 @@
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 
 const services = JSON.parse(readFileSync('src/data/services.json', 'utf8'));
+const source = file => existsSync(file) ? file : `src/content/legacy/${file}`;
 const files = {
-  'turnos.html': readFileSync('turnos.html', 'utf8'),
-  'admin.html': readFileSync('admin.html', 'utf8'),
+  'turnos.html': readFileSync(source('turnos.html'), 'utf8'),
+  'admin.html': readFileSync(source('admin.html'), 'utf8'),
   'supabase/functions/turno-alert/index.ts': readFileSync('supabase/functions/turno-alert/index.ts', 'utf8')
 };
 const escape = value => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');

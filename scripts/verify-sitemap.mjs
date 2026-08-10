@@ -10,6 +10,6 @@ const expected = [
 for (const path of expected) {
   const url = `https://www.pclaf.com.ar/${path}`;
   if (!sitemap.includes(`<loc>${url}</loc>`)) throw new Error(`Falta en sitemap: ${url}`);
-  if (path && !existsSync(path)) throw new Error(`Ruta del sitemap inexistente: ${path}`);
+  if (path && !existsSync(path) && !existsSync(`src/content/legacy/${path}`)) throw new Error(`Ruta del sitemap inexistente: ${path}`);
 }
 console.log(`Sitemap verificado: ${expected.length} rutas SEO declaradas.`);

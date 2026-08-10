@@ -10,13 +10,20 @@ function htmlFiles(directory = '.') {
 }
 
 const problems = [];
-for (const file of htmlFiles()) {
+const sources = [...htmlFiles('demos').map(file => ({ file, base: dirname(file) })), ...htmlFiles('src/content/legacy').map(file => ({ file, base: '.' }))];
+for (const { file, base } of sources) {
   const html = readFileSync(file, 'utf8');
   for (const match of html.matchAll(/(?:href|src)=["']([^"'#?]+)["']/g)) {
     const target = match[1];
     if (/^(?:https?:|mailto:|tel:|data:|javascript:)|\$\{|^\//.test(target)) continue;
-    if (!existsSync(resolve(dirname(file), target))) problems.push(`${file} → ${target}`);
+    const source = resolve(base, target);
+    // Las demos apuntan a páginas situadas un nivel arriba. En Astro esas
+    // páginas viven como rutas (o como fuente legacy) sin ese prefijo.
+    const publicPath = target.replace(/^(?:\.\.\/)+/, '');
+    const astroRoute = `src/pages/${publicPath.replace(/\.html$/, '.astro')}`;
+    const legacySource = `src/content/legacy/${publicPath}`;
+    if (!existsSync(source) && !existsSync(astroRoute) && !existsSync(legacySource)) problems.push(`${file} → ${target}`);
   }
 }
 if (problems.length) throw new Error(`Rutas locales inexistentes:\n${problems.join('\n')}`);
-console.log(`Rutas verificadas: ${htmlFiles().length} páginas sin recursos locales faltantes.`);
+console.log(`Rutas verificadas: ${sources.length} páginas sin recursos locales faltantes.`);
