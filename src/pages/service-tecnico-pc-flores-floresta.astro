@@ -1,4 +1,7 @@
 ---
-import LegacyPage from '../components/LegacyPage.astro';
+import SectionedPageLayout from '../layouts/SectionedPageLayout.astro';
+import { sectionedPageParts } from '../lib/sectioned-page';
+
+const parts = sectionedPageParts('service-tecnico-pc-flores-floresta.html');
 ---
-<LegacyPage filename="service-tecnico-pc-flores-floresta.html" />
+<SectionedPageLayout {...parts} />

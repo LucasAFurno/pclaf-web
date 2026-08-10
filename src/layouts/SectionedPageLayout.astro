@@ -1,0 +1,15 @@
+---
+import ContentSection from '../components/ContentSection.astro';
+
+interface Props {
+  beforeSections: string;
+  sections: string[];
+  afterSections: string;
+}
+
+const { beforeSections, sections, afterSections } = Astro.props;
+---
+
+<Fragment set:html={beforeSections} />
+{sections.map(html => <ContentSection {html} />)}
+<Fragment set:html={afterSections} />
