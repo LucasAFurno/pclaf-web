@@ -1,4 +1,7 @@
 ---
-import LegacyPage from '../components/LegacyPage.astro';
+import MainContentLayout from '../layouts/MainContentLayout.astro';
+import { mainPageParts } from '../lib/main-page';
+
+const parts = mainPageParts('diseno-web.html');
 ---
-<LegacyPage filename="diseno-web.html" />
+<MainContentLayout {...parts} />

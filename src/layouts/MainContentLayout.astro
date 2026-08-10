@@ -1,0 +1,14 @@
+---
+/** Layout para páginas institucionales que exponen un contenido principal. */
+interface Props {
+  beforeMain: string;
+  main: string;
+  afterMain: string;
+}
+
+const { beforeMain, main, afterMain } = Astro.props;
+---
+
+<Fragment set:html={beforeMain} />
+<Fragment set:html={main} />
+<Fragment set:html={afterMain} />
