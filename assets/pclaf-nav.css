@@ -17,4 +17,5 @@ body.pclaf-nav-enabled{padding-top:76px!important;}
 .pclaf-standard-nav__whatsapp{background:#25d366;color:#fff!important;}.pclaf-standard-nav__whatsapp:hover{background:#1ebe5b;}
 .pclaf-standard-nav__social{display:flex;align-items:center;gap:6px;}.pclaf-standard-nav__social a{background:#161616;border:1px solid #252525;color:#444!important;}.pclaf-standard-nav__social a:hover{border-color:#cc0000;color:#cc0000!important;}
 .pclaf-standard-nav__whatsapp svg,.pclaf-standard-nav__social svg{width:15px;height:15px;}
+.pclaf-standard-nav a:focus-visible{outline:2px solid #fff!important;outline-offset:3px;border-radius:6px;}
 @media(max-width:780px){body.pclaf-nav-enabled{padding-top:64px!important;}.pclaf-standard-nav{height:64px!important;}.pclaf-standard-nav__inner{height:64px;padding:0 16px;gap:10px;}.pclaf-standard-nav__primary{display:none;}.pclaf-standard-nav__name{font-size:10px;}.pclaf-standard-nav__tag{display:none;}.pclaf-standard-nav__logo{width:36px;height:36px;}.pclaf-standard-nav__actions{margin-left:auto;}.pclaf-standard-nav__social a{display:none;}}

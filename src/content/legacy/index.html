@@ -429,6 +429,9 @@ nav{
   object-fit:cover;
   object-position:center;
 }
+@media (prefers-reduced-motion:reduce){
+  .hero-flag-media{display:none;}
+}
 
 .hero-content{
   position:relative;
@@ -1407,7 +1410,7 @@ body>section:not(.hub-home),body>.ticker-wrap,body>div{display:none!important;}@
 <!-- â”€â”€â”€ HERO â”€â”€â”€ -->
 <section class="hero">
   <div class="hero-flag-bg" aria-hidden="true">
-    <video class="hero-flag-media" autoplay muted loop playsinline preload="auto">
+    <video class="hero-flag-media" autoplay muted loop playsinline preload="metadata">
       <source src="assets/hero-flag-loop.mp4" type="video/mp4">
     </video>
   </div>
