@@ -1,0 +1,13 @@
+---
+/**
+ * Bloque reutilizable de una categoría de precios. Conserva el HTML existente
+ * para que la primera extracción no cambie estilos, accesibilidad ni scripts.
+ */
+interface Props {
+  html: string;
+}
+
+const { html } = Astro.props;
+---
+
+<Fragment set:html={html} />

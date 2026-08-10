@@ -1,4 +1,9 @@
 ---
-import LegacyPage from '../components/LegacyPage.astro';
+import PriceSection from '../components/PriceSection.astro';
+import { pricePageParts } from '../lib/price-page';
+
+const { before, sections, after } = pricePageParts();
 ---
-<LegacyPage filename="precios.html" />
+<Fragment set:html={before} />
+{sections.map(html => <PriceSection {html} />)}
+<Fragment set:html={after} />
