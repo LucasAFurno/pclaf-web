@@ -29,7 +29,7 @@
       {"@type":"Offer","name":"Limpieza interna PC + pasta térmica (sin GPU)","price":"70000","priceCurrency":"ARS"},
       {"@type":"Offer","name":"Limpieza interna Notebook","price":"90000","priceCurrency":"ARS"},
       {"@type":"Offer","name":"Atención remota","price":"90000","priceCurrency":"ARS"},
-      {"@type":"Offer","name":"Limpieza interna GPU / placa de video","price":"70000","priceCurrency":"ARS"},
+      {"@type":"Offer","name":"Limpieza de GPU / placa de video","price":"70000","priceCurrency":"ARS"},
       {"@type":"Offer","name":"Optimización sin formateo","price":"50000","priceCurrency":"ARS"},
       {"@type":"Offer","name":"Optimización sin formateo GAMER","price":"120000","priceCurrency":"ARS"},
       {"@type":"Offer","name":"Backup hasta 50 GB","price":"20000","priceCurrency":"ARS"},
@@ -77,6 +77,17 @@ nav{background:var(--black2);border-bottom:2px solid var(--red);padding:0 24px;h
 .sec-title{font-family:var(--display);font-size:clamp(24px,4vw,36px);font-weight:900;color:#fff;margin-bottom:4px;letter-spacing:-.3px;}
 .sec-title span{color:var(--red);}
 .sec-sub{font-size:14px;color:var(--text3);margin-bottom:20px;}
+.price-guide{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:0 0 28px;}
+.price-guide-item{background:linear-gradient(135deg,var(--black3),#121212);border:1px solid var(--border);border-radius:12px;padding:15px 16px;}
+.price-guide-item strong{display:block;font-family:var(--mono);font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:#fff;margin-bottom:6px;}
+.price-guide-item span{font-size:12px;line-height:1.45;color:var(--text2);}
+.scope{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px;}
+.scope span{font-family:var(--mono);font-size:9px;letter-spacing:.03em;border-radius:999px;padding:3px 7px;white-space:nowrap;}
+.scope .yes{background:rgba(34,197,94,.12);color:#86efac;border:1px solid rgba(34,197,94,.24);}
+.scope .no{background:rgba(245,158,11,.09);color:#fcd34d;border:1px solid rgba(245,158,11,.22);}
+.gpu-row td:first-child{color:#fca5a5;}
+.gpu-row{background:linear-gradient(90deg,rgba(204,0,0,.11),var(--black2))!important;}
+.service-note{font-size:12px;color:var(--text3);margin-top:10px;line-height:1.55;}
 
 .price-table{width:100%;border-collapse:collapse;border:1px solid #85201d;border-radius:12px;overflow:hidden;box-shadow:0 12px 30px rgba(204,0,0,.12);}
 .table-scroll{position:relative;width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:12px;background:radial-gradient(circle at 85% 0,rgba(204,0,0,.14),transparent 42%);transition:transform .2s ease,box-shadow .2s ease;}
@@ -107,6 +118,7 @@ nav{background:var(--black2);border-bottom:2px solid var(--red);padding:0 24px;h
 .info-card li::before{content:'·';position:absolute;left:4px;color:var(--text3);}
 .remote-note{background:rgba(59,130,246,0.07);border:1px solid rgba(59,130,246,0.2);border-radius:8px;padding:10px 16px;margin-top:12px;font-size:13px;color:#93c5fd;display:flex;align-items:center;gap:8px;}
 @media(max-width:600px){
+  .price-guide{grid-template-columns:1fr;}
   .price-table td:nth-child(2){display:none;}
   .price-table th:nth-child(2){display:none;}
 }
@@ -221,6 +233,11 @@ footer a:hover{color:var(--red);}
 </div>
 
 <div class="section">
+  <div class="price-guide" aria-label="Cómo leer los precios">
+    <div class="price-guide-item"><strong>Precio normal</strong><span>Valor de mano de obra para el plazo habitual.</span></div>
+    <div class="price-guide-item"><strong>Urgencia</strong><span>Prioridad de atención; se confirma según disponibilidad.</span></div>
+    <div class="price-guide-item"><strong>Repuestos</strong><span>Van aparte y solo se colocan con tu aprobación.</span></div>
+  </div>
   <div class="intro-grid">
     <div class="panel">
       <h3>Service técnico en <span>Flores y Floresta</span></h3>
@@ -281,19 +298,20 @@ footer a:hover{color:var(--red);}
     <tbody>
       <tr>
         <td>Formateo Windows 11 + drivers <span class="badge-pop">MÁS PEDIDO</span></td>
-        <td>Windows limpio + drivers actualizados. Listo en 24/48hs</td>
+        <td>Instalación limpia de Windows y drivers.<div class="scope"><span class="yes">Incluye instalación</span><span class="no">No incluye backup ni licencia</span></div></td>
         <td class="price-normal">$70.000</td>
         <td class="price-urgencia">$105.000</td>
       </tr>
       <tr>
         <td>Formateo Windows 11 + drivers + Office + apps básicas</td>
-        <td>Todo lo anterior + Office completo + programas esenciales instalados</td>
+        <td>Windows, drivers, Office y apps esenciales.<div class="scope"><span class="yes">Incluye instalación</span><span class="no">No incluye backup ni licencias</span></div></td>
         <td class="price-normal">$85.000</td>
         <td class="price-urgencia">$128.000</td>
       </tr>
     </tbody>
   </table>
   </div>
+  <p class="service-note">Antes de formatear, pedí backup si necesitás conservar archivos: es un servicio separado y evita perder información importante.</p>
 </div>
 
 <!-- SERVICE INTERNO -->
@@ -308,49 +326,50 @@ footer a:hover{color:var(--red);}
     <tbody>
       <tr>
         <td>Limpieza interna PC + pasta térmica <span class="badge-pop">MÁS PEDIDO</span></td>
-        <td>Desmontaje, limpieza profunda y pasta Arctic MX-4. <strong>No incluye GPU / placa de video.</strong></td>
+        <td>Limpieza de gabinete, coolers y disipador; cambio de pasta térmica del procesador y prueba básica.<div class="scope"><span class="yes">CPU + gabinete</span><span class="no">No incluye GPU</span><span class="no">Sin repuestos</span></div></td>
         <td class="price-normal">$70.000</td>
         <td class="price-urgencia">$105.000</td>
       </tr>
       <tr>
         <td>Limpieza interna Notebook</td>
-        <td>Desmontaje completo, limpieza de cooler, pasta nueva aplicada</td>
+        <td>Apertura, limpieza de cooler y disipador, pasta térmica del procesador y prueba básica.<div class="scope"><span class="yes">Cooler + CPU</span><span class="no">No incluye GPU dedicada ni repuestos</span></div></td>
         <td class="price-normal">$90.000</td>
         <td class="price-urgencia">$135.000</td>
       </tr>
-      <tr>
-        <td>Atención remota <span class="badge-remote">REMOTO</span></td>
-        <td>Soporte remoto para software, configuraciones y optimizaciones</td>
-        <td class="price-normal">$90.000</td>
-        <td class="price-urgencia">$135.000</td>
-      </tr>
-      <tr>
-        <td>Limpieza interna GPU / placa de video</td>
-        <td>Limpieza, cambio de pasta, testeo bajo carga</td>
+      <tr class="gpu-row">
+        <td>Limpieza de GPU / placa de video <span class="badge-new">SERVICIO APARTE</span></td>
+        <td>Desmontaje de la placa de video, limpieza de polvo, cambio de pasta térmica y prueba bajo carga.<div class="scope"><span class="yes">GPU + cooler</span><span class="no">No incluye thermal pads ni reparación</span></div></td>
         <td class="price-normal">$70.000</td>
         <td class="price-urgencia">$105.000</td>
       </tr>
       <tr>
+        <td>Atención remota <span class="badge-remote">REMOTO</span></td>
+        <td>Soporte para software, configuración y diagnóstico inicial.<div class="scope"><span class="no">No incluye reparaciones físicas</span></div></td>
+        <td class="price-normal">$90.000</td>
+        <td class="price-urgencia">$135.000</td>
+      </tr>
+      <tr>
         <td>Revisión y diagnóstico</td>
-        <td>Informe del estado del equipo y presupuesto sin cargo</td>
+        <td>Revisión inicial, informe del problema y presupuesto antes de avanzar</td>
         <td class="price-normal">Sin cargo</td>
         <td class="price-urgencia">—</td>
       </tr>
       <tr>
         <td>Reparación motherboard PC</td>
-        <td>Diagnóstico y reparación de placa madre</td>
+        <td>Diagnóstico y reparación electrónica. El valor final depende de la falla y los componentes.</td>
         <td class="price-normal">desde $95.000</td>
         <td class="price-urgencia">consultar</td>
       </tr>
       <tr>
         <td>Reparación motherboard Notebook</td>
-        <td>Diagnóstico y reparación de placa madre</td>
+        <td>Diagnóstico y reparación electrónica. El valor final depende de la falla y los componentes.</td>
         <td class="price-normal">desde $190.000</td>
         <td class="price-urgencia">consultar</td>
       </tr>
     </tbody>
   </table>
   </div>
+  <p class="service-note">La limpieza de GPU es independiente de la limpieza de PC. Si tu placa necesita thermal pads o tiene una falla electrónica, te avisamos y cotizamos antes de hacer cualquier trabajo adicional.</p>
 </div>
 
 <!-- OPTIMIZACIÓN -->
@@ -365,13 +384,13 @@ footer a:hover{color:var(--red);}
     <tbody>
       <tr>
         <td>Optimización sin formateo</td>
-        <td>Limpieza de inicio, servicios, registro, actualizaciones y antivirus</td>
+        <td>Revisión de inicio, espacio, actualizaciones, software no deseado y antivirus.<div class="scope"><span class="yes">Sin borrar tus archivos</span><span class="no">No reemplaza una reparación de hardware</span></div></td>
         <td class="price-normal">$50.000</td>
         <td class="price-urgencia">$75.000</td>
       </tr>
       <tr>
         <td>Optimización sin formateo <span class="badge-pop">GAMER</span></td>
-        <td>Todo lo anterior + tweaks de rendimiento, drivers GPU, modo juego, overclock básico</td>
+        <td>Optimización de sistema y configuración para juegos, drivers y modo juego.<div class="scope"><span class="yes">Perfil gamer</span><span class="no">Sin overclock ni reparaciones</span></div></td>
         <td class="price-normal">$120.000</td>
         <td class="price-urgencia">$180.000</td>
       </tr>
