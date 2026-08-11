@@ -59,10 +59,16 @@ nav{background:var(--black2);border-bottom:2px solid var(--red);padding:0 24px;h
 .hero h1{font-family:var(--display);font-size:clamp(40px,7vw,78px);line-height:.95;letter-spacing:-.04em;margin-bottom:18px;}
 .hero h1 span{color:var(--red);}
 .hero p{max-width:760px;font-size:18px;color:var(--text2);line-height:1.7;}
-.hero-actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:26px;}
+.hero-actions{display:flex;flex-direction:column;align-items:flex-start;gap:16px;margin-top:26px;padding:18px 20px;border:1px solid rgba(204,0,0,.32);border-left:3px solid var(--red);border-radius:12px;background:linear-gradient(90deg,rgba(204,0,0,.12),rgba(204,0,0,0));}
 .hero-actions a{display:inline-flex;align-items:center;justify-content:center;padding:13px 18px;border-radius:10px;text-decoration:none;font-weight:700;text-transform:uppercase;letter-spacing:.05em;font-size:12px;border:1px solid var(--border);background:var(--black3);color:#fff;}
 .hero-actions a.primary{background:var(--red);border-color:var(--red);}
 .hero-actions a:hover{border-color:var(--red);}
+.hero-actions-kicker{font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#fff;}
+.hero-actions .hero-track-repair{min-width:250px;padding:16px 24px;font-size:14px;box-shadow:0 10px 24px rgba(204,0,0,.36);}
+.hero-actions-new{display:block;}
+.hero-actions-new>span{display:block;margin-bottom:10px;font-size:14px;letter-spacing:0;color:var(--text2);}
+.hero-actions-new>div{display:flex;flex-wrap:wrap;gap:10px;}
+@media(min-width:700px){.hero-actions{display:grid;grid-template-columns:minmax(330px,1.25fr) minmax(300px,.75fr);column-gap:34px;row-gap:14px;width:100%;}.hero-actions-kicker{grid-column:1/-1;}.hero-actions .hero-track-repair{width:100%;min-height:64px;justify-content:space-between;}.hero-actions-new{align-self:center;border-left:1px solid rgba(255,255,255,.16);padding-left:34px;}}
 .section{max-width:1100px;margin:0 auto;padding:0 24px 28px;}
 .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;}
 .card{background:var(--black2);border:1px solid var(--border);border-radius:16px;padding:22px;}
@@ -84,7 +90,8 @@ nav{background:var(--black2);border-bottom:2px solid var(--red);padding:0 24px;h
 .cta-links{display:flex;flex-wrap:wrap;gap:12px;margin-top:18px;}
 .cta-links a{display:inline-flex;align-items:center;justify-content:center;padding:12px 16px;border-radius:10px;background:#fff;color:var(--red);text-decoration:none;font-weight:800;text-transform:uppercase;letter-spacing:.05em;font-size:12px;}
 .proof-section{max-width:1100px;margin:0 auto;padding:30px 24px 56px;}
-.proof-head{display:flex;align-items:end;justify-content:space-between;gap:22px;margin-bottom:22px;flex-wrap:wrap;}.proof-head h2{font-family:var(--display);font-size:clamp(31px,5vw,48px);line-height:.95;letter-spacing:-.035em;}.proof-head h2 span{color:var(--red);}.google-score{display:flex;align-items:center;gap:9px;color:#f7b731;font-size:19px;font-weight:800;}.google-score small{color:var(--text2);font-size:12px;font-weight:500;}.review-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;}.review-card{background:var(--black2);border:1px solid var(--border);border-radius:14px;padding:20px;}.review-stars{color:#f7b731;font-size:14px;letter-spacing:2px;}.review-card blockquote{margin:15px 0;color:var(--text2);font-size:14px;line-height:1.65;}.review-card cite{font-style:normal;font-size:13px;font-weight:800;color:#fff;}.review-card cite small{display:block;color:var(--text3);font-weight:500;margin-top:3px;}.google-link{display:inline-flex;margin-top:18px;color:#fff;text-decoration:none;border-bottom:1px solid var(--red);font-weight:700;font-size:13px;}.google-link:hover{color:var(--red);}
+.proof-head{display:flex;align-items:end;justify-content:space-between;gap:22px;margin-bottom:22px;flex-wrap:wrap;}.proof-head h2{font-family:var(--display);font-size:clamp(31px,5vw,48px);line-height:.95;letter-spacing:-.035em;}.proof-head h2 span{color:var(--red);}.google-score{display:flex;align-items:center;gap:9px;color:#f7b731;font-size:19px;font-weight:800;}.google-score small{color:var(--text2);font-size:12px;font-weight:500;}.review-carousel{overflow:hidden;}.review-grid{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;scroll-behavior:smooth;}.review-grid::-webkit-scrollbar{display:none;}.review-card{flex:0 0 calc((100% - 28px)/3);scroll-snap-align:start;background:var(--black2);border:1px solid var(--border);border-radius:14px;padding:20px;}.review-stars{color:#f7b731;font-size:14px;letter-spacing:2px;}.review-card blockquote{margin:15px 0;color:var(--text2);font-size:14px;line-height:1.65;}.review-card cite{font-style:normal;font-size:13px;font-weight:800;color:#fff;}.review-card cite small{display:block;color:var(--text3);font-weight:500;margin-top:3px;}.google-link{display:inline-flex;margin-top:18px;color:#fff;text-decoration:none;border-bottom:1px solid var(--red);font-weight:700;font-size:13px;}.google-link:hover{color:var(--red);}
+@media(min-width:861px){.review-grid{width:calc(533.333333% + 60.667px);overflow:visible;scroll-snap-type:none;animation:review-carousel-scroll 32s linear infinite;}.review-card{flex:0 0 calc((100% - 210px)/16);}@keyframes review-carousel-scroll{from{transform:translateX(0);}to{transform:translateX(calc(-50% + 7px));}}}
 .location-section{max-width:1100px;margin:0 auto;padding:0 24px 56px;}.location-wrap{display:grid;grid-template-columns:1.25fr .75fr;overflow:hidden;border:1px solid var(--border);border-radius:16px;background:var(--black2);}.location-map{min-height:330px;}.location-map iframe{display:block;width:100%;height:100%;border:0;filter:grayscale(35%) contrast(1.08);}.location-info{padding:28px;display:flex;flex-direction:column;justify-content:center;}.location-info .eyebrow{margin-bottom:10px;}.location-info h2{font-family:var(--display);font-size:38px;line-height:.93;letter-spacing:-.035em;}.location-info p{margin-top:14px;color:var(--text2);line-height:1.65;font-size:15px;}.location-info strong{color:#fff;}.map-button{display:inline-flex;align-self:flex-start;margin-top:22px;padding:12px 15px;border-radius:8px;background:var(--red);color:#fff;text-decoration:none;font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;}
 footer{background:var(--black2);border-top:2px solid var(--red);padding:20px 24px;text-align:center;}
 footer span{font-family:var(--mono);font-size:11px;color:var(--text3);}
@@ -92,10 +99,12 @@ footer a{color:var(--text2);text-decoration:none;}
 footer a:hover{color:var(--red);}
 @media(max-width:860px){
   .grid,.strip,.review-grid,.location-wrap,.service-feature-grid,.process-grid{grid-template-columns:1fr;}.location-map{min-height:260px;}.process-step{padding:0 0 18px 52px;}.process-step:not(:last-child){border-right:0;border-bottom:1px solid var(--border);margin-bottom:18px;}
+  .review-card{flex-basis:calc((100% - 14px)/2);}
 }
 @media(max-width:520px){
   nav{padding:12px 14px;height:auto;align-items:flex-start;flex-wrap:wrap;}
   .nav-links{margin-left:0;width:100%;}
+  .review-card{flex-basis:100%;}
 }
 </style>
 <style>
@@ -131,9 +140,15 @@ footer a:hover{color:var(--red);}
   <h1>Servicio técnico para <span>PC y notebook</span> cerca de Flores y Floresta</h1>
   <p>PCLAF atiende equipos de clientes de Flores, Floresta y zonas cercanas de CABA. Hacemos formateo, limpieza interna, cambio de pasta térmica, instalación de Windows, optimización y mantenimiento general con atención por turno.</p>
   <div class="hero-actions">
-    <a class="primary" href="historial.html">Consultar arreglo</a>
-    <a href="precios.html">Ver precios</a>
-    <a href="turnos.html">Pedir turno</a>
+    <span class="hero-actions-kicker">¿Ya dejaste tu equipo?</span>
+    <a class="primary hero-track-repair" href="historial.html">Consultar mi arreglo →</a>
+    <div class="hero-actions-new">
+      <span>¿Todavía no dejaste tu equipo?</span>
+      <div>
+        <a href="precios.html">Ver precios</a>
+        <a href="turnos.html">Pedir turno</a>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -150,12 +165,27 @@ footer a:hover{color:var(--red);}
 <section class="proof-section">
   <div class="proof-head">
     <h2>Opiniones de <span>clientes reales</span></h2>
-    <div class="google-score">★ 4.4 <small>en Google Maps</small></div>
+    <div class="google-score">★ 4.5 <small>8 opiniones en Google</small></div>
   </div>
+  <div class="review-carousel" aria-label="Opiniones de clientes">
   <div class="review-grid">
-    <article class="review-card"><div class="review-stars">★★★★★</div><blockquote>“Se nota que son muy profesionales. Muy claros y honestos al informar. Muy rápidos y cordiales.”</blockquote><cite>Elizabeth Pier S.<small>Google Maps</small></cite></article>
-    <article class="review-card"><div class="review-stars">★★★★★</div><blockquote>“Económicos, honestos y rápidos en los arreglos. Súper recomendables.”</blockquote><cite>Francisco Adrián F.<small>Google Maps</small></cite></article>
-    <article class="review-card"><div class="review-stars">★★★★★</div><blockquote>“Excelente servicio. Rápido y a buen precio, me revivió la compu, parece nueva.”</blockquote><cite>Facundo Z.<small>Google Maps</small></cite></article>
+    <article class="review-card"><div class="review-stars">★★★★★</div><blockquote>“Desde el año 2022 que soy cliente de PCLAF y siempre recibimos una atención excelente, con diagnósticos justos y presupuestos acordes. Lo recomiendo 100%.”</blockquote><cite>Natalia O.<small>Google Maps · Hace 2 días</small></cite></article>
+    <article class="review-card"><div class="review-stars">★★★★★</div><blockquote>“Se nota que son muy profesionales. Muy claros y honestos al informar. Muy rápidos y cordiales. En todo momento me mantuvieron al tanto de las novedades. Súper recomendado.”</blockquote><cite>Elizabeth P.<small>Google Maps · Hace un mes</small></cite></article>
+    <article class="review-card"><div class="review-stars">★★★★★</div><blockquote>“Siempre nos asesoramos con PCLAF y la verdad no lo cambiamos. Económicos, honestos y rápidos en los arreglos. Súper recomendables.”</blockquote><cite>Francisco F.<small>Google Maps · Hace un mes</small></cite></article>
+    <article class="review-card"><div class="review-stars">★★★★★</div><blockquote>“Siempre de 10. Nunca un problema. Te asesora según tu necesidad y disponibilidades la mejor opción. No duden en consultarles.”</blockquote><cite>S Z<small>Google Maps · Hace 4 meses</small></cite></article>
+    <article class="review-card"><div class="review-stars">★★★★★</div><blockquote>“Excelente servicio y rapidez para solucionar el problema.”</blockquote><cite>Cristian P.<small>Google Maps · Hace 3 meses</small></cite></article>
+    <article class="review-card"><div class="review-stars">★★★★★</div><blockquote>“Excelente servicio. Rápido y a buen precio, me revivió la compu, parece nueva.”</blockquote><cite>Facundo Z.<small>Google Maps · Hace un año</small></cite></article>
+    <article class="review-card"><div class="review-stars">★★★★★</div><blockquote>“Todo bárbaro. Siempre atienden con rapidéz. ¡Recomendable!”</blockquote><cite>Noelia A.<small>Google Maps · Hace un año</small></cite></article>
+    <article class="review-card"><div class="review-stars">★<span style="color:var(--text3)">☆☆☆☆</span></div><blockquote>“Busqué el local y ni siquiera había nada y ni una referencia, tampoco responden los mensajes. Existe la función de actualizar la dirección o de eliminarla también.”</blockquote><cite>Silva E.<small>Google Maps · Hace un año</small></cite></article>
+    <article class="review-card" aria-hidden="true"><div class="review-stars">★★★★★</div><blockquote>“Desde el año 2022 que soy cliente de PCLAF y siempre recibimos una atención excelente, con diagnósticos justos y presupuestos acordes. Lo recomiendo 100%.”</blockquote><cite>Natalia O.<small>Google Maps · Hace 2 días</small></cite></article>
+    <article class="review-card" aria-hidden="true"><div class="review-stars">★★★★★</div><blockquote>“Se nota que son muy profesionales. Muy claros y honestos al informar. Muy rápidos y cordiales. En todo momento me mantuvieron al tanto de las novedades. Súper recomendado.”</blockquote><cite>Elizabeth P.<small>Google Maps · Hace un mes</small></cite></article>
+    <article class="review-card" aria-hidden="true"><div class="review-stars">★★★★★</div><blockquote>“Siempre nos asesoramos con PCLAF y la verdad no lo cambiamos. Económicos, honestos y rápidos en los arreglos. Súper recomendables.”</blockquote><cite>Francisco F.<small>Google Maps · Hace un mes</small></cite></article>
+    <article class="review-card" aria-hidden="true"><div class="review-stars">★★★★★</div><blockquote>“Siempre de 10. Nunca un problema. Te asesora según tu necesidad y disponibilidades la mejor opción. No duden en consultarles.”</blockquote><cite>S Z<small>Google Maps · Hace 4 meses</small></cite></article>
+    <article class="review-card" aria-hidden="true"><div class="review-stars">★★★★★</div><blockquote>“Excelente servicio y rapidez para solucionar el problema.”</blockquote><cite>Cristian P.<small>Google Maps · Hace 3 meses</small></cite></article>
+    <article class="review-card" aria-hidden="true"><div class="review-stars">★★★★★</div><blockquote>“Excelente servicio. Rápido y a buen precio, me revivió la compu, parece nueva.”</blockquote><cite>Facundo Z.<small>Google Maps · Hace un año</small></cite></article>
+    <article class="review-card" aria-hidden="true"><div class="review-stars">★★★★★</div><blockquote>“Todo bárbaro. Siempre atienden con rapidéz. ¡Recomendable!”</blockquote><cite>Noelia A.<small>Google Maps · Hace un año</small></cite></article>
+    <article class="review-card" aria-hidden="true"><div class="review-stars">★<span style="color:var(--text3)">☆☆☆☆</span></div><blockquote>“Busqué el local y ni siquiera había nada y ni una referencia, tampoco responden los mensajes. Existe la función de actualizar la dirección o de eliminarla también.”</blockquote><cite>Silva E.<small>Google Maps · Hace un año</small></cite></article>
+  </div>
   </div>
   <a class="google-link" href="https://www.google.com/maps?q=PCLAF%20Servicio%20Tecnico%20Campana%2051%20Floresta" target="_blank" rel="noopener noreferrer">Ver todas las reseñas en Google →</a>
 </section>
