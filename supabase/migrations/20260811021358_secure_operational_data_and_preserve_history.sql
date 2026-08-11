@@ -10,8 +10,8 @@ begin
   foreach table_name in array array['calificaciones','clientes','equipos','fotos','pasos','reparaciones','reportes','turnos']
   loop
     execute format('alter table public.%I enable row level security', table_name);
-    revoke all privileges on table public.%I from anon;
-    grant select, insert, update, delete on table public.%I to authenticated;
+    execute format('revoke all privileges on table public.%I from anon', table_name);
+    execute format('grant select, insert, update, delete on table public.%I to authenticated', table_name);
     for policy_name in
       select policyname from pg_policies where schemaname = 'public' and tablename = table_name
     loop
