@@ -1290,8 +1290,14 @@ function infraTitle(project,field){const state=project[`${field}_estado`]||'pend
 async function loadWebProjects(){
   const list=document.getElementById('webList');
   if(list) list.innerHTML='<div class="web-empty"><div class="spinner"></div>Cargando proyectos web...</div>';
-  try{webProjects=await db('GET','web_proyectos','?select=*&order=created_at.desc')||[];renderWebProjects();}
+  try{webProjects=await db('GET','web_proyectos','?select=*&order=created_at.desc')||[];renderWebProjects();refreshWebHealth().catch(error=>console.warn('web health',error));}
   catch(e){if(list)list.innerHTML='<div class="web-empty">No se pudieron cargar los proyectos. Aplicá la migración de Web antes de usar este módulo.</div>';console.error('web projects',e);}
+}
+async function refreshWebHealth(){
+  const response=await fetch(`${SUPA}/functions/v1/web-health`,{method:'POST',headers:H,body:'{}'});
+  if(!response.ok)throw new Error(await response.text());
+  webProjects=await db('GET','web_proyectos','?select=*&order=created_at.desc')||[];
+  renderWebProjects();
 }
 function setWebFilter(filter,button){webFilter=filter;document.querySelectorAll('#view-web .fbtn').forEach(b=>b.classList.remove('active'));button.classList.add('active');renderWebProjects();}
 function renderWebProjects(){
@@ -1313,7 +1319,7 @@ function renderWebProjects(){
   if(domainAlerts)domainAlerts.innerHTML=domainsSoon.length?domainsSoon.slice(0,3).map(p=>`<b>${escapeHtml(p.dominio||p.cliente_empresa||p.cliente_nombre)}</b> vence ${webDate(p.proxima_renovacion)}`).join('<br>'):'No hay dominios que vencer en los próximos 30 días.';
   if(billingAlerts)billingAlerts.innerHTML=billsDue.length?billsDue.slice(0,3).map(p=>`<b>${escapeHtml(p.cliente_empresa||p.cliente_nombre)}</b> · ${webMoney(p.monto_mensual_usd)||'cobro'} ${p.proximo_cobro?`(${webDate(p.proximo_cobro)})`:''}`).join('<br>'):'No hay cobros mensuales pendientes en los próximos 30 días.';
   if(!visible.length){list.innerHTML='<div class="web-empty">No hay proyectos para este filtro.</div>';return;}
-  list.innerHTML=visible.map(p=>{const plan=WEB_PLAN_PRESETS[p.plan]||WEB_PLAN_PRESETS['A medida'];return `<article class="web-card ${plan.className}"><div class="web-card-top"><span class="web-code">${escapeHtml(p.codigo||'WEB-…')}</span><select class="web-status" onchange="updateWebStatus(${Number(p.id)},this.value)">${Object.entries(WEB_STATUS).map(([key,label])=>`<option value="${key}" ${p.estado===key?'selected':''}>${label}</option>`).join('')}</select></div><div class="web-name">${escapeHtml(p.cliente_nombre)}</div><div class="web-company">${escapeHtml(p.cliente_empresa||'Sin empresa cargada')}</div><div class="web-meta"><span class="web-chip">${escapeHtml(p.plan||'A medida')}</span>${p.importe_usd?`<span class="web-chip">${webMoney(p.importe_usd)}</span>`:''}${p.dominio?`<span class="web-chip">${escapeHtml(p.dominio)}</span>`:''}</div><div class="infra-row">${Object.keys(INFRA_LABELS).map(field=>{const state=p[`${field}_estado`]||'pendiente';return `<button class="infra-btn ${state}" title="${escapeHtml(infraTitle(p,field))}" onclick="cycleInfraStatus(${Number(p.id)},'${field}')"><i class="infra-dot"></i>${INFRA_LABELS[field]}</button>`;}).join('')}</div><div class="web-card-foot"><span>${p.fecha_entrega?`Entrega: ${webDate(p.fecha_entrega)}`:'Sin fecha de entrega'}</span><span>${p.proxima_renovacion?`Renueva: ${webDate(p.proxima_renovacion)}`:''}</span></div></article>`;}).join('');
+  list.innerHTML=visible.map(p=>{const plan=WEB_PLAN_PRESETS[p.plan]||WEB_PLAN_PRESETS['A medida'];return `<article class="web-card ${plan.className}"><div class="web-card-top"><span class="web-code">${escapeHtml(p.codigo||'WEB-…')}</span><select class="web-status" onchange="updateWebStatus(${Number(p.id)},this.value)">${Object.entries(WEB_STATUS).map(([key,label])=>`<option value="${key}" ${p.estado===key?'selected':''}>${label}</option>`).join('')}</select></div><div class="web-name">${escapeHtml(p.cliente_nombre)}</div><div class="web-company">${escapeHtml(p.cliente_empresa||'Sin empresa cargada')}</div><div class="web-meta"><span class="web-chip">${escapeHtml(p.plan||'A medida')}</span>${p.importe_usd?`<span class="web-chip">${webMoney(p.importe_usd)}</span>`:''}${p.dominio?`<span class="web-chip">${escapeHtml(p.dominio)}</span>`:''}</div><div class="infra-row">${Object.keys(INFRA_LABELS).map(field=>{const state=p[`${field}_estado`]||'pendiente';return `<span class="infra-btn ${state}" title="${escapeHtml(infraTitle(p,field))}"><i class="infra-dot"></i>${INFRA_LABELS[field]}</span>`;}).join('')}</div><div class="web-card-foot"><span>${p.fecha_entrega?`Entrega: ${webDate(p.fecha_entrega)}`:'Sin fecha de entrega'}</span><span>${p.proxima_renovacion?`Renueva: ${webDate(p.proxima_renovacion)}`:''}</span></div></article>`;}).join('');
   wireWebCardMenus(list,visible);
 }
 function wireWebCardMenus(list,projects){
@@ -1358,15 +1364,6 @@ async function deleteWebProject(id){
 }
 document.addEventListener('click',()=>document.querySelectorAll('.web-menu.open').forEach(menu=>menu.classList.remove('open')));
 async function updateWebStatus(id,estado){try{await db('PATCH','web_proyectos',`?id=eq.${id}`,{estado});const project=webProjects.find(p=>p.id===id);if(project)project.estado=estado;renderWebProjects();toast(`Estado actualizado: ${WEB_STATUS[estado]}`);}catch(e){toast('No se pudo actualizar el estado',true);loadWebProjects();}}
-async function cycleInfraStatus(id,field){
-  const project=webProjects.find(p=>p.id===id);if(!project)return;
-  const statusField=`${field}_estado`,detailField=`${field}_detalle`;
-  const next={pendiente:'ok',ok:'error',error:'pendiente'}[project[statusField]||'pendiente'];
-  let detail=project[detailField]||null;
-  if(next==='error'){const entered=window.prompt(`Detalle del error de ${INFRA_LABELS[field]} (se verá al pasar el mouse por el indicador):`,detail||'');if(entered===null)return;detail=entered.trim()||`Error sin detalle en ${INFRA_LABELS[field]}`;}
-  if(next==='ok')detail=null;
-  try{await db('PATCH','web_proyectos',`?id=eq.${id}`,{[statusField]:next,[detailField]:detail});project[statusField]=next;project[detailField]=detail;renderWebProjects();toast(`${INFRA_LABELS[field]}: ${next==='ok'?'operativo':next==='error'?'con error':'pendiente'}`);}catch(e){toast(`No se pudo actualizar ${INFRA_LABELS[field]}`,true);loadWebProjects();}
-}
 
 function normalizeSpecText(v=''){
   return String(v||'')
@@ -3744,6 +3741,7 @@ document.addEventListener('DOMContentLoaded', () => {
   requestNotifPermission();
   loadRepoUpdateBadges();
   setTimeout(() => { ensureNotifAudio().catch(()=>{}); }, 150);
+  setInterval(()=>{if(hasValidSession())refreshWebHealth().catch(()=>{});},5*60*1000);
   document.addEventListener('pointerdown', () => { ensureNotifAudio().catch(()=>{}); }, { once:true, passive:true });
   window.addEventListener('focus', () => scheduleRefreshVisibleReportActions(250));
   document.addEventListener('visibilitychange', () => {
