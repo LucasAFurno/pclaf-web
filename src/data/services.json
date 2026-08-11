@@ -1,11 +1,11 @@
 [
-  {"name":"Limpieza interna PC + pasta térmica","normal":"$70.000","urgente":"$105.000"},
+  {"name":"Limpieza interna PC + pasta térmica (sin GPU)","normal":"$70.000","urgente":"$105.000"},
   {"name":"Limpieza interna Notebook","normal":"$90.000","urgente":"$135.000"},
   {"name":"Formateo Windows 11 + drivers","normal":"$70.000","urgente":"$105.000"},
   {"name":"Formateo Windows 11 + drivers + Office + apps","normal":"$85.000","urgente":"$128.000"},
   {"name":"Optimización sin formateo","normal":"$50.000","urgente":"$75.000"},
   {"name":"Optimización sin formateo GAMER","normal":"$120.000","urgente":"$180.000"},
-  {"name":"Service GPU / Placa de video","normal":"$70.000","urgente":"$105.000"},
+  {"name":"Limpieza interna GPU / placa de video","normal":"$70.000","urgente":"$105.000"},
   {"name":"Backup de archivos","normal":"desde $20.000","urgente":"desde $30.000"},
   {"name":"Atención remota","normal":"$90.000","urgente":"$135.000"},
   {"name":"Reparación motherboard","normal":"desde $95.000","urgente":""},
