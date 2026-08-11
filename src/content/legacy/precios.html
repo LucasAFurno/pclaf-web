@@ -121,6 +121,11 @@ nav{background:var(--black2);border-bottom:2px solid var(--red);padding:0 24px;h
   .price-guide{grid-template-columns:1fr;}
   .price-table td:nth-child(2){display:none;}
   .price-table th:nth-child(2){display:none;}
+  .table-scroll .price-table{min-width:0;width:100%;}
+  .price-table th,.price-table td{padding:13px 12px;}
+  .price-table th:first-child,.price-table td:first-child{width:58%;white-space:normal;overflow-wrap:normal;word-break:normal;}
+  .price-table th:nth-child(3),.price-table td:nth-child(3){width:21%;text-align:right;}
+  .price-table th:nth-child(4),.price-table td:nth-child(4){width:21%;text-align:right;}
 }
 .faq-list{display:flex;flex-direction:column;gap:2px;}
 .faq-item{background:var(--black2);border:1px solid var(--border);border-radius:8px;overflow:hidden;}
@@ -186,6 +191,9 @@ footer a:hover{color:var(--red);}
   .nav-wa{padding:8px 12px;font-size:12px;}
   .price-table td:nth-child(4){display:none;}
   .price-table th:nth-child(4){display:none;}
+  .price-table th:first-child,.price-table td:first-child{width:68%;font-size:15px;line-height:1.15;}
+  .price-table th:nth-child(3),.price-table td:nth-child(3){width:32%;font-size:12px;}
+  .badge-pop{display:none;}
 }
 @media(max-width:820px){
   .intro-grid{grid-template-columns:1fr;}
@@ -337,7 +345,7 @@ footer a:hover{color:var(--red);}
         <td class="price-urgencia">$135.000</td>
       </tr>
       <tr class="gpu-row">
-        <td>Limpieza de GPU / placa de video <span class="badge-new">SERVICIO APARTE</span></td>
+        <td>Limpieza de GPU / placa de video</td>
         <td>Desmontaje de la placa de video, limpieza de polvo, cambio de pasta térmica y prueba bajo carga.<div class="scope"><span class="yes">GPU + cooler</span><span class="no">No incluye thermal pads ni reparación</span></div></td>
         <td class="price-normal">$70.000</td>
         <td class="price-urgencia">$105.000</td>
