@@ -2099,23 +2099,28 @@ async function addInternalNote(repId){
   const input=document.getElementById(`ini-${repId}`);
   const text=input?.value?.trim()||'';
   if(!text){toast('Escribí una nota interna',true);return;}
-  const current=await getInternalNotesRecord(repId);
-  const notes=parseInternalNotes(current?.html_content);
-  notes.push({
-    id:`n${Date.now()}`,
-    text,
-    created_at:new Date().toISOString()
-  });
-  const payload={reparacion_id:repId,filename:INTERNAL_NOTES_FILENAME,html_content:JSON.stringify(notes),html_cliente:''};
-  if(current?.id){
-    await db('PATCH','reportes',`?id=eq.${current.id}`,payload);
-  }else{
-    await db('POST','reportes','',payload);
+  try{
+    const current=await getInternalNotesRecord(repId);
+    const notes=parseInternalNotes(current?.html_content);
+    notes.push({
+      id:`n${Date.now()}`,
+      text,
+      created_at:new Date().toISOString()
+    });
+    const payload={reparacion_id:repId,filename:INTERNAL_NOTES_FILENAME,html_content:JSON.stringify(notes),html_cliente:''};
+    if(current?.id){
+      await db('PATCH','reportes',`?id=eq.${current.id}`,payload);
+    }else{
+      await db('POST','reportes','',payload);
+    }
+    if(input) input.value='';
+    await loadInternalNotes(repId);
+    toast('Nota interna guardada ✓');
+    playSound('action');
+  }catch(error){
+    console.error('addInternalNote error',error);
+    toast('No se pudo guardar la nota. Volvé a iniciar sesión e intentá otra vez.',true);
   }
-  if(input) input.value='';
-  await loadInternalNotes(repId);
-  toast('Nota interna guardada ✓');
-  playSound('action');
 }
 
 async function loadPasos(id){
@@ -2129,30 +2134,37 @@ async function loadPasos(id){
 }
 
 async function addPaso(id){
-  const t=document.getElementById(`sti-${id}`).value.trim();
-  if(!t){toast('Escribí un título',true);return;}
+  const typedTitle=document.getElementById(`sti-${id}`).value.trim();
   const es=document.getElementById(`ses-${id}`).value;
   const no=document.getElementById(`sno-${id}`).value.trim();
   const fe=document.getElementById(`sfe-${id}`).value.trim();
-  const ex=await db('GET','pasos',`?reparacion_id=eq.${id}&select=orden&order=orden.desc&limit=1`);
-  const ord=ex?.length?ex[0].orden+1:1;
-  const ico=es==='done'?'check':es==='active'?'wrench':'bell';
-  await db('POST','pasos','',{reparacion_id:id,orden:ord,titulo:t,estado:es,nota:no||null,fecha:fe||null,icono:ico});
-  document.getElementById(`sti-${id}`).value='';document.getElementById(`sno-${id}`).value='';document.getElementById(`sfe-${id}`).value='';
-  await loadPasos(id);
+  if(!typedTitle&&!no){toast('Escribí un comentario o un título',true);return;}
+  const t=typedTitle||'Comentario interno';
+  try{
+    const ex=await db('GET','pasos',`?reparacion_id=eq.${id}&select=orden&order=orden.desc&limit=1`);
+    const ord=ex?.length?ex[0].orden+1:1;
+    const ico=es==='done'?'check':es==='active'?'wrench':'bell';
+    await db('POST','pasos','',{reparacion_id:id,orden:ord,titulo:t,estado:es,nota:no||null,fecha:fe||null,icono:ico});
+    document.getElementById(`sti-${id}`).value='';document.getElementById(`sno-${id}`).value='';document.getElementById(`sfe-${id}`).value='';
+    await loadPasos(id);
 
   // Ofrecer WA si hay nota
   const rep=aR.find(r=>r.id===id);
   const eq=aE.find(e=>e.id===rep?.equipo_id)||{};
   const cl=aC.find(c=>c.id===eq.cliente_id)||{};
-  if(cl.telefono && no){
+    if(cl.telefono && no){
     const msg=encodeURIComponent(`Hola ${cl.nombre?.split(' ')[0]||''}! Actualización de tu ${eq.nombre||'equipo'} (#${rep?.numero}): *${t}*${no?' — '+no:''}.`);
     toast('Paso agregado ✓');
     playSound('action');
     abrirWA(cl.telefono, msg);
-  } else {
+    } else {
     toast('Paso agregado ✓');
     playSound('action');
+    }
+  }catch(error){
+    console.error('addPaso error',error);
+    toast('No se pudo guardar el paso. Volvé a iniciar sesión e intentá otra vez.',true);
+    playSound('error');
   }
 }
 
