@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
 <link rel="canonical" href="https://www.pclaf.com.ar/admin.html">
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>
 <script>
 if (location.protocol !== 'https:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
   location.replace('https://' + location.host + location.pathname + location.search + location.hash);
@@ -497,9 +498,9 @@ select.web-status,select.f-sel,select.sse{color-scheme:dark;}select.web-status o
     <input class="f-in" type="email" id="loginEmail" value="lucas_yenkoz28@hotmail.com" autocomplete="username" inputmode="email" required/>
     <label class="f-lbl">Contraseña</label>
     <input class="f-in" type="password" id="loginPass" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"/>
+    <div class="turnstile-wrap" id="turnstileWidget"></div>
     <button class="login-btn" id="loginBtn" onclick="doLogin()">Entrar</button>
-    <button class="ibtn" style="width:100%;margin-top:10px" id="signupBtn" onclick="createInitialAccess()">Crear acceso inicial</button>
-    <div id="loginSecurity" class="login-security">Usá tu cuenta administradora de PCLAF.</div>
+    <div id="loginSecurity" class="login-security">Completá la verificación de seguridad para entrar.</div>
     <div class="login-err" id="loginErr">Contraseña incorrecta</div>
   </div>
 </div>
@@ -931,8 +932,19 @@ async function doLogin(){
     passInput.classList.add('err');
     return;
   }
+  if(!_turnstileToken){
+    err.textContent='Completá la verificación de seguridad.';
+    err.classList.add('show');
+    return;
+  }
   btn.disabled=true;btn.textContent='Verificando...';
   try{
+    const gate=await fetch(`${SUPA}/functions/v1/admin-login`,{
+      method:'POST',headers:{apikey:KEY,Authorization:`Bearer ${KEY}`,'Content-Type':'application/json'},
+      body:JSON.stringify({password:val,turnstileToken:_turnstileToken})
+    });
+    const gateResult=await gate.json().catch(()=>({}));
+    if(!gate.ok || !gateResult.ok) throw new Error(gateResult.error||'No se pudo validar el acceso.');
     const response=await fetch(`${SUPA}/auth/v1/token?grant_type=password`,{
       method:'POST',headers:{apikey:KEY,Authorization:`Bearer ${KEY}`,'Content-Type':'application/json'},
       body:JSON.stringify({email,password:val})
@@ -950,11 +962,10 @@ async function doLogin(){
       startSessionTimer();
       return;
     }
-    passInput.classList.add('err');
-    err.classList.add('show');
-    err.textContent=result.error_description||'No se pudo iniciar sesión. Si es tu primer acceso, crealo primero.';
-  }catch(_){
-    err.textContent='No hay conexión con el servidor de acceso.';
+    throw new Error(result.error_description||'No se pudo iniciar la sesión segura.');
+  }catch(error){
+    resetTurnstile();
+    err.textContent=error instanceof Error?error.message:'No hay conexión con el servidor de acceso.';
     err.classList.add('show');
     passInput.classList.add('err');
   }finally{
@@ -962,31 +973,6 @@ async function doLogin(){
   }
 }
 
-async function createInitialAccess(){
-  const email=document.getElementById('loginEmail').value.trim().toLowerCase();
-  const password=document.getElementById('loginPass').value;
-  const err=document.getElementById('loginErr');
-  const btn=document.getElementById('signupBtn');
-  if(email!=='lucas_yenkoz28@hotmail.com' || password.length<12){
-    err.textContent='Usá el correo administrador y una contraseña nueva de al menos 12 caracteres.';
-    err.classList.add('show');
-    return;
-  }
-  btn.disabled=true;btn.textContent='Creando acceso...';
-  try{
-    const response=await fetch(`${SUPA}/auth/v1/signup`,{
-      method:'POST',headers:{apikey:KEY,Authorization:`Bearer ${KEY}`,'Content-Type':'application/json'},
-      body:JSON.stringify({email,password})
-    });
-    const result=await response.json().catch(()=>({}));
-    if(!response.ok) throw new Error(result.msg||result.message||'No se pudo crear la cuenta.');
-    setLoginSecurity('Revisá tu correo y confirmá la cuenta. Después ingresá con esa misma contraseña.',true);
-    err.classList.remove('show');
-  }catch(error){
-    err.textContent=error instanceof Error?error.message:'No se pudo crear la cuenta.';
-    err.classList.add('show');
-  }finally{btn.disabled=false;btn.textContent='Crear acceso inicial';}
-}
 function startSessionTimer(){
   clearInterval(window._sessionTimer);
   if(!_sessionListenersBound){
@@ -1051,6 +1037,7 @@ async function restoreAuthenticatedSession(){
   }
 }
 restoreAuthenticatedSession();
+document.addEventListener('DOMContentLoaded',()=>initTurnstile());
 document.getElementById('loginPass').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
 document.getElementById('loginPass').addEventListener('input',()=>{
   document.getElementById('loginErr').classList.remove('show');

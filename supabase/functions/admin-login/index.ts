@@ -9,6 +9,7 @@ const allowedHostnames = (Deno.env.get("ADMIN_TURNSTILE_HOSTNAMES") || "www.pcla
   .split(",").map((value) => value.trim()).filter(Boolean);
 const maxAttempts = 3;
 const lockMinutes = 15;
+const adminEmail = "lucas_yenkoz28@hotmail.com";
 
 function corsHeaders(req: Request) {
   const origin = req.headers.get("origin") || "";
@@ -54,6 +55,31 @@ async function verifyTurnstile(token: string, remoteip: string) {
   return await response.json() as { success?: boolean; action?: string; hostname?: string };
 }
 
+async function authAdmin(path: string, init: RequestInit = {}) {
+  const response = await fetch(`${supabaseUrl}/auth/v1/admin/${path}`, {
+    ...init,
+    headers: { apikey: serviceRoleKey, Authorization: `Bearer ${serviceRoleKey}`, "Content-Type": "application/json", ...(init.headers || {}) },
+  });
+  const body = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(`Auth admin error ${response.status}`);
+  return body;
+}
+
+// La contraseña que acaba de superar el hash histórico se registra también en
+// Supabase Auth. Así el navegador recibe un JWT real para las políticas RLS sin
+// obligar al administrador a cambiar su contraseña conocida.
+async function syncAdminPassword(password: string) {
+  const list = await authAdmin("users?per_page=1000");
+  const user = Array.isArray(list?.users)
+    ? list.users.find((candidate: { email?: string }) => candidate.email?.toLowerCase() === adminEmail)
+    : null;
+  if (user?.id) {
+    await authAdmin(`users/${user.id}`, { method: "PUT", body: JSON.stringify({ password, email_confirm: true }) });
+    return;
+  }
+  await authAdmin("users", { method: "POST", body: JSON.stringify({ email: adminEmail, password, email_confirm: true }) });
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders(req) });
   if (req.method !== "POST") return reply(req, { ok: false, error: "method_not_allowed" }, 405);
@@ -77,6 +103,7 @@ Deno.serve(async (req) => {
 
     if (await sha256(password) === passwordHash) {
       if (record) await db(`admin_login_attempts?ip_hash=eq.${encodeURIComponent(ipHash)}`, { method: "DELETE" });
+      await syncAdminPassword(password);
       return reply(req, { ok: true });
     }
 
