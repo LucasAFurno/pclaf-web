@@ -2515,7 +2515,7 @@ async function verReporteAdmin(reportId, repId=''){
     const content = slot === 'tecnico' ? (row.html_content || row.html_cliente) : (row.html_cliente || row.html_content);
     if(popup){
       const safeHtml = content && String(content).trim()
-        ? String(content)
+        ? sanitizeReportHtml(String(content))
         : '<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Reporte vacio</title></head><body style="font-family:system-ui;background:#111;color:#eee;padding:24px">No hay contenido disponible para este reporte.</body></html>';
       popup.document.open();
       popup.document.write(safeHtml);
@@ -3338,18 +3338,9 @@ function generarReporteCliente(fullHtml) {
 }
 
 async function purgeExpiredArtifacts() {
-  const key = 'pclaf_last_purge_v1';
-  const now = Date.now();
-  const last = parseInt(localStorage.getItem(key) || '0', 10);
-  if (last && (now - last) < 12 * 60 * 60 * 1000) return;
-  const cutoff = new Date(now - 30 * 24 * 60 * 60 * 1000).toISOString();
-  try {
-    await db('DELETE','reportes',`?created_at=lt.${encodeURIComponent(cutoff)}`);
-    await db('DELETE','fotos',`?created_at=lt.${encodeURIComponent(cutoff)}`);
-    localStorage.setItem(key, String(now));
-  } catch (e) {
-    console.warn('purgeExpiredArtifacts', e);
-  }
+  // La retención se gestiona mediante respaldos y archivado del servidor.
+  // El panel nunca borra evidencias automáticamente al abrirse.
+  return;
 }
 
 function copiarCmd(elementId) {
@@ -3746,7 +3737,6 @@ document.addEventListener('DOMContentLoaded', () => {
   initNotifSound();
   requestNotifPermission();
   loadRepoUpdateBadges();
-  purgeExpiredArtifacts();
   setTimeout(() => { ensureNotifAudio().catch(()=>{}); }, 150);
   document.addEventListener('pointerdown', () => { ensureNotifAudio().catch(()=>{}); }, { once:true, passive:true });
   window.addEventListener('focus', () => scheduleRefreshVisibleReportActions(250));

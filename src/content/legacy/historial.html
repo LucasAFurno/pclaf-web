@@ -211,6 +211,18 @@ footer a:hover{color:var(--red);}
 // â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”
 const SUPABASE_URL     = 'https://bcmfzgjpqfjnudhgraan.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_I1oJLpCSeneeIw2SghABAw_GXrdLLWs';
+const PORTAL_URL = `${SUPABASE_URL}/functions/v1/pclaf-portal`;
+
+async function portal(action, payload = {}) {
+  const r = await fetch(PORTAL_URL, {
+    method: 'POST',
+    headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action, ...payload })
+  });
+  const body = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(body.error || r.status);
+  return body.data;
+}
 
 // â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”
 //  Cliente Supabase (sin dependencias externas)
@@ -325,31 +337,13 @@ async function cargar(code) {
   show('loading');
 
   try {
-    const [cliente] = await db('clientes', `?codigo=eq.${code}&limit=1`);
-    if (!cliente) { hide('loading'); show('notFound'); return; }
-
-    let discountSource = '';
-    if (cliente.descuento_resena) {
-      try {
-        const refRows = await db('turnos', `?nota=ilike.${encodeURIComponent(`*Referido por: ${code}*`)}&select=id&limit=1`);
-        discountSource = refRows?.length ? 'referido' : 'resena';
-      } catch(_) {
-        discountSource = 'resena';
-      }
-    }
-
-    const equipos = await db('equipos', `?cliente_id=eq.${cliente.id}&order=created_at.asc`);
-
-    for (const eq of equipos) {
-      // No mostrar reparaciones canceladas al cliente.
-      eq.repairs = await db('reparaciones', `?equipo_id=eq.${eq.id}&estado=neq.cancelado&order=created_at.desc`);
-      const activa = eq.repairs.find(r => ['listo','proceso','espera'].includes(r.estado));
-      eq.lastStatus = activa?.estado || 'ok';
-    }
-
-    // Ocultar equipos que solo tuvieron reparaciones canceladas.
-    const visibles = equipos.filter(eq => (eq.repairs || []).length > 0);
-    currentClient = { ...cliente, discountSource, machines: visibles };
+    const payload = await portal('history', { codigo: code });
+    if (!payload?.client) { hide('loading'); show('notFound'); return; }
+    const machines = (payload.machines || []).map(eq => {
+      const activa = (eq.repairs || []).find(r => ['listo','proceso','espera'].includes(r.estado));
+      return { ...eq, lastStatus: activa?.estado || 'ok' };
+    });
+    currentClient = { ...payload.client, discountSource: payload.client.descuento_origen || 'resena', machines };
     hide('loading');
     renderMachines(currentClient, code);
 
@@ -411,12 +405,10 @@ async function showMachine(equipoId, evt) {
   evt?.currentTarget?.classList.add('selected');
 
   const repHtml = await Promise.all(m.repairs.map(async (r,i) => {
-    const [pasos, fotos, calArr, repArr] = await Promise.all([
-      db('pasos', `?reparacion_id=eq.${r.id}&order=orden.asc`),
-      db('fotos', `?reparacion_id=eq.${r.id}&order=created_at.asc`).catch(()=>[]),
-      db('calificaciones', `?reparacion_id=eq.${r.id}&limit=1`).catch(()=>[]),
-      db('reportes', `?reparacion_id=eq.${r.id}&order=created_at.desc&select=id,created_at,html_cliente,filename`).catch(()=>[]),
-    ]);
+    const pasos = r.steps || [];
+    const fotos = r.photos || [];
+    const calArr = r.ratings || [];
+    const repArr = r.reports || [];
     const fecha = r.created_at ? new Date(r.created_at).toLocaleDateString('es-AR',{month:'long',year:'numeric'}) : '';
 
     const stepsHtml = pasos.map((s,si) => `
@@ -542,12 +534,10 @@ async function verReporte(reporteId, reparacionId='') {
     return;
   }
   try {
-    const repFilter = reparacionId ? `&reparacion_id=eq.${reparacionId}` : '';
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/reportes?id=eq.${reporteId}${repFilter}&select=id,reparacion_id,html_cliente,filename&limit=1`, {
-      headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` }
-    });
-    const data = await res.json();
-    const reporte = data?.[0];
+    const reporte = currentClient?.machines
+      ?.flatMap(machine => machine.repairs || [])
+      .find(repair => String(repair.id) === String(reparacionId))
+      ?.reports?.find(report => String(report.id) === String(reporteId));
     if (reporte) {
       if (inferReportSlot(reporte.filename) === 'técnico') {
         alert('Este reporte técnico no está disponible en el historial del cliente.');
@@ -587,11 +577,7 @@ async function enviarCalif(repId) {
   if (!puntaje) { alert('Seleccioná una puntuación'); return; }
   const comentario = document.getElementById(`califComent-${repId}`)?.value?.trim() || '';
   try {
-    await fetch(`${SUPABASE_URL}/rest/v1/calificaciones`, {
-      method:'POST',
-      headers:{ apikey:SUPABASE_ANON_KEY, Authorization:`Bearer ${SUPABASE_ANON_KEY}`, 'Content-Type':'application/json', Prefer:'return=representation' },
-      body: JSON.stringify({ reparacion_id:repId, puntuacion:puntaje, comentario })
-    });
+    await portal('rate', { codigo: currentClient?.codigo, reparacionId: repId, puntuacion: puntaje, comentario });
     const bloque = document.getElementById(`califBloque-${repId}`);
     if (!bloque) return;
 

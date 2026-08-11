@@ -404,6 +404,14 @@ textarea.f-in{resize:none;height:80px;}
 const SUPA='https://bcmfzgjpqfjnudhgraan.supabase.co';
 const KEY='sb_publishable_I1oJLpCSeneeIw2SghABAw_GXrdLLWs';
 const H={apikey:KEY,Authorization:`Bearer ${KEY}`,'Content-Type':'application/json',Prefer:'return=representation'};
+const PORTAL_URL=`${SUPA}/functions/v1/pclaf-portal`;
+
+async function portal(action,payload={}){
+  const r=await fetch(PORTAL_URL,{method:'POST',headers:{apikey:KEY,Authorization:`Bearer ${KEY}`,'Content-Type':'application/json'},body:JSON.stringify({action,...payload})});
+  const body=await r.json().catch(()=>({}));
+  if(!r.ok) throw new Error(body.error||'No se pudo completar la solicitud');
+  return body.data;
+}
 
 async function db(m,t,q='',b=null){
   const r=await fetch(`${SUPA}/rest/v1/${t}${q}`,{method:m,headers:H,body:b?JSON.stringify(b):null});
@@ -458,8 +466,7 @@ async function lookupReferral(strict=false){
     return null;
   }
   try{
-    const res=await db('GET','clientes',`?codigo=eq.${encodeURIComponent(ref)}&select=id,codigo,nombre,apellido,descuento_resena&limit=1`);
-    const cliente=res?.[0]||null;
+    const cliente=await portal('referral',{codigo:ref});
     if(cliente){
       state.refCliente=cliente;
       const nombre=[cliente.nombre,cliente.apellido].filter(Boolean).join(' ').trim();
@@ -596,7 +603,7 @@ async function loadOccupied(year,month){
   try{
     const from=`${year}-${String(month+1).padStart(2,'0')}-01`;
     const to=`${year}-${String(month+1).padStart(2,'0')}-31`;
-    const t=await db('GET','turnos',`?fecha=gte.${from}&fecha=lte.${to}&estado=neq.cancelado&select=fecha,hora`);
+    const t=await portal('availability',{desde:from,hasta:to});
     occupiedSlots={};
     (t||[]).forEach(x=>{
       if(!occupiedSlots[x.fecha]) occupiedSlots[x.fecha]=[];
@@ -722,7 +729,7 @@ async function confirmarTurno(){
         return;
       }
       try{
-        await db('PATCH','clientes',`?id=eq.${refCliente.id}`,{descuento_resena:true,descuento_origen:'referido'});
+        // El descuento se aplica de forma atómica dentro de pclaf-portal al crear el turno.
         refCliente.descuento_resena=true;
         refCliente.descuento_origen='referido';
         state.refCliente=refCliente;
@@ -736,14 +743,8 @@ async function confirmarTurno(){
     if(refCliente?.codigo) notaParts.push('Referido por: '+refCliente.codigo);
     if(eq) notaParts.push('Equipo: '+eq);
     if(nota) notaParts.push('Problema: '+nota);
-    const res=await db('POST','turnos','',{
-      nombre:nom, apellido:ape, telefono:tel,
-      servicio:state.servicio, fecha:state.fecha, hora:state.hora,
-      nota:notaParts.join(' | '),
-      estado:'pendiente',
-      urgente: state.urgencia || false
-    });
-    const id=res?.[0]?.id||'';
+    const res=await portal('book',{nombre:nom,apellido:ape,telefono:tel,servicio:state.servicio,fecha:state.fecha,hora:state.hora,nota:notaParts.filter(part=>!part.startsWith('Referido por:')).join(' | '),referido:refIngresado,urgente:state.urgencia||false});
+    const id=res?.id||'';
     const shortId='#T'+id.slice(0,6).toUpperCase();
     document.getElementById('confirmCode').textContent=shortId;
     // Show confirm
