@@ -707,6 +707,9 @@ section{max-width:1100px;margin:0 auto;padding:80px 24px;}
 .step:hover .step-n{color:var(--red);}
 .step-title{font-family:var(--display);font-size:20px;font-weight:800;color:var(--white);margin-bottom:8px;}
 .step-desc{font-size:13px;color:var(--text2);line-height:1.6;}
+.appointment-pulse{padding:10px 12px;border:1px solid rgba(245,158,11,.35);border-radius:8px;background:rgba(245,158,11,.07);color:#f5b642;animation:appointment-pulse 2.4s ease-in-out infinite;}
+@keyframes appointment-pulse{0%,100%{border-color:rgba(245,158,11,.32);box-shadow:0 0 0 rgba(245,158,11,0)}50%{border-color:rgba(255,190,45,.95);box-shadow:0 0 18px rgba(245,158,11,.18)}}
+@media(prefers-reduced-motion:reduce){.appointment-pulse{animation:none;}}
 
 /* â”€â”€â”€ ABOUT STRIP â”€â”€â”€ */
 .about-strip{
@@ -1605,7 +1608,7 @@ body>section:not(.hub-home),body>.ticker-wrap,body>div{display:none!important;}@
     <div class="step">
       <div class="step-n">01</div>
       <div class="step-title">Pedís turno</div>
-      <div class="step-desc">Atendemos únicamente con turno previo. Trabajamos en un laboratorio cerrado, no en un local a la calle. Escribinos por WhatsApp y coordinamos el día y horario que mejor te quede.</div>
+      <div class="step-desc appointment-pulse">Atendemos únicamente con turno previo. Trabajamos en un laboratorio cerrado, no en un local a la calle. Escribinos por WhatsApp y coordinamos el día y horario que mejor te quede.</div>
     </div>
     <div class="step">
       <div class="step-n">02</div>
