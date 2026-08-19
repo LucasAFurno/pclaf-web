@@ -68,9 +68,12 @@ nav{background:var(--black2);border-bottom:2px solid var(--red);padding:0 24px;h
 .hero-actions-new{display:block;}
 .hero-actions-new>span{display:block;margin-bottom:10px;font-size:14px;letter-spacing:0;color:var(--text2);}
 .hero-actions-new>div{display:flex;flex-wrap:wrap;gap:10px;}
-.appointment-notice{max-width:1052px;margin:0 auto 18px;padding:12px 16px;border:1px solid rgba(245,158,11,.28);border-radius:10px;background:rgba(245,158,11,.08);color:#f5b642;font-size:14px;line-height:1.6;animation:appointment-notice-pulse 2.4s ease-in-out infinite;}
+.appointment-notice{max-width:1052px;margin:0 auto 18px;padding:12px 16px;border:1px solid rgba(245,158,11,.5);border-radius:10px;background:linear-gradient(135deg,rgba(245,158,11,.16),rgba(245,158,11,.05));color:#f5b642;font-size:12px;line-height:1.55;text-align:center;animation:appointment-notice-pulse 2.4s ease-in-out infinite;}
+.appointment-notice-label{display:flex;align-items:center;justify-content:center;gap:7px;margin-bottom:5px;font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#ffd067;}
+.appointment-notice-label::before{content:'●';font-size:9px;animation:appointment-notice-dot 1.2s ease-in-out infinite;}
 @keyframes appointment-notice-pulse{0%,100%{border-color:rgba(245,158,11,.32);box-shadow:0 0 0 rgba(245,158,11,0)}50%{border-color:rgba(255,190,45,.95);box-shadow:0 0 20px rgba(245,158,11,.18)}}
-@media(prefers-reduced-motion:reduce){.appointment-notice{animation:none;}}
+@keyframes appointment-notice-dot{0%,100%{opacity:.4}50%{opacity:1}}
+@media(prefers-reduced-motion:reduce){.appointment-notice,.appointment-notice-label::before{animation:none;}}
 @media(min-width:700px){.hero-actions{display:grid;grid-template-columns:minmax(330px,1.25fr) minmax(300px,.75fr);column-gap:34px;row-gap:14px;width:100%;}.hero-actions-kicker{grid-column:1/-1;}.hero-actions .hero-track-repair{width:100%;min-height:64px;justify-content:space-between;}.hero-actions-new{align-self:center;border-left:1px solid rgba(255,255,255,.16);padding-left:34px;}}
 .section{max-width:1100px;margin:0 auto;padding:0 24px 28px;}
 .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;}
@@ -155,7 +158,7 @@ footer a:hover{color:var(--red);}
   </div>
 </section>
 
-<div class="appointment-notice">Atendemos únicamente con turno previo. Trabajamos en un laboratorio cerrado, no en un local a la calle. Si no podés concurrir, por favor avisanos con anticipación para liberar el turno y la disponibilidad del técnico.</div>
+<div class="appointment-notice"><div class="appointment-notice-label">Importante</div>Atendemos únicamente con turno previo. Trabajamos en un laboratorio cerrado, no en un local a la calle. Si no podés concurrir, por favor avisanos con anticipación para liberar el turno y la disponibilidad del técnico.</div>
 
 <section class="service-overview">
   <div class="service-overview-head"><div><div class="eyebrow">Servicio técnico en Floresta</div><h2>Tu equipo, <span>listo para usar</span></h2></div><p>Resolvemos problemas concretos con diagnóstico claro, presupuesto antes de avanzar y atención cercana.</p></div>
