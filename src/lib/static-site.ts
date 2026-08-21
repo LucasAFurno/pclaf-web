@@ -28,5 +28,9 @@ export function siteFiles(): string[] {
 export function fileResponse(path: string): Response {
   const file = resolve(root, path);
   if (!file.startsWith(root) || !existsSync(file) || !statSync(file).isFile()) return new Response(null, { status: 404 });
+  if (path.startsWith('demos/') && extname(file).toLowerCase() === '.html') {
+    const html = readFileSync(file, 'utf8').replace('</body>', '<script src="/demos/seo-demo.js" defer></script></body>');
+    return new Response(html, { headers: { 'Content-Type': 'text/html; charset=utf-8' } });
+  }
   return new Response(readFileSync(file), { headers: { 'Content-Type': mimeTypes.get(extname(file).toLowerCase()) ?? 'application/octet-stream' } });
 }
