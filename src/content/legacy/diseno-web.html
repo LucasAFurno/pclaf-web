@@ -77,6 +77,15 @@
   </style>
   <link rel="stylesheet" href="assets/pclaf-nav.css">
   <script src="assets/pclaf-nav.js" defer></script>
+  <style>
+    /* Catálogo compacto: cuatro vistas por fila sin perder legibilidad. */
+    .gallery{grid-template-columns:repeat(4,minmax(0,1fr));gap:18px;max-width:1320px;padding:0 20px 72px}
+    .browser{padding:6px;border-radius:12px;box-shadow:0 10px 25px rgba(67,43,17,.08)}
+    .dots{height:10px}.screen{height:215px;border-radius:7px}.screen>.visual-photo{display:none!important}.screen>*:not(.demo-thumb){visibility:hidden}.screen>.demo-thumb{display:block!important;visibility:visible!important;width:100%;height:100%;object-fit:cover;object-position:top;position:absolute;inset:0;z-index:3}
+    .design-info{display:block;padding:10px 2px 0}.design-info h2{font-size:16px;margin-bottom:4px}.design-info p{font-size:11px;line-height:1.45}
+    .design-actions{display:flex;justify-content:space-between;align-items:center;margin-top:10px}.demo-link,.choose{font-size:10px}.choose{padding:7px 8px}
+    @media(max-width:1050px){.gallery{grid-template-columns:repeat(3,minmax(0,1fr))}}@media(max-width:760px){.gallery{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;padding:0 14px 52px}.screen{height:190px}.design-info p{display:none}}@media(max-width:460px){.gallery{grid-template-columns:1fr}.screen{height:230px}}
+  </style>
 </head>
 <body>
   <nav class="standard-nav"><div class="standard-inner"><a class="standard-logo" href="index.html"><svg class="standard-logo-sq" viewBox="0 0 42 42" xmlns="http://www.w3.org/2000/svg"><rect width="42" height="22" fill="#CC0000"/><rect y="22" width="42" height="20" fill="#111"/><text x="21" y="19" text-anchor="middle" font-family="Arial Black,sans-serif" font-weight="900" font-size="18" fill="white">PC</text><text x="21" y="38" text-anchor="middle" font-family="Arial Black,sans-serif" font-weight="900" font-size="14" fill="white">LAF</text></svg><span><span class="standard-name">Servicio <em>técnico</em></span><span class="standard-tag">Campana 51, Floresta, CABA</span></span></a><div class="standard-actions"><a class="standard-wa" href="https://wa.me/5491135708345" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.2-1.8-.9-2-.97-.3-.1-.5-.15-.7.15-.2.3-.8 1-.94 1.16-.18.2-.35.22-.65.08-1.8-.9-3.1-2.2-4-3.9-.15-.3 0-.46.13-.6l.45-.52c.15-.17.2-.3.3-.5.1-.2.05-.37-.03-.52l-.9-2.2c-.25-.58-.5-.5-.67-.51H8.1c-.2 0-.52.07-.8.37-.27.3-1 1-1 2.48s1.06 2.88 1.2 3.07c.15.2 2.1 3.2 5.1 4.49.7.3 1.26.49 1.69.63.71.23 1.36.2 1.87.12.57-.08 1.76-.72 2-1.41.25-.7.25-1.29.18-1.41-.08-.13-.28-.2-.58-.35"/></svg></a><div class="standard-social"><a href="https://www.instagram.com/servicepclaf" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg></a><a href="https://www.facebook.com/servicepclaf" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg></a><a href="https://www.tiktok.com/@servicepclaf" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.6 6.7a4.8 4.8 0 01-3.8-4.3V2h-3.4v13.7a2.9 2.9 0 01-2.9 2.5 2.9 2.9 0 01-2.9-2.9 2.9 2.9 0 012.9-2.9c.28 0 .54.04.8.1V9a6.3 6.3 0 00-.8-.05 6.3 6.3 0 00-6.3 6.3 6.3 6.3 0 006.3 6.3 6.3 6.3 0 006.3-6.3V9a8.2 8.2 0 004.8 1.5V7a4.8 4.8 0 01-1-.3z"/></svg></a></div></div></div></nav>
@@ -96,6 +105,9 @@
       <article class="design"><div class="browser"><div class="dots"><i></i><i></i><i></i></div><div class="screen sand"><nav><b>LUNA ROJA</b><span>Carta · Reservas</span></nav><h3>La noche se come lento.</h3><p>Cocina de autor, vino y reservas sin rodeos.</p></div></div><div class="design-info"><div><h2>Gastronomía nocturna</h2><p>Para restaurantes, bares y experiencias gastronómicas que venden atmósfera y reservas.</p></div><div class="design-actions"><a class="demo-link" href="demos/luna-roja.html">Ver demo ↗</a><a class="choose" href="#">Elegir estilo</a></div></div></article>
       <article class="design"><div class="browser"><div class="dots"><i></i><i></i><i></i></div><div class="screen appx"><nav><b>PULSO</b><span>Producto · Demo</span></nav><div class="code">01 — ANALÍTICA CLARA</div><h3>Tu negocio tiene pulso.</h3></div></div><div class="design-info"><div><h2>Producto digital</h2><p>Para apps, software y servicios digitales que necesitan explicar valor y conseguir demos.</p></div><div class="design-actions"><a class="demo-link" href="demos/pulso.html">Ver demo ↗</a><a class="choose" href="#">Elegir estilo</a></div></div></article>
       <article class="design"><div class="browser"><div class="dots"><i></i><i></i><i></i></div><div class="screen salud"><nav><b>FLOR DE SOL</b><span>Ramitos · Pedidos</span></nav><h3>Un poco de sol.</h3><p>Flores de estación y regalos que se sienten personales.</p></div></div><div class="design-info"><div><h2>Catálogo floral</h2><p>Para florerías, regalos, decoración y comercios visuales que venden por WhatsApp.</p></div><div class="design-actions"><a class="demo-link" href="demos/flor-de-sol.html">Ver demo ↗</a><a class="choose" href="#">Elegir estilo</a></div></div></article>
+      <article class="design"><div class="browser"><div class="dots"><i></i><i></i><i></i></div><div class="screen salud"><nav><b>VITAL</b><span>Clases · Turnos</span></nav><h3>Entrená con energía.</h3></div></div><div class="design-info"><div><h2>Fitness activo</h2><p>Para gimnasios y entrenadores.</p></div><div class="design-actions"><a class="demo-link" href="demos/vital.html">Ver demo ↗</a><a class="choose" href="#">Elegir estilo</a></div></div></article>
+      <article class="design"><div class="browser"><div class="dots"><i></i><i></i><i></i></div><div class="screen coast"><nav><b>NUBE</b><span>Eventos</span></nav><h3>Hacé que se note.</h3></div></div><div class="design-info"><div><h2>Eventos expresivos</h2><p>Para celebraciones y producción.</p></div><div class="design-actions"><a class="demo-link" href="demos/nube.html">Ver demo ↗</a><a class="choose" href="#">Elegir estilo</a></div></div></article>
+      <article class="design"><div class="browser"><div class="dots"><i></i><i></i><i></i></div><div class="screen studio"><nav><b>ARCHIVO</b><span>Objetos</span></nav><h3>Objetos con memoria.</h3></div></div><div class="design-info"><div><h2>Archivo de autor</h2><p>Para marcas de nicho y colecciones.</p></div><div class="design-actions"><a class="demo-link" href="demos/archivo.html">Ver demo ↗</a><a class="choose" href="#">Elegir estilo</a></div></div></article>
     </section>
     <section class="pricing" id="precios-web">
       <div class="pricing-head"><div><div class="eyebrow">Planes y valores</div><h2>Elegí según lo que necesitás hoy.</h2></div><div><p>No empieces por el precio: elegí el objetivo de tu web. Mostramos el equivalente en pesos según dólar blue para que el valor sea claro al momento de consultar.</p><div class="blue-rate" id="blue-rate">Actualizando cotización blue…</div></div></div>
@@ -192,12 +204,18 @@
       const type = design.dataset.demo;
       const demo = design.querySelector('.demo-link');
       const url = demoUrls[type];
-      demo.href = url;
+      const targetUrl = url || demo.getAttribute('href');
+      demo.href = targetUrl;
       const overlay = document.createElement('a');
       overlay.className = 'demo-overlay';
-      overlay.href = url;
+      overlay.href = targetUrl;
       overlay.innerHTML = '<span>VER DEMO ↗</span>';
       design.querySelector('.browser').append(overlay);
+      const preview = document.createElement('img');
+      preview.className = 'demo-thumb';
+      preview.alt = `Vista previa de ${design.querySelector('h2').textContent.trim()}`;
+      preview.src = `assets/demo-previews/${targetUrl.split('/').pop().replace('.html','')}.png`;
+      design.querySelector('.screen').append(preview);
     });
 
     (async () => {
