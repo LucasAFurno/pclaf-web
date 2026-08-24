@@ -1683,22 +1683,6 @@ function discountCanApplyToRepair(repair, client){
   return new Date(repair?.created_at||0) >= new Date(client.descuento_disponible_desde);
 }
 
-function getDiscountSummary(repair, hasActiveDiscount=false){
-  if(!repair?.presupuesto) return '';
-  if(repair.descuento_porcentaje) return `Total a cobrar: ${repair.presupuesto} (${repair.descuento_porcentaje}% aplicado)`;
-  return hasActiveDiscount ? `Total a cobrar con 10%: ${getDiscountBudgetLabel(repair.presupuesto)}` : '';
-}
-
-function previewDiscount(repairId, hasActiveDiscount){
-  const input=document.getElementById(`pr-${repairId}`);
-  const hint=document.getElementById(`discountPreview-${repairId}`);
-  if(!input||!hint) return;
-  const amount=pm(input.value);
-  hint.textContent=amount&&(hasActiveDiscount||hint.dataset.applied==='true')
-    ? `Total a cobrar: $${Math.round(amount*.9).toLocaleString('es-AR')}`
-    : '';
-}
-
 function renderCards(data){
   const LB={espera:'En espera',proceso:'En reparación',listo:'Listo para retirar',entregado:'Entregado',cancelado:'Cancelado'};
   const IC={espera:'⏳',proceso:'🔧',listo:'✅',entregado:'📦',cancelado:'❌'};
@@ -1760,8 +1744,7 @@ function renderCards(data){
                 ${clienteReferido?`<div class="cir"><span class="cil">Referido</span><span class="civ">${clienteReferido}</span></div>`:''}
                 <div class="cir"><span class="cil">Presupuesto</span>
                   <div class="budget-stack">
-                    <div class="budget-input-wrap"><input class="prin" id="pr-${r.id}" value="${getBudgetBase(r)}" placeholder="$0.000" style="width:95px" oninput="previewDiscount('${r.id}',${descuentoParaEstaReparacion})"/><button class="smbtn" style="padding:5px 9px;font-size:11px" onclick="savePr('${r.id}')">OK</button></div>
-                    <span class="budget-hint" id="discountPreview-${r.id}" data-applied="${descuentoAplicado?'true':'false'}">${getDiscountSummary(r,descuentoParaEstaReparacion)}</span>
+                    <div class="budget-input-wrap"><input class="prin" id="pr-${r.id}" value="${getBudgetBase(r)}" placeholder="$0.000" style="width:95px"/><button class="smbtn" style="padding:5px 9px;font-size:11px" onclick="savePr('${r.id}')">OK</button></div>
                   </div>
                 </div>
                 <div class="cir"><span class="cil">Entrega est.</span>
