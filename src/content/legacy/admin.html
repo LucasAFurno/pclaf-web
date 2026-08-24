@@ -2482,8 +2482,14 @@ async function crearRep(){
     const er=await db('POST','equipos','',{cliente_id:cid,nombre:eq,modelo:mod,icono:ico});
     const aplicarDescuentoAhora=document.getElementById('mApplyDiscount').checked;
     const rr=await db('POST','reparaciones','',{equipo_id:er[0].id,numero:num,problema:prob,presupuesto:pres,estado:'espera',urgente,descuento_aplicado_manual:aplicarDescuentoAhora});
+    const repair=rr?.[0]||{};
+    const presupuestoFinal=formatArs(repair.presupuesto||pres);
+    const presupuestoOriginal=formatArs(repair.presupuesto_original||pres);
+    const detallePresupuesto=repair.descuento_porcentaje
+      ? `- Presupuesto original: ${presupuestoOriginal}\n- Descuento aplicado: ${repair.descuento_porcentaje}%\n- *Total con descuento: ${presupuestoFinal}*\n`
+      : presupuestoFinal?`- Presupuesto: ${presupuestoFinal}\n`:'';
     const hoy=new Date().toLocaleDateString('es-AR',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
-    await db('POST','pasos','',{reparacion_id:rr[0].id,orden:1,titulo:'Equipo ingresado',nota:`Comprobante #${num}. ${prob}`,estado:'done',fecha:hoy,icono:'check'});
+    await db('POST','pasos','',{reparacion_id:repair.id,orden:1,titulo:'Equipo ingresado',nota:`Comprobante #${num}. ${prob}`,estado:'done',fecha:hoy,icono:'check'});
     closeModal();
     ['mCod','mNom','mApe','mTel','mEq','mMod','mProb','mPres','mUrgente'].forEach(id=>document.getElementById(id).value='');
     delete document.getElementById('mCod').dataset.clientId;hideClientResults();
@@ -2497,7 +2503,7 @@ async function crearRep(){
         `- Equipo: ${eq}${mod?' ('+mod+')':''}\n`+
         `- Problema: ${prob}\n`+
         `- N\u00B0 de reparaci\u00F3n: *#${num}*\n`+
-        `${pres?'- Presupuesto: '+pres+'\n':''}`+
+        detallePresupuesto+
         `\nCampana 51, Floresta. Lun-Vie 10 a 19hs.\n`+
         `\nPod\u00E9s seguir el estado en:\n`+
         `https://www.pclaf.com.ar/historial.html\n`+
