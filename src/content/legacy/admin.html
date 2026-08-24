@@ -752,7 +752,7 @@ select.web-status,select.f-sel,select.sse{color-scheme:dark;}select.web-status o
         <input class="f-in" id="mNum" readonly placeholder="Calculando..." style="font-family:var(--mono);margin-bottom:0"/>
       </div>
       <div><label class="f-lbl">Problema</label><input class="f-in" id="mProb" placeholder="Ej: No enciende, pantalla rota..."/></div>
-      <div><label class="f-lbl">Presupuesto</label><input class="f-in" id="mPres" placeholder="Ej: $85.000" style="font-family:var(--mono)"/></div>
+      <div><label class="f-lbl">Presupuesto</label><input class="f-in" id="mPres" placeholder="Ej: $85.000" inputmode="numeric" oninput="formatArsInput(this)" style="font-family:var(--mono)"/></div>
       <input type="hidden" id="mUrgente" value=""/>
       <div>
         <label class="f-lbl">Ícono del equipo</label>
@@ -786,7 +786,7 @@ select.web-status,select.f-sel,select.sse{color-scheme:dark;}select.web-status o
       <div><label class="f-lbl">Equipo</label><input class="f-in" id="eEq" placeholder="Ej: Notebook HP"/></div>
       <div><label class="f-lbl">Modelo</label><input class="f-in" id="eMod" placeholder="Ej: Pavilion 15-eh1"/></div>
       <div><label class="f-lbl">Problema</label><input class="f-in" id="eProb" placeholder="Problema reportado"/></div>
-      <div><label class="f-lbl">Presupuesto</label><input class="f-in" id="ePres" placeholder="$0.000" style="font-family:var(--mono)"/></div>
+      <div><label class="f-lbl">Presupuesto</label><input class="f-in" id="ePres" placeholder="$0.000" inputmode="numeric" oninput="formatArsInput(this)" style="font-family:var(--mono)"/></div>
       <div><label class="f-lbl">Fecha estimada de entrega</label><input class="f-in" id="eFest" placeholder="Ej: 25 mar"/></div>
     </div>
     <div class="mfoot">
@@ -1682,8 +1682,16 @@ function getDiscountBudgetLabel(value){
   return `$${discounted.toLocaleString('es-AR')}`;
 }
 
+function formatArs(value=''){
+  const digits=String(value).replace(/\D/g,'').replace(/^0+(?=\d)/,'');
+  return digits?`$${digits.replace(/\B(?=(\d{3})+(?!\d))/g,'.')}`:'';
+}
+function formatArsInput(input){
+  const formatted=formatArs(input.value);
+  if(input.value!==formatted) input.value=formatted;
+}
 function getBudgetBase(repair){
-  return repair?.presupuesto_original || repair?.presupuesto || '';
+  return formatArs(repair?.presupuesto_original || repair?.presupuesto || '');
 }
 
 function discountCanApplyToRepair(repair, client){
@@ -1753,7 +1761,7 @@ function renderCards(data){
                 ${clienteReferido?`<div class="cir"><span class="cil">Referido</span><span class="civ">${clienteReferido}</span></div>`:''}
                 <div class="cir"><span class="cil">Presupuesto</span>
                   <div class="budget-stack">
-                    <div class="budget-input-wrap"><input class="prin" id="pr-${r.id}" value="${getBudgetBase(r)}" placeholder="$0.000" style="width:95px"/><button class="smbtn" style="padding:5px 9px;font-size:11px" onclick="savePr('${r.id}')">OK</button></div>
+                    <div class="budget-input-wrap"><input class="prin" id="pr-${r.id}" value="${getBudgetBase(r)}" placeholder="$0.000" inputmode="numeric" oninput="formatArsInput(this)" style="width:95px"/><button class="smbtn" style="padding:5px 9px;font-size:11px" onclick="savePr('${r.id}')">OK</button></div>
                   </div>
                 </div>
                 <div class="cir"><span class="cil">Entrega est.</span>
@@ -2244,7 +2252,8 @@ async function chEst(id,st,btn){
 }
 
 async function savePr(id){
-  const v=document.getElementById(`pr-${id}`).value.trim();
+  const input=document.getElementById(`pr-${id}`);formatArsInput(input);
+  const v=input.value.trim();
   const saved=await db('PATCH','reparaciones',`?id=eq.${id}`,{presupuesto:v});
   const updated=saved?.[0];
   const d=aR.find(r=>r.id===id); if(d&&updated) Object.assign(d,updated);
@@ -2328,7 +2337,8 @@ async function openModalFromTurno(nom, ape, tel, servicio, nota, urgente){
   const match=Object.entries(PRECIOS).find(([k])=>servicio&&servicio.includes(k));
   if(match){
     const p=match[1];
-    document.getElementById('mPres').value=urgente&&p.urgente ? p.urgente : p.normal;
+    const budget=document.getElementById('mPres');
+    budget.value=urgente&&p.urgente ? p.urgente : p.normal;formatArsInput(budget);
   }
 
   let matchedClient=null;
@@ -2452,7 +2462,8 @@ async function crearRep(){
   const mod=document.getElementById('mMod').value.trim();
   const num=document.getElementById('mNum').value.trim();
   const prob=document.getElementById('mProb').value.trim();
-  const pres=document.getElementById('mPres').value.trim();
+  const budget=document.getElementById('mPres');formatArsInput(budget);
+  const pres=budget.value.trim();
   const ico=document.getElementById('mIco').value;
   const urgente=document.getElementById('mUrgente').value==='1';
   if(!cod||!nom||!eq||!num||!prob){toast('Completá los campos obligatorios',true);return;}
@@ -2998,7 +3009,8 @@ async function guardarEdicion(){
   try{
     await db('PATCH','clientes',`?id=eq.${cid}`,{nombre:document.getElementById('eNom').value.trim(),apellido:document.getElementById('eApe').value.trim(),telefono:normalizePhoneInput(document.getElementById('eTel').value)});
     await db('PATCH','equipos',`?id=eq.${eid}`,{nombre:document.getElementById('eEq').value.trim(),modelo:document.getElementById('eMod').value.trim()});
-    await db('PATCH','reparaciones',`?id=eq.${rid}`,{problema:document.getElementById('eProb').value.trim(),presupuesto:document.getElementById('ePres').value.trim(),fecha_entrega:document.getElementById('eFest').value.trim()});
+    const budget=document.getElementById('ePres');formatArsInput(budget);
+    await db('PATCH','reparaciones',`?id=eq.${rid}`,{problema:document.getElementById('eProb').value.trim(),presupuesto:budget.value.trim(),fecha_entrega:document.getElementById('eFest').value.trim()});
     closeEdit();
     await loadAll();
     toast('Cambios guardados ✓');
