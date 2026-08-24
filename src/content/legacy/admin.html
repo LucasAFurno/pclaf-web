@@ -41,6 +41,7 @@ body{background:var(--black);color:var(--text);font-family:var(--sans);min-heigh
 .client-search-result{display:flex;width:100%;align-items:center;justify-content:space-between;gap:10px;border:0;border-bottom:1px solid var(--border);background:transparent;color:var(--text);padding:9px 10px;text-align:left;cursor:pointer;font:inherit;}
 .client-search-result:last-child{border-bottom:0;}.client-search-result:hover{background:rgba(59,130,246,.12);}.client-search-name{font-size:12px;font-weight:700;}.client-search-meta{font:10px var(--mono);color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .client-discount-override{display:none;align-items:center;gap:8px;margin:-2px 0 3px;padding:9px 10px;border:1px solid rgba(34,197,94,.32);border-radius:8px;background:rgba(34,197,94,.07);color:#79eea6;font-size:11px;font-weight:700;cursor:pointer;}.client-discount-override.show{display:flex;}.client-discount-override input{accent-color:#22c55e;}
+.client-mode-actions{display:flex;gap:6px;margin-bottom:8px;}.client-mode-btn{border:1px solid var(--border2);border-radius:7px;background:transparent;color:var(--text3);font:10px var(--mono);padding:6px 8px;cursor:pointer;}.client-mode-btn.active{border-color:rgba(59,130,246,.55);background:rgba(59,130,246,.12);color:#a9cbff;}
 .f-sel{width:100%;background:var(--black3);border:1.5px solid var(--border2);border-radius:8px;padding:11px 14px;font-size:14px;color:var(--text);outline:none;cursor:pointer;margin-bottom:12px;}
 .login-btn{width:100%;background:var(--red);border:none;border-radius:8px;padding:13px;font-size:14px;font-weight:700;color:#fff;cursor:pointer;}
 .login-btn:hover{background:var(--red-dark);}
@@ -731,10 +732,11 @@ select.web-status,select.f-sel,select.sse{color-scheme:dark;}select.web-status o
     <h3>Nueva reparación</h3>
     <div class="mgrid">
       <div>
-        <label class="f-lbl">Buscar cliente o código</label>
+        <div class="client-mode-actions"><button type="button" class="client-mode-btn active" id="mModeExisting" onclick="setClientMode('existing')">Buscar existente</button><button type="button" class="client-mode-btn" id="mModeNew" onclick="setClientMode('new')">+ Cliente nuevo</button></div>
+        <label class="f-lbl" id="mClientLabel">Buscar cliente o código</label>
         <input class="f-in" id="mCod" placeholder="Código, nombre, apellido o teléfono" autocomplete="off" style="margin-bottom:4px" oninput="buscarCliente(this.value)"/>
         <div id="mClientResults" class="client-search-results" role="listbox" aria-label="Clientes encontrados"></div>
-        <div style="font-size:11px;color:var(--text3);margin-bottom:8px;">Buscá y elegí un cliente existente para no duplicarlo</div>
+        <div id="mClientModeHelp" style="font-size:11px;color:var(--text3);margin-bottom:8px;">Buscá y elegí un cliente existente. Si tiene un descuento activo, aparecerá abajo.</div>
         <label id="mDiscountOverride" class="client-discount-override"><input type="checkbox" id="mApplyDiscount"/> <span id="mDiscountOverrideText"></span></label>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><div><label class="f-lbl">Nombre</label><input class="f-in" id="mNom" placeholder="Ej: Lucas"/></div><div><label class="f-lbl">Apellido</label><input class="f-in" id="mApe" placeholder="Ej: Méndez"/></div></div>
@@ -2269,6 +2271,7 @@ function abrirWA(telefono, msgEncoded){
 // MODAL — número automático
 async function openModal(){
   document.getElementById('modal').classList.add('open');
+  setClientMode('existing');
   document.getElementById('mNum').value='Calculando...';
   try{
     const reps=await db('GET','reparaciones','?select=numero&order=created_at.desc');
@@ -2366,6 +2369,20 @@ async function openModalFromTurno(nom, ape, tel, servicio, nota, urgente){
 function closeModal(){document.getElementById('modal').classList.remove('open');}
 
 let clientSearchTimer;
+let clientMode='existing';
+function setClientMode(mode){
+  clientMode=mode;
+  const isNew=mode==='new';
+  document.getElementById('mModeExisting').classList.toggle('active',!isNew);
+  document.getElementById('mModeNew').classList.toggle('active',isNew);
+  document.getElementById('mClientLabel').textContent=isNew?'Código para nuevo cliente':'Buscar cliente o código';
+  const code=document.getElementById('mCod');
+  code.placeholder=isNew?'Ej: CARLOS02':'Código, nombre, apellido o teléfono';
+  document.getElementById('mClientModeHelp').textContent=isNew
+    ? 'Ingresá un código único y completá los datos para crear el cliente.'
+    : 'Buscá y elegí un cliente existente. Si tiene un descuento activo, aparecerá abajo.';
+  if(isNew){code.value='';delete code.dataset.clientId;hideClientResults();updateDiscountOverride(null);}
+}
 function normalizeClientSearch(value=''){
   return String(value).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
 }
@@ -2397,6 +2414,7 @@ function buscarCliente(query=''){
   delete code.dataset.clientId;
   updateDiscountOverride(null);
   clearTimeout(clientSearchTimer);
+  if(clientMode==='new'){hideClientResults();return;}
   const q=normalizeClientSearch(query),phoneQuery=String(query).replace(/\D/g,'');
   if(q.length<2){hideClientResults();return;}
   clientSearchTimer=setTimeout(()=>{
