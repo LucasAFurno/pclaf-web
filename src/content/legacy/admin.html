@@ -36,6 +36,10 @@ body{background:var(--black);color:var(--text);font-family:var(--sans);min-heigh
 .f-in:focus{border-color:var(--red);}
 .f-in.err{border-color:var(--red);background:rgba(204,0,0,.08);box-shadow:0 0 0 3px rgba(204,0,0,.12);}
 .f-in[readonly]{opacity:.6;cursor:default;}
+.client-search-results{display:none;margin:-7px 0 8px;border:1px solid var(--border2);border-radius:8px;overflow:hidden;background:var(--black3);}
+.client-search-results.show{display:block;}
+.client-search-result{display:flex;width:100%;align-items:center;justify-content:space-between;gap:10px;border:0;border-bottom:1px solid var(--border);background:transparent;color:var(--text);padding:9px 10px;text-align:left;cursor:pointer;font:inherit;}
+.client-search-result:last-child{border-bottom:0;}.client-search-result:hover{background:rgba(59,130,246,.12);}.client-search-name{font-size:12px;font-weight:700;}.client-search-meta{font:10px var(--mono);color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .f-sel{width:100%;background:var(--black3);border:1.5px solid var(--border2);border-radius:8px;padding:11px 14px;font-size:14px;color:var(--text);outline:none;cursor:pointer;margin-bottom:12px;}
 .login-btn{width:100%;background:var(--red);border:none;border-radius:8px;padding:13px;font-size:14px;font-weight:700;color:#fff;cursor:pointer;}
 .login-btn:hover{background:var(--red-dark);}
@@ -726,9 +730,10 @@ select.web-status,select.f-sel,select.sse{color-scheme:dark;}select.web-status o
     <h3>Nueva reparación</h3>
     <div class="mgrid">
       <div>
-        <label class="f-lbl">Código de cliente</label>
-        <input class="f-in" id="mCod" placeholder="Ej: LUCAS01" style="margin-bottom:4px" oninput="this.value=this.value.toUpperCase();autoCliente(this.value)"/>
-        <div style="font-size:11px;color:var(--text3);margin-bottom:8px;">Si ya existe, se autocompleta el nombre y teléfono</div>
+        <label class="f-lbl">Buscar cliente o código</label>
+        <input class="f-in" id="mCod" placeholder="Código, nombre, apellido o teléfono" autocomplete="off" style="margin-bottom:4px" oninput="buscarCliente(this.value)"/>
+        <div id="mClientResults" class="client-search-results" role="listbox" aria-label="Clientes encontrados"></div>
+        <div style="font-size:11px;color:var(--text3);margin-bottom:8px;">Buscá y elegí un cliente existente para no duplicarlo</div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><div><label class="f-lbl">Nombre</label><input class="f-in" id="mNom" placeholder="Ej: Lucas"/></div><div><label class="f-lbl">Apellido</label><input class="f-in" id="mApe" placeholder="Ej: Méndez"/></div></div>
       <div><label class="f-lbl">Teléfono</label><input class="f-in" id="mTel" placeholder="Ej: 11 5823-9201"/></div>
@@ -2358,10 +2363,45 @@ async function openModalFromTurno(nom, ape, tel, servicio, nota, urgente){
 }
 function closeModal(){document.getElementById('modal').classList.remove('open');}
 
-async function autoCliente(cod){
-  if(cod.length<3)return;
-  const res=await db('GET','clientes',`?codigo=eq.${cod}&limit=1`);
-  if(res?.length){document.getElementById('mNom').value=res[0].nombre||'';document.getElementById('mTel').value=res[0].telefono||'';}
+let clientSearchTimer;
+function normalizeClientSearch(value=''){
+  return String(value).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
+}
+function hideClientResults(){
+  const results=document.getElementById('mClientResults');
+  if(results){results.classList.remove('show');results.replaceChildren();}
+}
+function selectClientById(clientId){
+  const client=aC.find(c=>String(c.id)===String(clientId));
+  if(!client) return;
+  const code=document.getElementById('mCod');
+  code.value=client.codigo||'';code.dataset.clientId=client.id;
+  document.getElementById('mNom').value=client.nombre||'';
+  document.getElementById('mApe').value=client.apellido||'';
+  document.getElementById('mTel').value=client.telefono||'';
+  hideClientResults();
+}
+function buscarCliente(query=''){
+  const code=document.getElementById('mCod');
+  delete code.dataset.clientId;
+  clearTimeout(clientSearchTimer);
+  const q=normalizeClientSearch(query),phoneQuery=String(query).replace(/\D/g,'');
+  if(q.length<2){hideClientResults();return;}
+  clientSearchTimer=setTimeout(()=>{
+    const matches=(aC||[]).filter(client=>{
+      const text=normalizeClientSearch([client.codigo,client.nombre,client.apellido,client.telefono].filter(Boolean).join(' '));
+      const phone=String(client.telefono||'').replace(/\D/g,'');
+      return text.includes(q)||(phoneQuery.length>=3&&phone.includes(phoneQuery));
+    }).slice(0,6);
+    const results=document.getElementById('mClientResults');
+    if(!matches.length){hideClientResults();return;}
+    results.innerHTML=matches.map(client=>{
+      const name=[client.nombre,client.apellido].filter(Boolean).join(' ')||'Sin nombre';
+      const meta=[client.codigo,client.telefono].filter(Boolean).join(' · ');
+      return `<button type="button" class="client-search-result" role="option" onclick="selectClientById('${client.id}')"><span class="client-search-name">${escapeHtml(name)}</span><span class="client-search-meta">${escapeHtml(meta)}</span></button>`;
+    }).join('');
+    results.classList.add('show');
+  },160);
 }
 
 async function crearRep(){
@@ -2381,7 +2421,14 @@ async function crearRep(){
   try{
     let clArr=await db('GET','clientes',`?codigo=eq.${cod}`);
     let cid;
-    if(clArr?.length){cid=clArr[0].id;}
+    const selectedClientId=document.getElementById('mCod').dataset.clientId;
+    const existingByData=(aC||[]).find(client=>
+      (tel&&normalizeWhatsappPhone(client.telefono)===normalizeWhatsappPhone(tel)) ||
+      (normalizeClientSearch(client.nombre)===normalizeClientSearch(nom)&&normalizeClientSearch(client.apellido)===normalizeClientSearch(ape))
+    );
+    if(selectedClientId){cid=selectedClientId;}
+    else if(clArr?.length){cid=clArr[0].id;}
+    else if(existingByData){cid=existingByData.id;toast(`Se usó el cliente existente ${existingByData.codigo||''}`);}
     else{const nv=await db('POST','clientes','',{codigo:cod,nombre:nom,apellido:ape,telefono:tel});cid=nv[0].id;}
     const er=await db('POST','equipos','',{cliente_id:cid,nombre:eq,modelo:mod,icono:ico});
     const rr=await db('POST','reparaciones','',{equipo_id:er[0].id,numero:num,problema:prob,presupuesto:pres,estado:'espera',urgente});
@@ -2389,6 +2436,7 @@ async function crearRep(){
     await db('POST','pasos','',{reparacion_id:rr[0].id,orden:1,titulo:'Equipo ingresado',nota:`Comprobante #${num}. ${prob}`,estado:'done',fecha:hoy,icono:'check'});
     closeModal();
     ['mCod','mNom','mApe','mTel','mEq','mMod','mProb','mPres','mUrgente'].forEach(id=>document.getElementById(id).value='');
+    delete document.getElementById('mCod').dataset.clientId;hideClientResults();
     await loadAll();
     if(tel){
       const msg=encodeURIComponent(
