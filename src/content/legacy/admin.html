@@ -118,10 +118,8 @@ main{max-width:1200px;margin:0 auto;padding:22px 24px 80px;overflow:hidden;}
 @keyframes pg{0%,100%{box-shadow:0 0 0 0 rgba(34,197,94,.45)}50%{box-shadow:0 0 0 4px rgba(34,197,94,0)}}
 @keyframes py{0%,100%{box-shadow:0 0 0 0 rgba(245,158,11,.45)}50%{box-shadow:0 0 0 4px rgba(245,158,11,0)}}
 @keyframes urgentePulse{0%,100%{background-color:rgba(245,158,11,0.04)}50%{background-color:rgba(245,158,11,0.12)}}
-@keyframes descuentoCardPulse{0%,100%{border-color:rgba(34,197,94,.42);box-shadow:0 0 0 0 rgba(34,197,94,0)}50%{border-color:rgba(74,222,128,.95);box-shadow:0 0 0 3px rgba(34,197,94,.14)}}
-@keyframes descuentoAlertPulse{0%,100%{background:rgba(34,197,94,.08)}50%{background:rgba(34,197,94,.18)}}
-.rc[data-descuento-activo="true"]{animation:descuentoCardPulse 1.6s ease-in-out infinite;border-left-color:var(--green)!important;}
-.rc[data-descuento-activo="true"] .descuento-alert{animation:descuentoAlertPulse 1.6s ease-in-out infinite;}
+@keyframes descuentoTotalPulse{0%,100%{border-color:rgba(34,197,94,.45);box-shadow:0 0 0 0 rgba(34,197,94,0)}50%{border-color:rgba(74,222,128,.98);box-shadow:0 0 0 3px rgba(34,197,94,.18)}}
+.repair-summary-chip.money.discounted{color:#62f39a;border-color:rgba(34,197,94,.65);background:rgba(34,197,94,.13);animation:descuentoTotalPulse 1.6s ease-in-out infinite;}
 .rc[data-urgente="true"]{animation:urgentePulse 2s ease-in-out infinite;border-left:3px solid var(--amber)!important;}
 .badge-urgente{display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:700;color:var(--amber);background:var(--amber-dim);border:1px solid rgba(245,158,11,.3);border-radius:4px;padding:2px 6px;font-family:var(--mono);animation:py 1.5s infinite;}
 .rcb{display:none;padding:0 12px 12px;border-top:1px solid var(--border);}
@@ -1143,7 +1141,7 @@ async function loadPage(){
   if(fSt!=='todos') filter+=`&estado=eq.${fSt}`;
   if(q && q.match(/^\d+$/)) filter+=`&numero=eq.${q.padStart(4,'0')}`;
 
-  const select=`select=id,numero,problema,presupuesto,estado,urgente,fecha_entrega,created_at,equipo_id,equipos(id,nombre,icono,modelo,cliente_id,clientes(id,codigo,nombre,apellido,telefono,descuento_resena,descuento_resena_usado,descuento_origen))`;
+  const select=`select=id,numero,problema,presupuesto,presupuesto_original,descuento_porcentaje,descuento_origen,descuento_aplicado_en,estado,urgente,fecha_entrega,created_at,equipo_id,equipos(id,nombre,icono,modelo,cliente_id,clientes(id,codigo,nombre,apellido,telefono,descuento_resena,descuento_resena_usado,descuento_origen,descuento_disponible_desde))`;
 
   try{
     document.getElementById('rlist').innerHTML='<div class="empty"><div class="spinner"></div>Cargando...</div>';
@@ -1167,7 +1165,7 @@ async function loadPage(){
 
 async function loadAllData(force=false){
   if(allDataPromise && !force) return allDataPromise;
-  const select='select=id,numero,problema,presupuesto,estado,urgente,fecha_entrega,created_at,equipo_id,equipos(id,nombre,icono,modelo,cliente_id,clientes(id,codigo,nombre,apellido,telefono,descuento_resena,descuento_resena_usado,descuento_origen))&order=numero.desc';
+  const select='select=id,numero,problema,presupuesto,presupuesto_original,descuento_porcentaje,descuento_origen,descuento_aplicado_en,estado,urgente,fecha_entrega,created_at,equipo_id,equipos(id,nombre,icono,modelo,cliente_id,clientes(id,codigo,nombre,apellido,telefono,descuento_resena,descuento_resena_usado,descuento_origen,descuento_disponible_desde))&order=numero.desc';
   const pasosSelect='select=reparacion_id,created_at,orden,fecha';
   const batchSize=1000;
   allDataPromise=(async()=>{
@@ -1675,6 +1673,32 @@ function getDiscountBudgetLabel(value){
   return `$${discounted.toLocaleString('es-AR')}`;
 }
 
+function getBudgetBase(repair){
+  return repair?.presupuesto_original || repair?.presupuesto || '';
+}
+
+function discountCanApplyToRepair(repair, client){
+  if(!client?.descuento_resena) return false;
+  if(!client.descuento_disponible_desde) return false;
+  return new Date(repair?.created_at||0) >= new Date(client.descuento_disponible_desde);
+}
+
+function getDiscountSummary(repair, hasActiveDiscount=false){
+  if(!repair?.presupuesto) return '';
+  if(repair.descuento_porcentaje) return `Total a cobrar: ${repair.presupuesto} (${repair.descuento_porcentaje}% aplicado)`;
+  return hasActiveDiscount ? `Total a cobrar con 10%: ${getDiscountBudgetLabel(repair.presupuesto)}` : '';
+}
+
+function previewDiscount(repairId, hasActiveDiscount){
+  const input=document.getElementById(`pr-${repairId}`);
+  const hint=document.getElementById(`discountPreview-${repairId}`);
+  if(!input||!hint) return;
+  const amount=pm(input.value);
+  hint.textContent=amount&&(hasActiveDiscount||hint.dataset.applied==='true')
+    ? `Total a cobrar: $${Math.round(amount*.9).toLocaleString('es-AR')}`
+    : '';
+}
+
 function renderCards(data){
   const LB={espera:'En espera',proceso:'En reparación',listo:'Listo para retirar',entregado:'Entregado',cancelado:'Cancelado'};
   const IC={espera:'⏳',proceso:'🔧',listo:'✅',entregado:'📦',cancelado:'❌'};
@@ -1687,6 +1711,8 @@ function renderCards(data){
     const wm=encodeURIComponent(`Hola ${(c.nombre||'').split(' ')[0]}, te escribimos de PCLAF. Tu ${e.nombre||'equipo'} (#${r.numero}) está ${LB[r.estado]||r.estado}.`);
     const urgente=r.urgente||false;
     const descuentoActivo=!!c.descuento_resena;
+    const descuentoParaEstaReparacion=discountCanApplyToRepair(r,c);
+    const descuentoAplicado=!!r.descuento_porcentaje;
     const descuentoGoogleUsado=!!c.descuento_resena_usado;
     const referralTurn=getReferralTurnForClient(c);
     const clienteReferido=[referralTurn?.nombre,referralTurn?.apellido].filter(Boolean).join(' ').trim();
@@ -1707,9 +1733,8 @@ function renderCards(data){
     const descuentoPendienteTexto=clienteReferido
       ? `Descuento sugerido: este cliente refirió a ${clienteReferido}. Podés activarle 10%.`
       : 'Descuento sugerido: este cliente tiene un referido acreditado. Podés activarle 10%.';
-    return `<div class="rc" id="c-${r.id}" data-estado="${r.estado}"${descuentoActivo?' data-descuento-activo="true"':''}${urgente?' data-urgente="true"':''}>
+    return `<div class="rc" id="c-${r.id}" data-estado="${r.estado}"${urgente?' data-urgente="true"':''}>
       ${urgente?`<div style="background:rgba(245,158,11,0.1);border-bottom:1px solid rgba(245,158,11,0.25);padding:6px 16px;display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;color:var(--amber);">⚡ Urgente — en el día</div>`:''}
-      ${descuentoActivo?`<div class="descuento-alert" role="status" style="background:rgba(34,197,94,0.08);border-bottom:1px solid rgba(34,197,94,0.2);padding:7px 16px;display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;color:var(--green);">${descuentoStripTexto}</div>`:''}
       ${descuentoPendiente?`<div style="background:rgba(34,197,94,0.06);border-bottom:1px solid rgba(34,197,94,0.16);padding:7px 16px;display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;color:var(--green);">${descuentoPendienteTexto}</div>`:''}
       <div class="rch" onclick="togC('${r.id}')">
         <div class="rcn">#${r.numero}</div>
@@ -1735,8 +1760,8 @@ function renderCards(data){
                 ${clienteReferido?`<div class="cir"><span class="cil">Referido</span><span class="civ">${clienteReferido}</span></div>`:''}
                 <div class="cir"><span class="cil">Presupuesto</span>
                   <div class="budget-stack">
-                    <div class="budget-input-wrap"><input class="prin" id="pr-${r.id}" value="${r.presupuesto||''}" placeholder="$0.000" style="width:95px"/><button class="smbtn" style="padding:5px 9px;font-size:11px" onclick="savePr('${r.id}')">OK</button></div>
-                    ${descuentoActivo&&r.presupuesto?`<span class="budget-hint">con desc: ${getDiscountBudgetLabel(r.presupuesto)}</span>`:''}
+                    <div class="budget-input-wrap"><input class="prin" id="pr-${r.id}" value="${getBudgetBase(r)}" placeholder="$0.000" style="width:95px" oninput="previewDiscount('${r.id}',${descuentoParaEstaReparacion})"/><button class="smbtn" style="padding:5px 9px;font-size:11px" onclick="savePr('${r.id}')">OK</button></div>
+                    <span class="budget-hint" id="discountPreview-${r.id}" data-applied="${descuentoAplicado?'true':'false'}">${getDiscountSummary(r,descuentoParaEstaReparacion)}</span>
                   </div>
                 </div>
                 <div class="cir"><span class="cil">Entrega est.</span>
@@ -1900,7 +1925,10 @@ function formatRepairCardHeaders(repairs){
     const detail=document.createElement('div');detail.className='repair-summary-equipment';detail.textContent=`${equipment.icono||'💻'} ${equipment.nombre||'Equipo'}${model}`;
     const meta=document.createElement('div');meta.className='repair-summary-meta';
     if(client.codigo){const code=document.createElement('span');code.className='repair-summary-chip code';code.textContent=client.codigo;meta.append(code);}
-    const price=document.createElement('span');price.className=`repair-summary-chip money${amount?'':' empty'}`;price.textContent=amount||'Sin presupuesto';meta.append(price);
+    const appliesHere=discountCanApplyToRepair(repair,client);
+    if(client.descuento_resena&&!appliesHere){const discount=document.createElement('span');discount.className='repair-summary-chip';discount.textContent='10% · PRÓXIMO EQUIPO';meta.append(discount);}
+    else if(client.descuento_resena){const discount=document.createElement('span');discount.className='repair-summary-chip';discount.textContent='10% DISPONIBLE';meta.append(discount);}
+    const price=document.createElement('span');price.className=`repair-summary-chip money${repair.descuento_porcentaje?' discounted':''}${amount?'':' empty'}`;price.textContent=amount||'Sin presupuesto';meta.append(price);
     const foot=document.createElement('div');foot.className='repair-card-foot';
     const hint=document.createElement('strong');hint.textContent='Ver detalles';
     const arrow=document.createElement('div');arrow.className='rcch';arrow.innerHTML='<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6l4 4 4-4"/></svg>';
@@ -1984,7 +2012,10 @@ function formatRepairCardHeaders(repairs){
     const detail=document.createElement('div');detail.className='repair-summary-equipment';detail.textContent=`${equipment.icono||'💻'} ${equipment.nombre||'Equipo'}${model}`;
     const meta=document.createElement('div');meta.className='repair-summary-meta';
     if(client.codigo){const code=document.createElement('span');code.className='repair-summary-chip code';code.textContent=client.codigo;meta.append(code);}
-    const price=document.createElement('span');price.className=`repair-summary-chip money${amount?'':' empty'}`;price.textContent=amount||'Sin presupuesto';meta.append(price);
+    const appliesHere=discountCanApplyToRepair(repair,client);
+    if(client.descuento_resena&&!appliesHere){const discount=document.createElement('span');discount.className='repair-summary-chip';discount.textContent='10% · PRÓXIMO EQUIPO';meta.append(discount);}
+    else if(client.descuento_resena){const discount=document.createElement('span');discount.className='repair-summary-chip';discount.textContent='10% DISPONIBLE';meta.append(discount);}
+    const price=document.createElement('span');price.className=`repair-summary-chip money${repair.descuento_porcentaje?' discounted':''}${amount?'':' empty'}`;price.textContent=amount||'Sin presupuesto';meta.append(price);
     const foot=document.createElement('div');foot.className='repair-card-foot';const preview=document.createElement('span');preview.className='repair-problem-preview';preview.textContent=repair.problema||'Sin problema cargado';const hint=document.createElement('strong');hint.textContent='Detalles';const arrow=document.createElement('div');arrow.className='rcch';arrow.innerHTML='<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6l4 4 4-4"/></svg>';foot.append(preview,hint,arrow);
     header.append(top,title,detail,meta,foot);simplifyRepairDetail(card);
   });
@@ -2222,22 +2253,16 @@ async function chEst(id,st,btn){
 
 async function savePr(id){
   const v=document.getElementById(`pr-${id}`).value.trim();
-  await db('PATCH','reparaciones',`?id=eq.${id}`,{presupuesto:v});
-  const d=aR.find(r=>r.id===id); if(d) d.presupuesto=v;
-  // Check if client has discount
+  const saved=await db('PATCH','reparaciones',`?id=eq.${id}`,{presupuesto:v});
+  const updated=saved?.[0];
+  const d=aR.find(r=>r.id===id); if(d&&updated) Object.assign(d,updated);
   const eq=aE.find(e=>e.id===d?.equipo_id)||{};
   const cl=aC.find(c=>c.id===eq.cliente_id)||{};
-  if(cl.descuento_resena && v){
-    const num=parseFloat(v.replace(/[^0-9.,]/g,'').replace(',','.'));
-    if(!isNaN(num)){
-      const desc=Math.round(num*0.9).toLocaleString('es-AR');
-      toast(`Presupuesto guardado ✓ — con 10% descuento: $${desc}`);
-      playSound('action');
-      return;
-    }
-  }
-  toast('Presupuesto guardado ✓');
+  if(updated?.descuento_porcentaje){
+    toast(`Presupuesto guardado ✓ — total a cobrar: ${updated.presupuesto}`);
+  }else toast('Presupuesto guardado ✓');
   playSound('action');
+  await loadPage();
 }
 
 // ── WhatsApp — abre directo sin toast intermedio ──
@@ -2889,7 +2914,7 @@ function editarRep(id){
   document.getElementById('eEq').value=e.nombre||'';
   document.getElementById('eMod').value=e.modelo||'';
   document.getElementById('eProb').value=r.problema||'';
-  document.getElementById('ePres').value=r.presupuesto||'';
+  document.getElementById('ePres').value=getBudgetBase(r);
   document.getElementById('eFest').value=r.fecha_entrega||'';
   document.getElementById('modalEdit').classList.add('open');
 }
