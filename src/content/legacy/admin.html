@@ -40,6 +40,7 @@ body{background:var(--black);color:var(--text);font-family:var(--sans);min-heigh
 .client-search-results.show{display:block;}
 .client-search-result{display:flex;width:100%;align-items:center;justify-content:space-between;gap:10px;border:0;border-bottom:1px solid var(--border);background:transparent;color:var(--text);padding:9px 10px;text-align:left;cursor:pointer;font:inherit;}
 .client-search-result:last-child{border-bottom:0;}.client-search-result:hover{background:rgba(59,130,246,.12);}.client-search-name{font-size:12px;font-weight:700;}.client-search-meta{font:10px var(--mono);color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.client-discount-override{display:none;align-items:center;gap:8px;margin:-2px 0 3px;padding:9px 10px;border:1px solid rgba(34,197,94,.32);border-radius:8px;background:rgba(34,197,94,.07);color:#79eea6;font-size:11px;font-weight:700;cursor:pointer;}.client-discount-override.show{display:flex;}.client-discount-override input{accent-color:#22c55e;}
 .f-sel{width:100%;background:var(--black3);border:1.5px solid var(--border2);border-radius:8px;padding:11px 14px;font-size:14px;color:var(--text);outline:none;cursor:pointer;margin-bottom:12px;}
 .login-btn{width:100%;background:var(--red);border:none;border-radius:8px;padding:13px;font-size:14px;font-weight:700;color:#fff;cursor:pointer;}
 .login-btn:hover{background:var(--red-dark);}
@@ -734,6 +735,7 @@ select.web-status,select.f-sel,select.sse{color-scheme:dark;}select.web-status o
         <input class="f-in" id="mCod" placeholder="Código, nombre, apellido o teléfono" autocomplete="off" style="margin-bottom:4px" oninput="buscarCliente(this.value)"/>
         <div id="mClientResults" class="client-search-results" role="listbox" aria-label="Clientes encontrados"></div>
         <div style="font-size:11px;color:var(--text3);margin-bottom:8px;">Buscá y elegí un cliente existente para no duplicarlo</div>
+        <label id="mDiscountOverride" class="client-discount-override"><input type="checkbox" id="mApplyDiscount"/> <span id="mDiscountOverrideText"></span></label>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><div><label class="f-lbl">Nombre</label><input class="f-in" id="mNom" placeholder="Ej: Lucas"/></div><div><label class="f-lbl">Apellido</label><input class="f-in" id="mApe" placeholder="Ej: Méndez"/></div></div>
       <div><label class="f-lbl">Teléfono</label><input class="f-in" id="mTel" placeholder="Ej: 11 5823-9201"/></div>
@@ -2371,6 +2373,14 @@ function hideClientResults(){
   const results=document.getElementById('mClientResults');
   if(results){results.classList.remove('show');results.replaceChildren();}
 }
+function updateDiscountOverride(client){
+  const box=document.getElementById('mDiscountOverride');
+  const check=document.getElementById('mApplyDiscount');
+  const text=document.getElementById('mDiscountOverrideText');
+  const active=!!client?.descuento_resena;
+  check.checked=false;box.classList.toggle('show',active);
+  if(active) text.textContent=`Aplicar 10% por ${client.descuento_origen==='referido'?'referido':'reseña Google'} a ESTA reparación`;
+}
 function selectClientById(clientId){
   const client=aC.find(c=>String(c.id)===String(clientId));
   if(!client) return;
@@ -2379,11 +2389,13 @@ function selectClientById(clientId){
   document.getElementById('mNom').value=client.nombre||'';
   document.getElementById('mApe').value=client.apellido||'';
   document.getElementById('mTel').value=client.telefono||'';
+  updateDiscountOverride(client);
   hideClientResults();
 }
 function buscarCliente(query=''){
   const code=document.getElementById('mCod');
   delete code.dataset.clientId;
+  updateDiscountOverride(null);
   clearTimeout(clientSearchTimer);
   const q=normalizeClientSearch(query),phoneQuery=String(query).replace(/\D/g,'');
   if(q.length<2){hideClientResults();return;}
@@ -2431,12 +2443,14 @@ async function crearRep(){
     else if(existingByData){cid=existingByData.id;toast(`Se usó el cliente existente ${existingByData.codigo||''}`);}
     else{const nv=await db('POST','clientes','',{codigo:cod,nombre:nom,apellido:ape,telefono:tel});cid=nv[0].id;}
     const er=await db('POST','equipos','',{cliente_id:cid,nombre:eq,modelo:mod,icono:ico});
-    const rr=await db('POST','reparaciones','',{equipo_id:er[0].id,numero:num,problema:prob,presupuesto:pres,estado:'espera',urgente});
+    const aplicarDescuentoAhora=document.getElementById('mApplyDiscount').checked;
+    const rr=await db('POST','reparaciones','',{equipo_id:er[0].id,numero:num,problema:prob,presupuesto:pres,estado:'espera',urgente,descuento_aplicado_manual:aplicarDescuentoAhora});
     const hoy=new Date().toLocaleDateString('es-AR',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
     await db('POST','pasos','',{reparacion_id:rr[0].id,orden:1,titulo:'Equipo ingresado',nota:`Comprobante #${num}. ${prob}`,estado:'done',fecha:hoy,icono:'check'});
     closeModal();
     ['mCod','mNom','mApe','mTel','mEq','mMod','mProb','mPres','mUrgente'].forEach(id=>document.getElementById(id).value='');
     delete document.getElementById('mCod').dataset.clientId;hideClientResults();
+    updateDiscountOverride(null);
     await loadAll();
     if(tel){
       const msg=encodeURIComponent(
