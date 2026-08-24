@@ -40,7 +40,7 @@ body{background:var(--black);color:var(--text);font-family:var(--sans);min-heigh
 .client-search-results.show{display:block;}
 .client-search-result{display:flex;width:100%;align-items:center;justify-content:space-between;gap:10px;border:0;border-bottom:1px solid var(--border);background:transparent;color:var(--text);padding:9px 10px;text-align:left;cursor:pointer;font:inherit;}
 .client-search-result:last-child{border-bottom:0;}.client-search-result:hover{background:rgba(59,130,246,.12);}.client-search-name{font-size:12px;font-weight:700;}.client-search-meta{font:10px var(--mono);color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.client-discount-override{display:none;align-items:center;gap:8px;margin:-2px 0 3px;padding:9px 10px;border:1px solid rgba(34,197,94,.32);border-radius:8px;background:rgba(34,197,94,.07);color:#79eea6;font-size:11px;font-weight:700;cursor:pointer;}.client-discount-override.show{display:flex;}.client-discount-override input{accent-color:#22c55e;}
+.client-discount-override{display:flex;align-items:center;gap:8px;margin:-2px 0 3px;padding:9px 10px;border:1px solid var(--border);border-radius:8px;background:rgba(255,255,255,.025);color:var(--text3);font-size:11px;font-weight:700;cursor:not-allowed;}.client-discount-override.available{border-color:rgba(34,197,94,.32);background:rgba(34,197,94,.07);color:#79eea6;cursor:pointer;}.client-discount-override input{accent-color:#22c55e;}
 .client-mode-actions{display:flex;gap:6px;margin-bottom:8px;}.client-mode-btn{border:1px solid var(--border2);border-radius:7px;background:transparent;color:var(--text3);font:10px var(--mono);padding:6px 8px;cursor:pointer;}.client-mode-btn.active{border-color:rgba(59,130,246,.55);background:rgba(59,130,246,.12);color:#a9cbff;}
 .f-sel{width:100%;background:var(--black3);border:1.5px solid var(--border2);border-radius:8px;padding:11px 14px;font-size:14px;color:var(--text);outline:none;cursor:pointer;margin-bottom:12px;}
 .login-btn{width:100%;background:var(--red);border:none;border-radius:8px;padding:13px;font-size:14px;font-weight:700;color:#fff;cursor:pointer;}
@@ -2395,10 +2395,12 @@ function updateDiscountOverride(client){
   const check=document.getElementById('mApplyDiscount');
   const text=document.getElementById('mDiscountOverrideText');
   const active=!!client?.descuento_resena;
-  check.checked=false;box.classList.toggle('show',active);
-  if(active) text.textContent=`Aplicar 10% por ${client.descuento_origen==='referido'?'referido':'reseña Google'} a ESTA reparación`;
+  check.checked=false;check.disabled=!active;box.classList.toggle('available',active);
+  text.textContent=active
+    ? `Aplicar 10% por ${client.descuento_origen==='referido'?'referido':'reseña Google'} a ESTA reparación`
+    : client?'Este cliente no tiene un descuento activo':'Elegí un cliente para ver si tiene un descuento disponible';
 }
-function selectClientById(clientId){
+async function selectClientById(clientId){
   const client=aC.find(c=>String(c.id)===String(clientId));
   if(!client) return;
   const code=document.getElementById('mCod');
@@ -2408,6 +2410,10 @@ function selectClientById(clientId){
   document.getElementById('mTel').value=client.telefono||'';
   updateDiscountOverride(client);
   hideClientResults();
+  try{
+    const latest=await db('GET','clientes',`?id=eq.${client.id}&select=id,descuento_resena,descuento_origen&limit=1`);
+    if(latest?.[0]) updateDiscountOverride({...client,...latest[0]});
+  }catch(_){/* Conserva el dato ya cargado si falla la actualización. */}
 }
 function buscarCliente(query=''){
   const code=document.getElementById('mCod');
