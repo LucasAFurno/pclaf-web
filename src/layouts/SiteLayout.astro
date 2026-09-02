@@ -1,17 +1,30 @@
 ---
 interface Props { title: string; description?: string; }
-const { title, description = 'Tecnología que funciona. Personas que responden. PCLAF, Floresta.' } = Astro.props;
+const { title, description = 'Servicio técnico de PC y notebooks en Floresta. Diagnóstico claro, reparación confiable y turnos online.' } = Astro.props;
 ---
 <!doctype html>
 <html lang="es">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#111111" />
+    <meta name="theme-color" content="#171717" />
     <title>{title}</title>
     <meta name="description" content={description} />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="/assets/pclaf-nav.css" />
     <slot name="head" />
   </head>
   <body><slot /></body>
 </html>
+
+<style is:global>
+:root { --ink:#171717; --paper:#f3f0e9; --orange:#f26430; --muted:#77746d; --line:#d7d2c8; --green:#94d39c; }
+* { box-sizing:border-box; }
+html { scroll-behavior:smooth; background:var(--paper); }
+body { margin:0; background:var(--paper); color:var(--ink); font-family:'Manrope',sans-serif; }
+a { color:inherit; }
+::selection { background:var(--orange); color:var(--paper); }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration:.01ms!important; animation-iteration-count:1!important; scroll-behavior:auto!important; transition-duration:.01ms!important; } }
+</style>
