@@ -1,30 +1,23 @@
 ---
 interface Props { title: string; description?: string; }
-const { title, description = 'Servicio técnico de PC y notebooks en Floresta. Diagnóstico claro, reparación confiable y turnos online.' } = Astro.props;
+const { title, description = 'Servicio técnico de PC y notebooks en Floresta. Diagnóstico claro y reparación confiable.' } = Astro.props;
 ---
 <!doctype html>
 <html lang="es">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#171717" />
+    <meta name="theme-color" content="#0b0d0f" />
     <title>{title}</title>
     <meta name="description" content={description} />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
-    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="/assets/pclaf-nav.css" />
     <slot name="head" />
   </head>
   <body><slot /></body>
 </html>
-
 <style is:global>
-:root { --ink:#171717; --paper:#f3f0e9; --orange:#f26430; --muted:#77746d; --line:#d7d2c8; --green:#94d39c; }
-* { box-sizing:border-box; }
-html { scroll-behavior:smooth; background:var(--paper); }
-body { margin:0; background:var(--paper); color:var(--ink); font-family:'Manrope',sans-serif; }
-a { color:inherit; }
-::selection { background:var(--orange); color:var(--paper); }
-@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration:.01ms!important; animation-iteration-count:1!important; scroll-behavior:auto!important; transition-duration:.01ms!important; } }
+:root{--bg:#0b0d0f;--surface:#12161a;--surface-2:#1a2025;--text:#f1f3ef;--muted:#89939a;--line:#283037;--orange:#ff5b2e;--lime:#c8f35a;--mono:'DM Mono',monospace;--sans:'Space Grotesk',sans-serif}*{box-sizing:border-box}html{scroll-behavior:smooth;background:var(--bg)}body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans)}a{color:inherit}::selection{background:var(--orange);color:var(--text)}@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important}}
 </style>
