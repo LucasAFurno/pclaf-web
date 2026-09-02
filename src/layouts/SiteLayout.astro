@@ -1,23 +1,20 @@
 ---
-interface Props { title: string; description?: string; }
-const { title, description = 'Servicio técnico de PC y notebooks en Floresta. Diagnóstico claro y reparación confiable.' } = Astro.props;
+export interface Props { title?: string; description?: string; canonical?: string; }
+const { title = 'PCLAF | Servicio técnico de PC en Floresta y Flores', description = 'Servicio técnico de PC y notebooks en Floresta, Flores y CABA. Diagnóstico, reparación, limpieza Gamer, upgrades y diseño web.', canonical = '/' } = Astro.props;
+const siteUrl = 'https://pclaf.com.ar';
+const canonicalUrl = new URL(canonical, siteUrl).toString();
+const logo = 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-gl4itMqZMwCKOQkKoUxi0O0dR3VHDQe.png';
+const structuredData = { '@context': 'https://schema.org', '@type': 'ComputerStore', name: 'PCLAF', url: siteUrl, logo, image: logo, description, telephone: '+54 9 11 3570-8345', address: { '@type': 'PostalAddress', streetAddress: 'Campana 51', addressLocality: 'Floresta', addressRegion: 'CABA', addressCountry: 'AR' }, areaServed: ['Floresta', 'Flores', 'CABA'], priceRange: '$$' };
 ---
 <!doctype html>
-<html lang="es">
+<html lang="es" class="dark">
   <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#0b0d0f" />
-    <title>{title}</title>
-    <meta name="description" content={description} />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
-    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="/assets/pclaf-nav.css" />
-    <slot name="head" />
-  </head>
-  <body><slot /></body>
+    <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><meta name="theme-color" content="#080808" /><meta name="description" content={description} /><meta name="robots" content="index, follow" />
+    <link rel="canonical" href={canonicalUrl} /><link rel="icon" href={logo} />
+    <meta property="og:type" content="website" /><meta property="og:locale" content="es_AR" /><meta property="og:site_name" content="PCLAF" /><meta property="og:title" content={title} /><meta property="og:description" content={description} /><meta property="og:url" content={canonicalUrl} /><meta property="og:image" content={logo} />
+    <meta name="twitter:card" content="summary" /><meta name="twitter:title" content={title} /><meta name="twitter:description" content={description} /><meta name="twitter:image" content={logo} />
+    <link rel="preconnect" href="https://fonts.googleapis.com" /><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" /><link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" /><link rel="stylesheet" href="/assets/pclaf-nav.css" />
+    <script type="application/ld+json" set:html={JSON.stringify(structuredData)}></script><title>{title}</title><slot name="head" />
+  </head><body><slot /></body>
 </html>
-<style is:global>
-:root{--bg:#0b0d0f;--surface:#12161a;--surface-2:#1a2025;--text:#f1f3ef;--muted:#89939a;--line:#283037;--orange:#ff5b2e;--lime:#c8f35a;--mono:'DM Mono',monospace;--sans:'Space Grotesk',sans-serif}*{box-sizing:border-box}html{scroll-behavior:smooth;background:var(--bg)}body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans)}a{color:inherit}::selection{background:var(--orange);color:var(--text)}@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important}}
-</style>
+<style is:global>:root{--bg:#080808;--surface:#111;--surface-2:#181818;--text:#fff;--muted:#9b9b9b;--line:#2b2b2b;--red:#e21b23;--green:#a8e063;--mono:'DM Mono',monospace;--sans:'Space Grotesk',sans-serif}*{box-sizing:border-box}html{scroll-behavior:smooth;background:var(--bg)}body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans)}a{color:inherit}::selection{background:var(--red);color:#fff}@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important}}</style>
