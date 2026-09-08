@@ -3644,7 +3644,8 @@ function descargarLauncherReporte(repId, numero, forcedSlot=null, legacySlot=nul
     ? { label:'TECNICO', emoji:'🔧' }
     : { label: momento === 'antes' ? 'CLIENTE_ANTES' : 'CLIENTE_DESPUES', emoji:'👤' };
 
-  const bat = `@echo off
+const bat = `@echo off
+setlocal EnableExtensions DisableDelayedExpansion
 chcp 65001 >nul
 title PCLAF - Reporte ${cfg.label} #${numero} [${launcherVersion}]
 color 0A
@@ -3659,7 +3660,8 @@ echo.
 echo  [1/2] Descargando DiagnosticoPC.ps1...
 echo  Fuente primaria: ${scriptUrl}
 echo  Fuente alterna : ${scriptFallbackUrl}
-where curl.exe >nul 2>nul && (
+where curl.exe >nul 2>nul
+if not errorlevel 1 (
   curl.exe -L --fail --silent --show-error --retry 2 --connect-timeout 15 --output "%SCRIPT_TMP%" "${scriptUrl}"
   if not exist "%SCRIPT_TMP%" curl.exe -L --fail --silent --show-error --retry 2 --connect-timeout 15 --output "%SCRIPT_TMP%" "${scriptFallbackUrl}"
 )
@@ -3736,7 +3738,7 @@ if not defined PS_EXE if not exist "%CMD_TMP%" (
   echo  ERROR: No se encontro PowerShell ni el diagnostico CMD.
   echo  Verifica que curl.exe este disponible en Sergei.
   pause
-  exit /b 1
+  goto :FIN
 )
 if defined PS_EXE if not exist "%SCRIPT_TMP%" (
   echo.
@@ -3749,7 +3751,7 @@ if not defined PS_EXE if not exist "%CMD_TMP%" (
   echo  ERROR: No se pudo descargar el modo CMD.
   echo  Revisá la conexion a Internet y volve a intentarlo.
   pause
-  exit /b 1
+  goto :FIN
 )
 echo  [OK] Herramientas listas.
 
@@ -3781,7 +3783,7 @@ if not defined PS_EXE call "%CMD_TMP%" %2 "%REP_ID%"
 if errorlevel 1 echo  [AVISO] El reporte local se genero, pero la subida puede haber fallado.
 if not errorlevel 1 echo  [OK] Reporte %2 terminado.
 pause
-exit /b
+goto :MENU
 
 :HISTORIAL
 echo.
@@ -3790,7 +3792,7 @@ if defined PS_EXE if exist C:\\ProgramData\\PCLAF\\last.json "%PS_EXE%" -NoProfi
 if not defined PS_EXE if exist C:\\ProgramData\\PCLAF\\last.json echo  Hay un historial PCLAF en C:\\ProgramData\\PCLAF.
 if not exist C:\\ProgramData\\PCLAF\\last.json echo  No hay historial local.
 pause
-exit /b
+goto :MENU
 
 :MARCAR
 echo.
@@ -3798,10 +3800,15 @@ reg add "HKCU\\SOFTWARE\\PCLAF\\Diagnostics" /v "Rep${numero}" /t REG_SZ /d "PCL
 if errorlevel 1 echo  [ERROR] No se pudo marcar el equipo.
 if not errorlevel 1 echo  [OK] Equipo marcado con la reparacion #${numero}.
 pause
-exit /b
+goto :MENU
 
 :FIN
 del /q "%SCRIPT_TMP%" >nul 2>nul
+del /q "%CMD_TMP%" >nul 2>nul
+echo.
+echo  La ventana quedara abierta para que puedas leer el resultado.
+pause
+endlocal
 exit /b 0
 `;
   if (window._pclafDownloading) { toast('Ya hay una descarga en curso...', true); return; }
