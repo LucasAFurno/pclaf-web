@@ -2671,7 +2671,8 @@ async function loadReportActions(repId){
         </div>
       </div>`;
     };
-    cont.innerHTML=`<div class="report-flat-grid">
+    const repairNumber = aR.find(x=>x.id===repId)?.numero || '';
+    cont.innerHTML=`<button class="pdf-btn" onclick="descargarMenuHerramientas('${repId}','${repairNumber}')" style="justify-self:start;border-color:var(--blue);color:var(--blue);margin-bottom:4px">🧰 Descargar menú de herramientas</button><div class="report-flat-grid">
       ${renderSlot('tecnico','Tecnico','var(--red)',true)}
       ${renderSlot('antes','Antes','var(--green)',true)}
       ${renderSlot('despues','Despues','var(--amber)',true)}
@@ -3572,7 +3573,7 @@ where curl.exe >nul 2>nul && (
 )
 powershell -NoProfile -Command "$ProgressPreference='SilentlyContinue'; [Net.ServicePointManager]::SecurityProtocol='Tls12'; if(-not (Test-Path '%SCRIPT_TMP%')){ $urls=@('${DIAGNOSTICO_SCRIPT_URL}','${DIAGNOSTICO_SCRIPT_FALLBACK_URL}'); foreach($u in $urls){ try { Invoke-WebRequest -Uri $u -OutFile '%SCRIPT_TMP%' -UseBasicParsing; if((Test-Path '%SCRIPT_TMP%') -and ((Get-Item '%SCRIPT_TMP%').Length -gt 0)){ Write-Host ('DESCARGADO: ' + $u); break } } catch { Write-Host ('FALLO: ' + $u + ' :: ' + $_.Exception.Message) } } }"
 
-if %ERRORLEVEL% NEQ 0 (
+  if not exist "%SCRIPT_TMP%" (
   echo  ERROR: La descarga del script fallo en todas las fuentes.
   pause & exit /b 1
 )
@@ -3586,7 +3587,7 @@ echo.
 echo  [2/2] Ejecutando en modo ${cfg.modo}...
 powershell -NoProfile -ExecutionPolicy Bypass -File "%SCRIPT_TMP%" -Modo ${cfg.modo}
 
-if %ERRORLEVEL% NEQ 0 (
+  if not exist "%SCRIPT_TMP%" (
   echo.
   echo  Algo salio mal. Proba ejecutar como Administrador.
 ) else (
@@ -3683,6 +3684,105 @@ pause`;
   a.click();
   setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 500);
   toast(`${cfg.emoji} Descargando launcher automático para #${numero}`);
+}
+
+function descargarMenuHerramientas(repId, numero) {
+  const scriptSources = getLatestScriptUrls();
+  const scriptUrl = scriptSources.primary;
+  const scriptFallbackUrl = scriptSources.fallback;
+  const menuVersion = `${new Date().toISOString().replace(/[-:TZ.]/g,'').slice(0,14)}_${Math.random().toString(36).slice(2,6)}`;
+  const bat = `@echo off
+chcp 65001 >nul
+title PCLAF - Herramientas reparacion #${numero}
+color 0A
+set "SCRIPT_TMP=%TEMP%\\DiagnosticoPC_PCLAF_%RANDOM%%RANDOM%.ps1"
+set "REP_ID=${repId}"
+set "SUPA=${SUPA}"
+set "KEY=${KEY}"
+echo.
+echo  ============================================================
+echo                 P C L A F  -  HERRAMIENTAS
+echo                 Reparacion #${numero}
+echo                 Menu ${menuVersion}
+echo  ============================================================
+echo.
+echo  Preparando herramientas...
+where curl.exe >nul 2>nul && (
+  curl.exe -L --fail --silent --show-error --retry 2 --connect-timeout 15 --output "%SCRIPT_TMP%" "${scriptUrl}"
+  if not exist "%SCRIPT_TMP%" curl.exe -L --fail --silent --show-error --retry 2 --connect-timeout 15 --output "%SCRIPT_TMP%" "${scriptFallbackUrl}"
+)
+powershell -NoProfile -Command "$ProgressPreference='SilentlyContinue'; [Net.ServicePointManager]::SecurityProtocol='Tls12'; if(-not (Test-Path '%SCRIPT_TMP%')){ $urls=@('${scriptUrl}','${scriptFallbackUrl}'); foreach($u in $urls){ try { Invoke-WebRequest -Uri $u -OutFile '%SCRIPT_TMP%' -UseBasicParsing; if((Test-Path '%SCRIPT_TMP%') -and ((Get-Item '%SCRIPT_TMP%').Length -gt 0)){ break } } catch { Write-Host ('FALLO: ' + $u + ' :: ' + $_.Exception.Message) } } }"
+if not exist "%SCRIPT_TMP%" (
+  echo.
+  echo  ERROR: No se pudo descargar la herramienta.
+  echo  Revisá la conexion a Internet y volve a intentarlo.
+  pause
+  exit /b 1
+)
+echo  [OK] Herramientas listas.
+
+:MENU
+echo.
+echo  ------------------ MENU PCLAF ------------------
+echo  [1] Diagnostico ANTES  - estado al recibir el equipo
+echo  [2] Diagnostico DESPUES - estado luego del servicio
+echo  [3] Reporte TECNICO - uso interno
+echo  [4] Ver historial local de la PC
+echo  [5] Marcar PC con esta reparacion
+echo  [0] Salir
+echo  --------------------------------------------------
+set "OPCION="
+set /p "OPCION=Elegí una opcion: "
+if "%OPCION%"=="1" call :REPORTE cliente antes
+if "%OPCION%"=="2" call :REPORTE cliente despues
+if "%OPCION%"=="3" call :REPORTE tecnico tecnico
+if "%OPCION%"=="4" call :HISTORIAL
+if "%OPCION%"=="5" call :MARCAR
+if "%OPCION%"=="0" goto :FIN
+goto :MENU
+
+:REPORTE
+echo.
+echo  Generando reporte %2... El stress puede tardar 5 minutos.
+powershell -NoProfile -ExecutionPolicy Bypass -File "%SCRIPT_TMP%" -Modo %1 -MomentoReporte %2 -ReparacionId "%REP_ID%" -SupabaseUrl "%SUPA%" -SupabaseAnonKey "%KEY%" -SubirASupabase
+if errorlevel 1 echo  [AVISO] El reporte local se genero, pero la subida puede haber fallado.
+if not errorlevel 1 echo  [OK] Reporte %2 terminado.
+pause
+exit /b
+
+:HISTORIAL
+echo.
+reg query HKCU\\SOFTWARE\\PCLAF\\Diagnostics 2>nul
+if exist C:\\ProgramData\\PCLAF\\last.json powershell -NoProfile -Command "& { $j=Get-Content C:\\ProgramData\\PCLAF\\last.json | ConvertFrom-Json; Write-Host 'Estado:' $j.FinalStatus.EstadoGeneral; Write-Host 'Fecha:' $j.Metadata.Fecha }"
+if not exist C:\\ProgramData\\PCLAF\\last.json echo  No hay historial local.
+pause
+exit /b
+
+:MARCAR
+echo.
+reg add "HKCU\\SOFTWARE\\PCLAF\\Diagnostics" /v "Rep${numero}" /t REG_SZ /d "PCLAF_%COMPUTERNAME%_${numero}" /f
+if errorlevel 1 echo  [ERROR] No se pudo marcar el equipo.
+if not errorlevel 1 echo  [OK] Equipo marcado con la reparacion #${numero}.
+pause
+exit /b
+
+:FIN
+del /q "%SCRIPT_TMP%" >nul 2>nul
+exit /b 0
+`;
+  if (window._pclafDownloading) { toast('Ya hay una descarga en curso...', true); return; }
+  window._pclafDownloading = true;
+  setTimeout(() => { window._pclafDownloading = false; }, 3000);
+  const blob = new Blob([bat], { type:'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `PCLAF_Herramientas_${numero}_${menuVersion}.bat`;
+  a.style.display = 'none';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 500);
+  toast(`🧰 Descargando menú de herramientas para #${numero}`);
 }
 
 function lanzarMarca() {
