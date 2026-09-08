@@ -3706,7 +3706,8 @@ function descargarMenuHerramientas(repId, numero) {
   const cmdScriptUrl = 'https://raw.githubusercontent.com/LucasAFurno/pclaf-reporte/main/DiagnosticoPC_CMD.bat';
   const cmdScriptFallbackUrl = 'https://cdn.jsdelivr.net/gh/LucasAFurno/pclaf-reporte@main/DiagnosticoPC_CMD.bat';
   const menuVersion = `${new Date().toISOString().replace(/[-:TZ.]/g,'').slice(0,14)}_${Math.random().toString(36).slice(2,6)}`;
-  const bat = `@echo off
+const bat = `@echo off
+setlocal EnableExtensions DisableDelayedExpansion
 chcp 65001 >nul
 title PCLAF - Herramientas reparacion #${numero}
 color 0A
@@ -3717,7 +3718,7 @@ set "SUPA=${SUPA}"
 set "KEY=${KEY}"
 set "PS_EXE="
 if exist "%SystemRoot%\\System32\\WindowsPowerShell\\v1.0\\powershell.exe" set "PS_EXE=%SystemRoot%\\System32\\WindowsPowerShell\\v1.0\\powershell.exe"
-if not defined PS_EXE if exist "%ProgramFiles%\\PowerShell\\7\\pwsh.exe" set "PS_EXE=%ProgramFiles%\\PowerShell\\7\\pwsh.exe"
+if "%PS_EXE%"=="" if exist "%ProgramFiles%\\PowerShell\\7\\pwsh.exe" set "PS_EXE=%ProgramFiles%\\PowerShell\\7\\pwsh.exe"
 echo.
 echo  ============================================================
 echo                 P C L A F  -  HERRAMIENTAS
@@ -3726,34 +3727,28 @@ echo                 Menu ${menuVersion}
 echo  ============================================================
 echo.
 echo  Preparando herramientas...
-where curl.exe >nul 2>nul && (
-  curl.exe -L --fail --silent --show-error --retry 2 --connect-timeout 15 --output "%SCRIPT_TMP%" "${scriptUrl}"
-  if not exist "%SCRIPT_TMP%" curl.exe -L --fail --silent --show-error --retry 2 --connect-timeout 15 --output "%SCRIPT_TMP%" "${scriptFallbackUrl}"
-  curl.exe -L --fail --silent --show-error --retry 2 --connect-timeout 15 --output "%CMD_TMP%" "${cmdScriptUrl}"
-  if not exist "%CMD_TMP%" curl.exe -L --fail --silent --show-error --retry 2 --connect-timeout 15 --output "%CMD_TMP%" "${cmdScriptFallbackUrl}"
-)
-if defined PS_EXE "%PS_EXE%" -NoProfile -Command "$ProgressPreference='SilentlyContinue'; [Net.ServicePointManager]::SecurityProtocol='Tls12'; if(-not (Test-Path '%SCRIPT_TMP%')){ $urls=@('${scriptUrl}','${scriptFallbackUrl}'); foreach($u in $urls){ try { Invoke-WebRequest -Uri $u -OutFile '%SCRIPT_TMP%' -UseBasicParsing; if((Test-Path '%SCRIPT_TMP%') -and ((Get-Item '%SCRIPT_TMP%').Length -gt 0)){ break } } catch { Write-Host ('FALLO: ' + $u + ' :: ' + $_.Exception.Message) } } }; if(-not (Test-Path '%CMD_TMP%')){ try { Invoke-WebRequest -Uri '${cmdScriptUrl}' -OutFile '%CMD_TMP%' -UseBasicParsing } catch {} }"
-if not defined PS_EXE if not exist "%CMD_TMP%" (
-  echo.
-  echo  ERROR: No se encontro PowerShell ni el diagnostico CMD.
-  echo  Verifica que curl.exe este disponible en Sergei.
-  pause
-  goto :FIN
-)
-if defined PS_EXE if not exist "%SCRIPT_TMP%" (
-  echo.
-  echo  AVISO: No se pudo descargar el diagnostico PowerShell.
-  echo  Se usara el modo CMD basico.
-)
-if not defined PS_EXE echo  [OK] Modo WinPE CMD disponible.
-if defined PS_EXE echo  [OK] PowerShell disponible.
-if not defined PS_EXE if not exist "%CMD_TMP%" (
-  echo  ERROR: No se pudo descargar el modo CMD.
-  echo  Revisá la conexion a Internet y volve a intentarlo.
-  pause
-  goto :FIN
-)
+curl.exe -L --fail --silent --show-error --retry 2 --connect-timeout 15 --output "%SCRIPT_TMP%" "${scriptUrl}" >nul 2>nul
+if not exist "%SCRIPT_TMP%" curl.exe -L --fail --silent --show-error --retry 2 --connect-timeout 15 --output "%SCRIPT_TMP%" "${scriptFallbackUrl}" >nul 2>nul
+curl.exe -L --fail --silent --show-error --retry 2 --connect-timeout 15 --output "%CMD_TMP%" "${cmdScriptUrl}" >nul 2>nul
+if not exist "%CMD_TMP%" curl.exe -L --fail --silent --show-error --retry 2 --connect-timeout 15 --output "%CMD_TMP%" "${cmdScriptFallbackUrl}" >nul 2>nul
+if not "%PS_EXE%"=="" if not exist "%SCRIPT_TMP%" "%PS_EXE%" -NoProfile -Command "try { Invoke-WebRequest -Uri '${scriptUrl}' -OutFile '%SCRIPT_TMP%' -UseBasicParsing } catch {}"
+if not "%PS_EXE%"=="" if not exist "%SCRIPT_TMP%" "%PS_EXE%" -NoProfile -Command "try { Invoke-WebRequest -Uri '${scriptFallbackUrl}' -OutFile '%SCRIPT_TMP%' -UseBasicParsing } catch {}"
+if not "%PS_EXE%"=="" if not exist "%CMD_TMP%" "%PS_EXE%" -NoProfile -Command "try { Invoke-WebRequest -Uri '${cmdScriptUrl}' -OutFile '%CMD_TMP%' -UseBasicParsing } catch {}"
+if "%PS_EXE%"=="" goto CHECK_CMD
+if not exist "%SCRIPT_TMP%" echo  AVISO: No se pudo descargar el diagnostico PowerShell. Se usara CMD.
+:CHECK_CMD
+if not exist "%CMD_TMP%" goto NO_CMD
+if "%PS_EXE%"=="" echo  [OK] Modo WinPE CMD disponible.
+if not "%PS_EXE%"=="" echo  [OK] PowerShell disponible.
 echo  [OK] Herramientas listas.
+goto MENU
+
+:NO_CMD
+echo.
+echo  ERROR: No se pudo descargar el diagnostico CMD.
+echo  Sergei necesita curl.exe o una conexion disponible.
+pause
+goto FIN
 
 :MENU
 echo.
