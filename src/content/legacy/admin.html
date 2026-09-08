@@ -3610,8 +3610,13 @@ pause`;
   toast(`${cfg.emoji} Descargando PCLAF_${cfg.label}.bat — abrilo como Administrador`);
 }
 
-function descargarLauncherReporte(repId, numero, forcedSlot=null) {
-  const slot = forcedSlot || getSelectedReportSlot(repId);
+function descargarLauncherReporte(repId, numero, forcedSlot=null, legacySlot=null) {
+  // Los botones antiguos pasaban modo y momento por separado. Conservamos
+  // esa firma para que cualquier panel cacheado siga generando el slot correcto.
+  const requestedSlot = legacySlot || forcedSlot;
+  const slot = ['antes','despues','tecnico'].includes(requestedSlot)
+    ? requestedSlot
+    : getSelectedReportSlot(repId);
   const slotMeta = getReportSlotMeta(slot);
   const modo = slotMeta.modo || 'cliente';
   const momento = slotMeta.momento || 'antes';
