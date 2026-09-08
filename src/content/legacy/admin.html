@@ -630,8 +630,8 @@ select.web-status,select.f-sel,select.sse{color-scheme:dark;}select.web-status o
     <!-- ── HERRAMIENTAS ── -->
     <div class="view" id="view-tools">
       <div style="max-width:920px;">
-        <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:4px;"><span style="font-size:20px;font-weight:700;color:#fff;">Herramientas del taller</span><span style="font-family:var(--mono);font-size:11px;color:var(--text3);background:var(--black3);padding:2px 8px;border-radius:4px;border:1px solid var(--border);">Suite v3.6 · 08/09/2026 17:10 ART</span></div>
-        <div style="font-size:12px;color:var(--text3);margin-bottom:24px;">El menú se descarga desde cada reparación para asociar automáticamente los reportes al cliente · Última actualización: 08/09/2026 17:10 ART</div>
+        <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:4px;"><span style="font-size:20px;font-weight:700;color:#fff;">Herramientas del taller</span><span style="font-family:var(--mono);font-size:11px;color:var(--text3);background:var(--black3);padding:2px 8px;border-radius:4px;border:1px solid var(--border);">Suite v3.7 · 08/09/2026 17:13 ART</span></div>
+        <div style="font-size:12px;color:var(--text3);margin-bottom:24px;">El menú se descarga desde cada reparación para asociar automáticamente los reportes al cliente · Última actualización: 08/09/2026 17:13 ART</div>
 
         <article class="web-card plan-esencial" style="border-top-color:var(--blue);margin-bottom:14px;">
           <div class="web-card-top"><span class="web-code">PCLAF TOOLKIT · v3.2</span><span class="web-status" style="color:#9bc5ff;">MENÚ ÚNICO</span></div>
@@ -3324,31 +3324,15 @@ function mTbl(reps){
 
 // ── SUBIR REPORTE HTML ──
 function subirReporte(repId) {
-  document.getElementById(`reporteInput-${repId}`).click();
+  const input=document.getElementById(`reporteInput-${repId}`);
+  if(!input){toast('No se encontró el selector de reportes de esta reparación',true);return;}
+  input.value='';
+  input.click();
 }
 
 function prepararResubidaReporte(repId, slot='antes'){
   const sel=document.getElementById(`reporteSlot-${repId}`);
   if(sel) sel.value = slot === 'legacy' ? 'antes' : slot;
-  subirReporte(repId);
-}
-
-function subirReporteManual(repId){
-  const choice=window.prompt('¿Qué reporte vas a subir?\n1 = Antes\n2 = Después\n3 = Técnico','1');
-  const slot=choice==='2'?'despues':choice==='3'?'tecnico':choice==='1'?'antes':'';
-  if(!slot){toast('Elegí 1, 2 o 3 para indicar el tipo de reporte',true);return;}
-  const sel=document.getElementById(`reporteSlot-${repId}`);
-  if(sel) sel.value=slot;
-  subirReporte(repId);
-}
-
-function abrirMenuPresupuestoReporte(repId){
-  const choice=window.prompt('¿Qué querés hacer?\n1 = Generar presupuesto PDF\n2 = Subir reporte Antes\n3 = Subir reporte Después\n4 = Subir reporte Técnico','1');
-  if(choice==='1'){generarPDF(repId);return;}
-  const slot=choice==='2'?'antes':choice==='3'?'despues':choice==='4'?'tecnico':'';
-  if(!slot){toast('Elegí una opción válida',true);return;}
-  const sel=document.getElementById(`reporteSlot-${repId}`);
-  if(sel) sel.value=slot;
   subirReporte(repId);
 }
 
