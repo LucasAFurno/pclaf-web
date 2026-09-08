@@ -449,7 +449,12 @@ async function showMachine(equipoId, evt) {
       </div>` : '';
 
     // Reporte de diagnóstico
-    const reportesCliente = (repArr || []).filter(rep => inferReportSlot(rep.filename) !== 'técnico');
+    // Solo mostrar reportes que realmente tengan una versión preparada para el cliente.
+    // Los reportes técnicos, internos o vacíos nunca deben aparecer en el portal público.
+    const reportesCliente = (repArr || []).filter(rep => {
+      const slot=inferReportSlot(rep.filename);
+      return slot !== 'técnico' && slot !== 'interno' && String(rep.html_cliente||'').trim().length > 0;
+    });
     const reportSlots = pickClientReports(reportesCliente);
     const latestClientReport = reportSlots.antes || reportSlots.despues || reportSlots.legacy;
     const reporteHtml = latestClientReport ? `
