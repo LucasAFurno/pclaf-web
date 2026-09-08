@@ -630,8 +630,8 @@ select.web-status,select.f-sel,select.sse{color-scheme:dark;}select.web-status o
     <!-- ── HERRAMIENTAS ── -->
     <div class="view" id="view-tools">
       <div style="max-width:920px;">
-        <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:4px;"><span style="font-size:20px;font-weight:700;color:#fff;">Herramientas del taller</span><span style="font-family:var(--mono);font-size:11px;color:var(--text3);background:var(--black3);padding:2px 8px;border-radius:4px;border:1px solid var(--border);">Suite v3.5 · 08/09/2026 17:09 ART</span></div>
-        <div style="font-size:12px;color:var(--text3);margin-bottom:24px;">El menú se descarga desde cada reparación para asociar automáticamente los reportes al cliente · Última actualización: 08/09/2026 17:09 ART</div>
+        <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:4px;"><span style="font-size:20px;font-weight:700;color:#fff;">Herramientas del taller</span><span style="font-family:var(--mono);font-size:11px;color:var(--text3);background:var(--black3);padding:2px 8px;border-radius:4px;border:1px solid var(--border);">Suite v3.6 · 08/09/2026 17:10 ART</span></div>
+        <div style="font-size:12px;color:var(--text3);margin-bottom:24px;">El menú se descarga desde cada reparación para asociar automáticamente los reportes al cliente · Última actualización: 08/09/2026 17:10 ART</div>
 
         <article class="web-card plan-esencial" style="border-top-color:var(--blue);margin-bottom:14px;">
           <div class="web-card-top"><span class="web-code">PCLAF TOOLKIT · v3.2</span><span class="web-status" style="color:#9bc5ff;">MENÚ ÚNICO</span></div>
@@ -1996,7 +1996,9 @@ function simplifyRepairQuickActions(card){
     const repairId=card.id.replace(/^c-/,'');
     const uploadBefore=document.createElement('button');uploadBefore.type='button';uploadBefore.textContent='📄 Subir reporte Antes';uploadBefore.onclick=()=>{const sel=document.getElementById(`reporteSlot-${repairId}`);if(sel)sel.value='antes';subirReporte(repairId);menu.classList.remove('open');};
     const uploadAfter=document.createElement('button');uploadAfter.type='button';uploadAfter.textContent='📄 Subir reporte Después';uploadAfter.onclick=()=>{const sel=document.getElementById(`reporteSlot-${repairId}`);if(sel)sel.value='despues';subirReporte(repairId);menu.classList.remove('open');};
-    menu.append(uploadBefore,uploadAfter);sourceActions.remove();
+    const repairNumber=aR.find(item=>item.id===repairId)?.numero||'';
+    const downloadTool=document.createElement('button');downloadTool.type='button';downloadTool.textContent='🧰 Descargar script de diagnóstico';downloadTool.onclick=()=>{descargarMenuHerramientas(repairId,repairNumber);menu.classList.remove('open');};
+    menu.append(uploadBefore,uploadAfter,downloadTool);sourceActions.remove();
     toggle.onclick=(event)=>{event.stopPropagation();document.querySelectorAll('.repair-menu.open').forEach(item=>{if(item!==menu)item.classList.remove('open');});menu.classList.toggle('open');};menu.onclick=event=>event.stopPropagation();wrap.append(toggle,menu);headerTop.append(wrap);
   }
   const headerTopFinal=card.querySelector('.repair-card-top'),inline=card.querySelector('.repair-discount-inline');
@@ -2683,7 +2685,7 @@ async function loadReportActions(repId){
       </div>`;
     };
     const repairNumber = aR.find(x=>x.id===repId)?.numero || '';
-    cont.innerHTML=`<button class="pdf-btn" onclick="descargarMenuHerramientas('${repId}','${repairNumber}')" style="justify-self:start;border-color:var(--blue);color:var(--blue);margin-bottom:4px">🧰 Descargar menú de herramientas</button><div class="report-flat-grid">
+    cont.innerHTML=`<div class="report-flat-grid">
       ${renderSlot('tecnico','Tecnico','var(--red)',true)}
       ${renderSlot('antes','Antes','var(--green)',true)}
       ${renderSlot('despues','Despues','var(--amber)',true)}
