@@ -3566,7 +3566,11 @@ echo.
 echo  [1/2] Descargando DiagnosticoPC.ps1...
 echo  Fuente primaria: ${DIAGNOSTICO_SCRIPT_URL}
 echo  Fuente alterna : ${DIAGNOSTICO_SCRIPT_FALLBACK_URL}
-powershell -NoProfile -Command "$ProgressPreference='SilentlyContinue'; [Net.ServicePointManager]::SecurityProtocol='Tls12'; $urls=@('${DIAGNOSTICO_SCRIPT_URL}','${DIAGNOSTICO_SCRIPT_FALLBACK_URL}'); $ok=$false; foreach($u in $urls){ try { Invoke-WebRequest -Uri $u -OutFile '%SCRIPT_TMP%' -UseBasicParsing; if((Test-Path '%SCRIPT_TMP%') -and ((Get-Item '%SCRIPT_TMP%').Length -gt 0)){ Write-Host ('DESCARGADO: ' + $u); $ok=$true; break } } catch { Write-Host ('FALLO: ' + $u + ' :: ' + $_.Exception.Message) } }; if(-not $ok){ exit 1 }" 2>nul
+where curl.exe >nul 2>nul && (
+  curl.exe -L --fail --silent --show-error --retry 2 --connect-timeout 15 --output "%SCRIPT_TMP%" "${DIAGNOSTICO_SCRIPT_URL}"
+  if not exist "%SCRIPT_TMP%" curl.exe -L --fail --silent --show-error --retry 2 --connect-timeout 15 --output "%SCRIPT_TMP%" "${DIAGNOSTICO_SCRIPT_FALLBACK_URL}"
+)
+powershell -NoProfile -Command "$ProgressPreference='SilentlyContinue'; [Net.ServicePointManager]::SecurityProtocol='Tls12'; if(-not (Test-Path '%SCRIPT_TMP%')){ $urls=@('${DIAGNOSTICO_SCRIPT_URL}','${DIAGNOSTICO_SCRIPT_FALLBACK_URL}'); foreach($u in $urls){ try { Invoke-WebRequest -Uri $u -OutFile '%SCRIPT_TMP%' -UseBasicParsing; if((Test-Path '%SCRIPT_TMP%') -and ((Get-Item '%SCRIPT_TMP%').Length -gt 0)){ Write-Host ('DESCARGADO: ' + $u); break } } catch { Write-Host ('FALLO: ' + $u + ' :: ' + $_.Exception.Message) } } }"
 
 if %ERRORLEVEL% NEQ 0 (
   echo  ERROR: La descarga del script fallo en todas las fuentes.
@@ -3643,7 +3647,11 @@ echo.
 echo  [1/2] Descargando DiagnosticoPC.ps1...
 echo  Fuente primaria: ${scriptUrl}
 echo  Fuente alterna : ${scriptFallbackUrl}
-powershell -NoProfile -Command "$ProgressPreference='SilentlyContinue'; [Net.ServicePointManager]::SecurityProtocol='Tls12'; $urls=@('${scriptUrl}','${scriptFallbackUrl}'); $ok=$false; foreach($u in $urls){ try { Invoke-WebRequest -Uri $u -OutFile '%SCRIPT_TMP%' -UseBasicParsing; if((Test-Path '%SCRIPT_TMP%') -and ((Get-Item '%SCRIPT_TMP%').Length -gt 0)){ Write-Host ('DESCARGADO: ' + $u); $ok=$true; break } } catch { Write-Host ('FALLO: ' + $u + ' :: ' + $_.Exception.Message) } }; if(-not $ok){ exit 1 }" 2>nul
+where curl.exe >nul 2>nul && (
+  curl.exe -L --fail --silent --show-error --retry 2 --connect-timeout 15 --output "%SCRIPT_TMP%" "${scriptUrl}"
+  if not exist "%SCRIPT_TMP%" curl.exe -L --fail --silent --show-error --retry 2 --connect-timeout 15 --output "%SCRIPT_TMP%" "${scriptFallbackUrl}"
+)
+powershell -NoProfile -Command "$ProgressPreference='SilentlyContinue'; [Net.ServicePointManager]::SecurityProtocol='Tls12'; if(-not (Test-Path '%SCRIPT_TMP%')){ $urls=@('${scriptUrl}','${scriptFallbackUrl}'); foreach($u in $urls){ try { Invoke-WebRequest -Uri $u -OutFile '%SCRIPT_TMP%' -UseBasicParsing; if((Test-Path '%SCRIPT_TMP%') -and ((Get-Item '%SCRIPT_TMP%').Length -gt 0)){ Write-Host ('DESCARGADO: ' + $u); break } } catch { Write-Host ('FALLO: ' + $u + ' :: ' + $_.Exception.Message) } } }"
 if %ERRORLEVEL% NEQ 0 (
   echo  ERROR: La descarga del script fallo en todas las fuentes.
   pause & exit /b 1
