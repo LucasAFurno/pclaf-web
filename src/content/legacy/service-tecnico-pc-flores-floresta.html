@@ -225,5 +225,11 @@ footer a:hover{color:var(--red);}
 <footer>
   <span>© 2026 PCLAF · Campana 51, Floresta, CABA · <a href="ubicacion.html">Cómo llegar</a> · <a href="index.html">Volver al inicio</a></span>
 </footer>
+<script>
+  document.querySelectorAll('.service-feature-bg').forEach((video) => {
+    video.muted = true;
+    video.play().catch(() => {});
+  });
+</script>
 </body>
 </html>
