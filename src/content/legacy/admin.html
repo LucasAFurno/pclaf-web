@@ -1123,6 +1123,39 @@ const PAGE_SIZE=30;
 let totalCount=0;
 let searchTimeout=null;
 let allDataPromise=null;
+let metricsLoaded=false;
+
+/** Prefer the current page card, then the optional full cache. */
+function resolveRepair(id){
+  return pageRepairMap[id] || aR.find(r=>r.id===id) || null;
+}
+function resolveEquipClient(rep){
+  if(!rep) return {e:{},c:{}};
+  const e=rep.equipos || aE.find(x=>x.id===rep.equipo_id) || {};
+  const c=e.clientes || aC.find(x=>x.id===e.cliente_id) || {};
+  return {e,c};
+}
+function rememberRepairs(rows){
+  (rows||[]).forEach(r=>{
+    if(!r?.id) return;
+    pageRepairMap[r.id]=r;
+    const i=aR.findIndex(x=>x.id===r.id);
+    if(i>=0) aR[i]=r; else aR.push(r);
+    const e=r.equipos;
+    if(e?.id){
+      const ei=aE.findIndex(x=>x.id===e.id);
+      if(ei>=0) aE[ei]={...aE[ei],...e}; else aE.push({...e});
+      const c=e.clientes;
+      if(c?.id){
+        const ci=aC.findIndex(x=>x.id===c.id);
+        if(ci>=0) aC[ci]={...aC[ci],...c}; else aC.push({...c});
+      }
+    }
+  });
+}
+function escapePostgrestFilter(value=''){
+  return String(value).replace(/[%_,.()]/g,' ').trim();
+}
 let repairMetricDates=new Map();
 const ES_MONTHS={ene:0,enero:0,feb:1,febrero:1,mar:2,marzo:2,abr:3,abril:3,may:4,mayo:4,jun:5,junio:5,jul:6,julio:6,ago:7,agosto:7,sep:8,set:8,sept:8,septiembre:8,setiembre:8,oct:9,octubre:9,nov:10,noviembre:10,dic:11,diciembre:11};
 
@@ -1155,7 +1188,29 @@ async function loadPage(){
 
   let filter=`order=numero.desc&limit=${PAGE_SIZE}&offset=${offset}`;
   if(fSt!=='todos') filter+=`&estado=eq.${fSt}`;
-  if(q && q.match(/^\d+$/)) filter+=`&numero=eq.${q.padStart(4,'0')}`;
+  if(q && /^\d+$/.test(q)) filter+=`&numero=eq.${q.padStart(4,'0')}`;
+  else if(q){
+    const safe=escapePostgrestFilter(q);
+    if(safe.length>=2){
+      try{
+        const clients=await db('GET','clientes',`?or=(nombre.ilike.*${encodeURIComponent(safe)}*,apellido.ilike.*${encodeURIComponent(safe)}*,codigo.ilike.*${encodeURIComponent(safe)}*,telefono.ilike.*${encodeURIComponent(safe)}*)&select=id&limit=40`)||[];
+        const clientIds=clients.map(c=>c.id);
+        let equipoIds=[];
+        if(clientIds.length){
+          const eqs=await db('GET','equipos',`?cliente_id=in.(${clientIds.join(',')})&select=id&limit=80`)||[];
+          equipoIds=eqs.map(e=>e.id);
+        }
+        const eqsName=await db('GET','equipos',`?nombre.ilike.*${encodeURIComponent(safe)}*&select=id&limit=40`)||[];
+        eqsName.forEach(e=>{ if(e.id && !equipoIds.includes(e.id)) equipoIds.push(e.id); });
+        const parts=[`problema.ilike.*${safe}*`];
+        if(equipoIds.length) parts.push(`equipo_id.in.(${equipoIds.join(',')})`);
+        filter+=`&or=(${parts.join(',')})`;
+      }catch(err){
+        console.warn('search filter fallback',err);
+        filter+=`&problema.ilike.*${encodeURIComponent(safe)}*`;
+      }
+    }
+  }
 
   const select=`select=id,numero,problema,presupuesto,presupuesto_original,descuento_porcentaje,descuento_origen,descuento_aplicado_en,estado,urgente,fecha_entrega,created_at,equipo_id,equipos(id,nombre,icono,modelo,cliente_id,clientes(id,codigo,nombre,apellido,telefono,descuento_resena,descuento_resena_usado,descuento_origen,descuento_disponible_desde))`;
 
@@ -1170,8 +1225,10 @@ async function loadPage(){
 
     if(!Array.isArray(data)||!data.length){
       document.getElementById('rlist').innerHTML='<div class="empty">Sin reparaciones</div>';
+      pageRepairMap={};
       return;
     }
+    rememberRepairs(data);
     renderCards(data);
   }catch(e){
     document.getElementById('rlist').innerHTML='<div class="empty">Error cargando datos</div>';
@@ -1181,7 +1238,7 @@ async function loadPage(){
 
 async function loadAllData(force=false){
   if(allDataPromise && !force) return allDataPromise;
-  const select='select=id,numero,problema,presupuesto,presupuesto_original,descuento_porcentaje,descuento_origen,descuento_aplicado_en,estado,urgente,fecha_entrega,created_at,equipo_id,equipos(id,nombre,icono,modelo,cliente_id,clientes(id,codigo,nombre,apellido,telefono,descuento_resena,descuento_resena_usado,descuento_origen,descuento_disponible_desde))&order=numero.desc';
+  const select='select=id,numero,problema,presupuesto,estado,urgente,fecha_entrega,created_at,equipo_id,equipos(id,nombre,icono,modelo,cliente_id,clientes(id,codigo,nombre,apellido,telefono))&order=numero.desc';
   const pasosSelect='select=reparacion_id,created_at,orden,fecha';
   const batchSize=1000;
   allDataPromise=(async()=>{
@@ -1232,6 +1289,7 @@ async function loadAllData(force=false){
     });
     aE=[...equiposMap.values()];
     aC=[...clientesMap.values()];
+    metricsLoaded=true;
     return aR;
   })();
 
@@ -1279,7 +1337,9 @@ function parseMetricPasoDate(raw, fallbackYearSource=null){
 
 async function loadAll(){
   currentPage=0;
-  await Promise.all([loadStats(), loadAllData()]);
+  // FREE tier: never hydrate the full catalog on login (Disk IO Budget).
+  // Full dump only when opening Métricas (loadAllData).
+  await loadStats();
   await loadPage();
 }
 
@@ -2199,9 +2259,8 @@ async function addPaso(id){
     await loadPasos(id);
 
   // Ofrecer WA si hay nota
-  const rep=aR.find(r=>r.id===id);
-  const eq=aE.find(e=>e.id===rep?.equipo_id)||{};
-  const cl=aC.find(c=>c.id===eq.cliente_id)||{};
+  const rep=resolveRepair(id);
+  const {e:eq,c:cl}=resolveEquipClient(rep);
     if(cl.telefono && no){
     const msg=encodeURIComponent(`Hola ${cl.nombre?.split(' ')[0]||''}! Actualización de tu ${eq.nombre||'equipo'} (#${rep?.numero}): *${t}*${no?' — '+no:''}.`);
     toast('Paso agregado ✓');
@@ -2229,7 +2288,7 @@ async function chEst(id,st,btn){
     playSound('error');
     return;
   }
-  const d=aR.find(r=>r.id===id); if(d) d.estado=st;
+  const d=resolveRepair(id); if(d) d.estado=st;
   loadStats().catch(()=>{});
   const stateGrid=btn?.closest('.sgrid');
   if(stateGrid){stateGrid.querySelectorAll('.so').forEach(b=>b.className='so');btn.classList.add('a'+st[0]);}
@@ -2240,9 +2299,8 @@ async function chEst(id,st,btn){
   if(b){b.className=b.tagName==='BUTTON'?`repair-status-button sb sb-${st}`:`sb sb-${st}`;b.innerHTML=`<span class="dot"></span>${LB[st]}`;}
 
   // WhatsApp automático según estado
-  const rep=aR.find(r=>r.id===id)||{};
-  const eq=aE.find(e=>e.id===rep.equipo_id)||{};
-  const cl=aC.find(c=>c.id===eq.cliente_id)||{};
+  const rep=resolveRepair(id)||{};
+  const {e:eq,c:cl}=resolveEquipClient(rep);
   if(cl.telefono){
     const nombre=cl.nombre?.split(' ')[0]||'';
     const equipo=eq.nombre||'tu equipo';
@@ -2450,20 +2508,26 @@ function buscarCliente(query=''){
   if(clientMode==='new'){hideClientResults();return;}
   const q=normalizeClientSearch(query),phoneQuery=String(query).replace(/\D/g,'');
   if(q.length<2){hideClientResults();return;}
-  clientSearchTimer=setTimeout(()=>{
-    const matches=(aC||[]).filter(client=>{
-      const text=normalizeClientSearch([client.codigo,client.nombre,client.apellido,client.telefono].filter(Boolean).join(' '));
-      const phone=String(client.telefono||'').replace(/\D/g,'');
-      return text.includes(q)||(phoneQuery.length>=3&&phone.includes(phoneQuery));
-    }).slice(0,6);
+  clientSearchTimer=setTimeout(async()=>{
     const results=document.getElementById('mClientResults');
-    if(!matches.length){hideClientResults();return;}
-    results.innerHTML=matches.map(client=>{
-      const name=[client.nombre,client.apellido].filter(Boolean).join(' ')||'Sin nombre';
-      const meta=[client.codigo,client.telefono].filter(Boolean).join(' · ');
-      return `<button type="button" class="client-search-result" role="option" onclick="selectClientById('${client.id}')"><span class="client-search-name">${escapeHtml(name)}</span><span class="client-search-meta">${escapeHtml(meta)}</span></button>`;
-    }).join('');
-    results.classList.add('show');
+    try{
+      const safe=escapePostgrestFilter(query);
+      const phoneSafe=phoneQuery.replace(/\D/g,'');
+      const parts=[`nombre.ilike.*${encodeURIComponent(safe)}*`,`apellido.ilike.*${encodeURIComponent(safe)}*`,`codigo.ilike.*${encodeURIComponent(safe)}*`];
+      if(phoneSafe.length>=3) parts.push(`telefono.ilike.*${encodeURIComponent(phoneSafe)}*`);
+      const matches=await db('GET','clientes',`?or=(${parts.join(',')})&select=id,codigo,nombre,apellido,telefono,descuento_resena,descuento_origen&limit=6`)||[];
+      matches.forEach(c=>{ const i=aC.findIndex(x=>x.id===c.id); if(i>=0) aC[i]={...aC[i],...c}; else aC.push(c); });
+      if(!matches.length){hideClientResults();return;}
+      results.innerHTML=matches.map(client=>{
+        const name=[client.nombre,client.apellido].filter(Boolean).join(' ')||'Sin nombre';
+        const meta=[client.codigo,client.telefono].filter(Boolean).join(' · ');
+        return `<button type="button" class="client-search-result" role="option" onclick="selectClientById('${client.id}')"><span class="client-search-name">${escapeHtml(name)}</span><span class="client-search-meta">${escapeHtml(meta)}</span></button>`;
+      }).join('');
+      results.classList.add('show');
+    }catch(err){
+      console.warn('buscarCliente',err);
+      hideClientResults();
+    }
   },160);
 }
 
@@ -2509,7 +2573,7 @@ async function crearRep(){
     ['mCod','mNom','mApe','mTel','mEq','mMod','mProb','mPres','mUrgente'].forEach(id=>document.getElementById(id).value='');
     delete document.getElementById('mCod').dataset.clientId;hideClientResults();
     updateDiscountOverride(null);
-    await loadAll();
+    await loadPage();
     if(tel){
       const msg=encodeURIComponent(
         `Hola ${nom}! Te escribimos de *PCLAF - Servicio t\u00E9cnico*.\n\n`+
@@ -3034,7 +3098,7 @@ async function guardarEdicion(){
     const budget=document.getElementById('ePres');formatArsInput(budget);
     await db('PATCH','reparaciones',`?id=eq.${rid}`,{problema:document.getElementById('eProb').value.trim(),presupuesto:budget.value.trim(),fecha_entrega:document.getElementById('eFest').value.trim()});
     closeEdit();
-    await loadAll();
+    await loadPage();
     toast('Cambios guardados ✓');
     playSound('action');
   }catch(e){toast('Error: '+e.message,true);}
@@ -3189,34 +3253,46 @@ function toggleSearch(){
   if(p.classList.contains('open')) document.getElementById('clientSearch').focus();
 }
 
-function buscarClientes(q){
+async function buscarClientes(q){
   const cont=document.getElementById('clientResults');
   if(!q||q.length<2){cont.innerHTML='';return;}
-  const ql=q.toLowerCase();
-  const matches=aC.filter(c=>(c.nombre||'').toLowerCase().includes(ql)||(c.codigo||'').toLowerCase().includes(ql));
-  if(!matches.length){cont.innerHTML='<div style="color:var(--text3);font-size:13px;padding:10px">Sin resultados</div>';return;}
-  cont.innerHTML=matches.slice(0,8).map(c=>{
-    const eqs=aE.filter(e=>e.cliente_id===c.id);
-    const reps=aR.filter(r=>eqs.some(e=>e.id===r.equipo_id));
-    const activas=reps.filter(r=>r.estado!=='entregado').length;
-    return `<div class="sp-client" onclick="filtrarPorCliente('${c.id}')">
+  cont.innerHTML='<div style="color:var(--text3);font-size:13px;padding:10px">Buscando...</div>';
+  try{
+    const safe=escapePostgrestFilter(q);
+    const matches=await db('GET','clientes',`?or=(nombre.ilike.*${encodeURIComponent(safe)}*,apellido.ilike.*${encodeURIComponent(safe)}*,codigo.ilike.*${encodeURIComponent(safe)}*)&select=id,codigo,nombre,apellido,telefono&limit=8`)||[];
+    matches.forEach(c=>{ const i=aC.findIndex(x=>x.id===c.id); if(i>=0) aC[i]={...aC[i],...c}; else aC.push(c); });
+    if(!matches.length){cont.innerHTML='<div style="color:var(--text3);font-size:13px;padding:10px">Sin resultados</div>';return;}
+    const cards=await Promise.all(matches.map(async c=>{
+      const eqs=await db('GET','equipos',`?cliente_id=eq.${c.id}&select=id&limit=50`)||[];
+      const ids=eqs.map(e=>e.id);
+      let total=0, activas=0;
+      if(ids.length){
+        const reps=await db('GET','reparaciones',`?equipo_id=in.(${ids.join(',')})&select=id,estado&limit=200`)||[];
+        total=reps.length; activas=reps.filter(r=>r.estado!=='entregado'&&r.estado!=='cancelado').length;
+      }
+      return `<div class="sp-client" onclick="filtrarPorCliente('${c.id}')">
       <div class="sp-client-name">${c.nombre||''} ${c.apellido||''} <span style="color:var(--text3);font-size:11px;font-family:var(--mono)">${c.codigo||''}</span></div>
-      <div class="sp-client-meta">${c.telefono||''} · ${reps.length} reparación${reps.length!==1?'es':''} total · ${activas} activa${activas!==1?'s':''}</div>
+      <div class="sp-client-meta">${c.telefono||''} · ${total} reparación${total!==1?'es':''} total · ${activas} activa${activas!==1?'s':''}</div>
     </div>`;
-  }).join('');
+    }));
+    cont.innerHTML=cards.join('');
+  }catch(err){
+    console.warn('buscarClientes',err);
+    cont.innerHTML='<div style="color:var(--text3);font-size:13px;padding:10px">Error buscando</div>';
+  }
 }
 
-function filtrarPorCliente(clienteId){
-  const eqs=aE.filter(e=>e.cliente_id===clienteId).map(e=>e.id);
-  const reps=aR.filter(r=>eqs.includes(r.equipo_id));
-  const LB={espera:'En espera',proceso:'En reparación',listo:'Listo para retirar',entregado:'Entregado',cancelado:'Cancelado'};
-  const IC={espera:'⏳',proceso:'🔧',listo:'✅',entregado:'📦',cancelado:'❌'};
-  if(!reps.length){document.getElementById('rlist').innerHTML='<div class="empty">Sin reparaciones para este cliente</div>';return;}
+async function filtrarPorCliente(clienteId){
   document.getElementById('searchPanel').classList.remove('open');
-  // Temporarily override renderList to show only this client
-  const c=aC.find(x=>x.id===clienteId)||{};
-  document.getElementById('srch').value=c.nombre||'';
-  renderList();
+  try{
+    const c=(await db('GET','clientes',`?id=eq.${clienteId}&select=id,nombre,codigo&limit=1`))?.[0]||aC.find(x=>x.id===clienteId)||{};
+    document.getElementById('srch').value=c.nombre||c.codigo||'';
+    currentPage=0;
+    await loadPage();
+  }catch(err){
+    console.warn('filtrarPorCliente',err);
+    toast('No se pudo filtrar por cliente',true);
+  }
 }
 
 // MÉTRICAS
@@ -3268,7 +3344,7 @@ function getFrom(p){
 
 async function renderMetrics(){
   try{
-    if(!aR.length) await loadAllData();
+    if(!metricsLoaded) await loadAllData();
     const from=getFrom(cPer);
     const reps=aR.filter(r=>{
       const d=getMetricDate(r);
@@ -4038,8 +4114,8 @@ document.addEventListener('DOMContentLoaded', () => {
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') scheduleRefreshVisibleReportActions(250);
   });
-  // Poll cada 60 segundos
-  setInterval(checkNuevosTurnos, 60000);
+  // Poll cada 3 minutos (FREE Disk IO)
+  setInterval(checkNuevosTurnos, 3*60*1000);
   // Primera check a los 3 segundos (cuando ya cargo la data)
   setTimeout(checkNuevosTurnos, 3000);
 });
