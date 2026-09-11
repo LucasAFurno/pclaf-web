@@ -54,7 +54,7 @@ nav{background:var(--black2);border-bottom:2px solid var(--red);padding:0 24px;h
 .nav-links a.primary{background:var(--red);border-color:var(--red);}
 .nav-links a.primary:hover{background:var(--red-dark);}
 .nav-links a:hover{border-color:var(--red);}
-.hero{max-width:1100px;margin:0 auto;padding:64px 24px 34px;}
+.hero{max-width:1100px;margin:0 auto;padding:64px 24px 34px;position:relative;overflow:hidden;border-radius:0 0 18px 18px}.hero>*:not(.hero-bg-video){position:relative;z-index:1}.hero-bg-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.34;filter:blur(1.5px) saturate(1.3) contrast(1.08);transform:scale(1.035);z-index:0}.hero:after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,rgba(8,8,8,.78),rgba(8,8,8,.42) 52%,rgba(8,8,8,.68));z-index:0;pointer-events:none}
 .eyebrow{font-family:var(--mono);font-size:11px;color:var(--red);letter-spacing:.14em;text-transform:uppercase;margin-bottom:14px;}
 .hero h1{font-family:var(--display);font-size:clamp(40px,7vw,78px);line-height:.95;letter-spacing:-.04em;margin-bottom:18px;}
 .hero h1 span{color:var(--red);}
@@ -141,7 +141,7 @@ footer a:hover{color:var(--red);}
   </div>
 </nav>
 
-<section class="hero">
+<section class="hero"><video class="hero-bg-video" autoplay muted loop playsinline preload="metadata" aria-hidden="true"><source src="/assets/pc-motherboard-loop.mp4" type="video/mp4"></video>
   <div class="eyebrow">Servicio técnico PC y notebook · Flores y Floresta</div>
   <h1>Servicio técnico para <span>PC y notebook</span> cerca de Flores y Floresta</h1>
   <p>PCLAF atiende equipos de clientes de Flores, Floresta y zonas cercanas de CABA. Hacemos formateo, limpieza interna, cambio de pasta térmica, instalación de Windows, optimización y mantenimiento general con atención por turno.</p>
