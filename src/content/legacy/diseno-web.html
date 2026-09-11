@@ -83,7 +83,7 @@
     .gallery{grid-template-columns:repeat(4,minmax(0,1fr));gap:18px;max-width:1320px;padding:0 20px 72px}
     .browser{padding:6px;border-radius:12px;box-shadow:0 10px 25px rgba(67,43,17,.08)}
     .dots{height:10px}.screen{height:215px;border-radius:7px}.screen>.visual-photo{display:none!important}.screen>*:not(.demo-thumb){visibility:hidden}.screen>.demo-thumb{display:block!important;visibility:visible!important;width:100%;height:100%;object-fit:cover;object-position:top;position:absolute;inset:0;z-index:3}
-    .design-info{display:block;padding:10px 2px 0}.design-info h2{font-size:16px;margin-bottom:4px}.design-info p{font-size:11px;line-height:1.45}
+    .design-info{display:block;padding:10px 2px 0}.design-info h2{font-size:16px;margin-bottom:4px}.design-info p{font-size:11px;line-height:1.45}.design.featured-demo .browser{border-color:#cc0000;box-shadow:0 10px 28px rgba(204,0,0,.2)}.design.featured-demo .choose{background:#cc0000;border-color:#cc0000;color:#fff}
     .design-actions{display:flex;justify-content:space-between;align-items:center;margin-top:10px}.demo-link,.choose{font-size:10px}.choose{padding:7px 8px}
     @media(max-width:1050px){.gallery{grid-template-columns:repeat(3,minmax(0,1fr))}}@media(max-width:760px){.gallery{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;padding:0 14px 52px}.screen{height:190px}.design-info p{display:none}}@media(max-width:460px){.gallery{grid-template-columns:1fr}.screen{height:230px}}
   </style>
@@ -93,6 +93,7 @@
   <main>
     <header class="intro promo-intro"><video class="promo-intro-bg" autoplay muted loop playsinline preload="metadata" aria-hidden="true"><source src="/assets/web-design-office-loop.mp4" type="video/mp4"></video><div class="eyebrow">Promo lanzamiento · CABA y AMBA</div><h1>Tu negocio merece una web que convierta visitas en consultas.</h1><p>Con una <strong>web profesional adaptada a tu necesidad</strong> mostrás lo que hacés y recibís consultas por WhatsApp. Tenemos desde opciones simples para empezar hasta sitios y catálogos a medida: elegí un estilo y lo llevamos a tu negocio.</p></header>
     <section class="gallery" aria-label="Estilos de diseño disponibles">
+      <article class="design featured-demo" data-demo="operando" data-preview="assets/operando-panel-real.png"><div class="browser"><div class="dots"><i></i><i></i><i></i></div><div class="screen studio"><nav><b>OPERANDO.APP</b><span>Panel · Gestión</span></nav><h3>Tu negocio, bajo control.</h3><p>Clientes, ventas y tareas en un solo lugar.</p></div></div><div class="design-info"><div><h2>Operando.app</h2><p>Un panel de gestión comercial para ordenar clientes, trabajos y presupuestos.</p></div><div class="design-actions"><a class="demo-link" href="https://operando.app" target="_blank" rel="noopener noreferrer">Ver demo ↗</a><a class="choose" href="https://operando.app" target="_blank" rel="noopener noreferrer">Conocer Operando</a></div></div></article>
       <article class="design" data-demo="cafe"><div class="browser"><div class="dots"><i></i><i></i><i></i></div><div class="screen sand"><nav><b>CAFÉ BRUMA</b><span>Carta · Contacto</span></nav><h3>Café de especialidad. Sin apuro.</h3><p>Buenos granos, pastelería del día y una mesa para quedarte.</p><span class="tiny-btn">Ver carta</span></div></div><div class="design-info"><div><h2>Café editorial</h2><p>Un ejemplo completo para cafeterías, restaurantes, panaderías y propuestas gastronómicas.</p></div><div class="design-actions"><a class="demo-link" href="demos/demo.html?tipo=cafe">Ver demo ↗</a><a class="choose" href="#">Elegir estilo</a></div></div></article>
       <article class="design" data-demo="libreria"><div class="browser"><div class="dots"><i></i><i></i><i></i></div><div class="screen studio"><nav><b>PÁGINA NORTE</b><span>Novedades · Contacto</span></nav><h3>Historias para llevar con vos.</h3><p>Libros nuevos, usados y recomendaciones que dan ganas de quedarse.</p></div></div><div class="design-info"><div><h2>Librería contemporánea</h2><p>Para librerías, editoriales, cultura, tiendas de objetos y proyectos con personalidad.</p></div><div class="design-actions"><a class="demo-link" href="demos/demo.html?tipo=libreria">Ver demo ↗</a><a class="choose" href="#">Elegir estilo</a></div></div></article>
       <article class="design" data-demo="ropa"><div class="browser"><div class="dots"><i></i><i></i><i></i></div><div class="screen coast"><nav><b>MORA ESTUDIO</b><span>Ver colección · Contacto</span></nav><h3>Prendas para todos los días.</h3><p>Texturas suaves, colores que combinan y diseño para usar mucho.</p></div></div><div class="design-info"><div><h2>Moda con carácter</h2><p>Para indumentaria, accesorios, marcas de autor y tiendas que necesitan vender mejor.</p></div><div class="design-actions"><a class="demo-link" href="demos/demo.html?tipo=ropa">Ver demo ↗</a><a class="choose" href="#">Elegir estilo</a></div></div></article>
@@ -199,7 +200,8 @@
       arquitectura: 'demos/forme.html',
       bienestar: 'demos/alma.html',
       inmobiliaria: 'demos/altura.html',
-      bici: 'demos/movi.html'
+      bici: 'demos/movi.html',
+      operando: 'https://operando.app'
     };
     document.querySelectorAll('.design').forEach(design => {
       const type = design.dataset.demo;
@@ -215,7 +217,7 @@
       const preview = document.createElement('img');
       preview.className = 'demo-thumb';
       preview.alt = `Vista previa de ${design.querySelector('h2').textContent.trim()}`;
-      preview.src = `assets/demo-previews/${targetUrl.split('/').pop().replace('.html','')}.png`;
+      preview.src = design.dataset.preview || `assets/demo-previews/${targetUrl.split('/').pop().replace('.html','')}.png`;
       design.querySelector('.screen').append(preview);
     });
 
