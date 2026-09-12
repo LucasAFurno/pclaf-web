@@ -240,7 +240,7 @@ footer a:hover{color:var(--red);}
   <div class="hero-note">📍 Los precios incluyen mano de obra. Los repuestos se presupuestan por separado.</div>
 </div>
 
-<div class="section">
+<div class="section price-context">
   <div class="price-guide" aria-label="Cómo leer los precios">
     <div class="price-guide-item"><strong>Precio normal</strong><span>Valor de mano de obra para el plazo habitual.</span></div>
     <div class="price-guide-item"><strong>Urgencia</strong><span>Prioridad de atención; se confirma según disponibilidad.</span></div>
@@ -295,7 +295,7 @@ footer a:hover{color:var(--red);}
 </div>
 
 <!-- FORMATEO Y SOFTWARE -->
-<div class="section">
+<div class="section price-section">
   <h2 class="sec-title">Formateo <span>y software</span></h2>
   <p class="sec-sub">Windows limpio, sin publicidades ni programas basura</p>
   <div class="table-scroll">
@@ -323,7 +323,7 @@ footer a:hover{color:var(--red);}
 </div>
 
 <!-- SERVICE INTERNO -->
-<div class="section">
+<div class="section price-section">
   <h2 class="sec-title">Service <span>interno</span></h2>
   <p class="sec-sub">Limpieza y mantenimiento de hardware</p>
   <div class="table-scroll">
@@ -381,7 +381,7 @@ footer a:hover{color:var(--red);}
 </div>
 
 <!-- OPTIMIZACIÓN -->
-<div class="section">
+<div class="section price-section">
   <h2 class="sec-title">Optimización <span>del sistema</span></h2>
   <p class="sec-sub">Mejora de rendimiento sin necesidad de formatear</p>
   <div class="table-scroll">
@@ -408,7 +408,7 @@ footer a:hover{color:var(--red);}
 </div>
 
 <!-- BACKUP -->
-<div class="section">
+<div class="section price-section">
   <h2 class="sec-title">Backup <span>de archivos</span></h2>
   <p class="sec-sub">Resguardo de tus archivos personales antes de cualquier intervención</p>
   <table class="price-table">
@@ -529,6 +529,14 @@ footer a:hover{color:var(--red);}
 <footer>
   <span>© 2026 PCLAF - Servicio técnico · Campana 51, Floresta, CABA · <a href="ubicacion.html">Cómo llegar</a> · <a href="index.html">Volver al inicio</a></span>
 </footer>
+
+<script>
+  const priceContext = document.querySelector('.price-context');
+  const priceSections = document.querySelectorAll('.price-section');
+  if (priceContext && priceSections.length) {
+    priceSections[priceSections.length - 1].after(priceContext);
+  }
+</script>
 
 </body>
 </html>
