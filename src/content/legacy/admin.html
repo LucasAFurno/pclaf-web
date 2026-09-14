@@ -764,7 +764,7 @@ select.web-status,select.f-sel,select.sse{color-scheme:dark;}select.web-status o
         <div id="mClientModeHelp" style="font-size:11px;color:var(--text3);margin-bottom:8px;">Buscá y elegí un cliente existente. Si tiene un descuento activo, aparecerá abajo.</div>
         <label id="mDiscountOverride" class="client-discount-override"><input type="checkbox" id="mApplyDiscount"/> <span id="mDiscountOverrideText"></span></label>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><div><label class="f-lbl">Nombre</label><input class="f-in" id="mNom" placeholder="Ej: Lucas"/></div><div><label class="f-lbl">Apellido</label><input class="f-in" id="mApe" placeholder="Ej: Méndez"/></div></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><div><label class="f-lbl">Nombre</label><input class="f-in" id="mNom" placeholder="Ej: Lucas" oninput="previsualizarCodigoCliente()"/></div><div><label class="f-lbl">Apellido</label><input class="f-in" id="mApe" placeholder="Ej: Méndez" oninput="previsualizarCodigoCliente()"/></div></div>
       <div><label class="f-lbl">Teléfono</label><input class="f-in" id="mTel" placeholder="Ej: 11 5823-9201"/></div>
       <div><label class="f-lbl">Equipo</label><input class="f-in" id="mEq" placeholder="Ej: Notebook HP"/></div>
       <div><label class="f-lbl">Modelo</label><input class="f-in" id="mMod" placeholder="Ej: Pavilion 15-eh1"/></div>
@@ -2481,11 +2481,34 @@ function setClientMode(mode){
   document.getElementById('mModeNew').classList.toggle('active',isNew);
   document.getElementById('mClientLabel').textContent=isNew?'Código para nuevo cliente':'Buscar cliente o código';
   const code=document.getElementById('mCod');
-  code.placeholder=isNew?'Ej: CARLOS02':'Código, nombre, apellido o teléfono';
+  code.readOnly=isNew;
+  code.placeholder=isNew?'Se genera automáticamente':'Código, nombre, apellido o teléfono';
   document.getElementById('mClientModeHelp').textContent=isNew
-    ? 'Ingresá un código único y completá los datos para crear el cliente.'
+    ? 'El código toma las 2 primeras letras del nombre y apellido, más un número correlativo.'
     : 'Buscá y elegí un cliente existente. Si tiene un descuento activo, aparecerá abajo.';
-  if(isNew){code.value='';delete code.dataset.clientId;hideClientResults();updateDiscountOverride(null);}
+  if(isNew){code.value='';delete code.dataset.clientId;hideClientResults();updateDiscountOverride(null);previsualizarCodigoCliente();}
+  else code.value='';
+}
+function normalizarParteCodigoCliente(value=''){
+  return String(value).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase().replace(/[^A-Z0-9]/g,'');
+}
+let clientCodePreviewTimer;
+function previsualizarCodigoCliente(){
+  if(clientMode!=='new') return;
+  clearTimeout(clientCodePreviewTimer);
+  clientCodePreviewTimer=setTimeout(async()=>{
+    const nombre=normalizarParteCodigoCliente(document.getElementById('mNom').value).slice(0,2);
+    const apellido=normalizarParteCodigoCliente(document.getElementById('mApe').value).slice(0,2);
+    const base=`${nombre}${apellido}`;
+    const code=document.getElementById('mCod');
+    if(base.length<4){code.value='';return;}
+    try{
+      const rows=await db('GET','clientes',`?codigo=like.${base}*&select=codigo&order=codigo.desc&limit=1000`)||[];
+      const used=new Set(rows.map(row=>String(row.codigo||'').toUpperCase()));
+      let n=1;while(used.has(`${base}${String(n).padStart(2,'0')}`))n++;
+      code.value=`${base}${String(n).padStart(2,'0')}`;
+    }catch(_){code.value=`${base}01`;}
+  },180);
 }
 function normalizeClientSearch(value=''){
   return String(value).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
@@ -2553,7 +2576,7 @@ function buscarCliente(query=''){
 }
 
 async function crearRep(){
-  const cod=document.getElementById('mCod').value.trim().toUpperCase();
+  const cod=clientMode==='new'?'':document.getElementById('mCod').value.trim().toUpperCase();
   const nom=document.getElementById('mNom').value.trim();
   const ape=document.getElementById('mApe').value.trim();
   const nomCompleto=ape?`${nom} ${ape}`:nom;
@@ -2566,9 +2589,9 @@ async function crearRep(){
   const pres=budget.value.trim();
   const ico=document.getElementById('mIco').value;
   const urgente=document.getElementById('mUrgente').value==='1';
-  if(!cod||!nom||!eq||!num||!prob){toast('Completá los campos obligatorios',true);return;}
+  if((clientMode!=='new'&&!cod)||!nom||!eq||!num||!prob){toast('Completá los campos obligatorios',true);return;}
   try{
-    let clArr=await db('GET','clientes',`?codigo=eq.${cod}`);
+    let clArr=cod?await db('GET','clientes',`?codigo=eq.${cod}`):[];
     let cid;
     const selectedClientId=document.getElementById('mCod').dataset.clientId;
     const existingByData=(aC||[]).find(client=>
@@ -2578,7 +2601,7 @@ async function crearRep(){
     if(selectedClientId){cid=selectedClientId;}
     else if(clArr?.length){cid=clArr[0].id;}
     else if(existingByData){cid=existingByData.id;toast(`Se usó el cliente existente ${existingByData.codigo||''}`);}
-    else{const nv=await db('POST','clientes','',{codigo:cod,nombre:nom,apellido:ape,telefono:tel});cid=nv[0].id;}
+    else{const nv=await db('POST','clientes','',{codigo:cod||null,nombre:nom,apellido:ape,telefono:tel});cid=nv[0].id;document.getElementById('mCod').value=nv[0].codigo||'';}
     const er=await db('POST','equipos','',{cliente_id:cid,nombre:eq,modelo:mod,icono:ico});
     const aplicarDescuentoAhora=document.getElementById('mApplyDiscount').checked;
     const rr=await db('POST','reparaciones','',{equipo_id:er[0].id,numero:num,problema:prob,presupuesto:pres,estado:'espera',urgente,descuento_aplicado_manual:aplicarDescuentoAhora});
