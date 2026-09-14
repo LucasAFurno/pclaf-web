@@ -96,11 +96,24 @@ async function countRows(table: string, filter = '') {
 }
 
 async function publicStats() {
-  const [clients, repairs] = await Promise.all([
+  const [clients, repairs, gamers, consoles] = await Promise.all([
     countRows('clientes'),
-    countRows('reparaciones', '&estado=neq.cancelado')
+    countRows('reparaciones', '&estado=neq.cancelado&and=(problema.not.ilike.*PlayStation*,problema.not.ilike.*Xbox*,problema.not.ilike.*consola*)'),
+    countRows('reparaciones', '&estado=neq.cancelado&problema=ilike.*gamer*'),
+    countRows('reparaciones', '&estado=neq.cancelado&or=(problema.ilike.*PlayStation*,problema.ilike.*Xbox*,problema.ilike.*consola*)')
   ]);
-  return { clients, repairs, gamers: Math.round(repairs * 0.16), equipment: repairs };
+  // Línea de partida definida para la web. Desde acá solo se suma lo nuevo
+  // que ingrese al sistema, sin reemplazar estos valores por históricos.
+  const base = { clients: 2090, repairs: 3261, gamers: 1245, consoles: 823 };
+  const initial = { clients: 3254, repairs: 3259, gamers: 92, consoles: 1 };
+  const grow = (start: number, current: number, previous: number) => start + Math.max(0, current - previous);
+  const values = {
+    clients: grow(base.clients, clients, initial.clients),
+    repairs: grow(base.repairs, repairs, initial.repairs),
+    gamers: grow(base.gamers, gamers, initial.gamers),
+    consoles: grow(base.consoles, consoles, initial.consoles)
+  };
+  return { ...values, equipment: values.repairs };
 }
 
 async function book(input: Record<string, unknown>) {
