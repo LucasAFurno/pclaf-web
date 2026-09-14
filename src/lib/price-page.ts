@@ -16,9 +16,14 @@ export function pricePageParts() {
     throw new Error('No se pudieron identificar las secciones de precios.');
   }
 
+  const contextStart = html.indexOf('<div class="section price-context">');
+  if (contextStart < 0 || contextStart > starts[0]) {
+    throw new Error('No se pudo identificar el contexto de precios.');
+  }
+
   return {
-    before: html.slice(0, starts[0]),
-    sections: starts.slice(0, -1).map((start, index) => html.slice(start, starts[index + 1])),
+    before: html.slice(0, contextStart),
+    context: html.slice(contextStart, starts[0]),
     after: html.slice(starts.at(-1)!)
   };
 }

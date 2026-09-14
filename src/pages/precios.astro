@@ -1,7 +1,7 @@
 ---
 import { pricePageParts } from '../lib/price-page';
 import { consoles } from '../data/consoles';
-const { before, after } = pricePageParts();
+const { before, context, after } = pricePageParts();
 
 const groups = [
   { key: 'pc', label: 'PC', icon: '▣', items: [
@@ -46,6 +46,7 @@ const groups = [
   </div>
   <div class="catalog-actions"><a class="catalog-button catalog-button-primary" href="/turnos.html">Pedir turno →</a><a class="catalog-button" href="https://wa.me/5491121111111" target="_blank" rel="noreferrer">Consultar por WhatsApp</a></div>
 </section>
+<Fragment set:html={context} />
 <Fragment set:html={after} />
 
 <style is="global">
