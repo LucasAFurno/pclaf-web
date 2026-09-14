@@ -1,4 +1,7 @@
 ---
-import ModernInfoPage from '../components/ModernInfoPage.astro';
+import SectionedPageLayout from '../layouts/SectionedPageLayout.astro';
+import { sectionedPageParts } from '../lib/sectioned-page';
+
+const parts = sectionedPageParts('ubicacion.html');
 ---
-<ModernInfoPage title="Estamos cerca" accent="de vos." eyebrow="PCLAF / UBICACIÓN" description="Taller en Campana 51, Floresta. Atendemos Flores, Villa Luro, Caballito y zonas cercanas." cards={[{"title":"Taller en Floresta","text":"Información clara y acompañamiento en cada paso para que decidas con tranquilidad."},{"title":"Lunes a viernes · 10 a 19 hs.","text":"Información clara y acompañamiento en cada paso para que decidas con tranquilidad."},{"title":"Abrir ubicación en Google Maps","text":"Información clara y acompañamiento en cada paso para que decidas con tranquilidad."}]} />
+<SectionedPageLayout {...parts} />

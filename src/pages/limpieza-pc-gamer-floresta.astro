@@ -1,4 +1,7 @@
 ---
-import ModernServicePage from '../components/ModernServicePage.astro';
+import ServiceArticleLayout from '../layouts/ServiceArticleLayout.astro';
+import { serviceArticleParts } from '../lib/service-article';
+
+const parts = serviceArticleParts('limpieza-pc-gamer-floresta.html');
 ---
-<ModernServicePage title="Limpieza de PC gamer" accent="Más rendimiento." description="Limpieza profunda para PC gamer en Floresta: menos temperatura, menos ruido y más estabilidad en tus partidas." items={["Limpieza de componentes","Flujo de aire","Prueba de estabilidad"]} />
+<ServiceArticleLayout {...parts} />

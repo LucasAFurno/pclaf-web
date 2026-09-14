@@ -1,4 +1,7 @@
 ---
-import ModernServicePage from '../components/ModernServicePage.astro';
+import ServiceArticleLayout from '../layouts/ServiceArticleLayout.astro';
+import { serviceArticleParts } from '../lib/service-article';
+
+const parts = serviceArticleParts('cambio-pasta-termica-notebook-caba.html');
 ---
-<ModernServicePage title="Cambio de pasta térmica" accent="Notebook más fresca." description="Mantenimiento térmico para notebook en CABA. Reducimos temperatura, ruido y desgaste con limpieza interna y pasta térmica de calidad." items={["Limpieza interna","Pasta térmica nueva","Control de temperaturas"]} />
+<ServiceArticleLayout {...parts} />
