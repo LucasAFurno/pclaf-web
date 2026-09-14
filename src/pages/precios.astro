@@ -1,17 +1,53 @@
 ---
-import PriceSection from '../components/PriceSection.astro';
 import { pricePageParts } from '../lib/price-page';
 import { consoles } from '../data/consoles';
-const { before, sections, after } = pricePageParts();
+const { before, after } = pricePageParts();
+
+const groups = [
+  { key: 'pc', label: 'PC', icon: '▣', items: [
+    ['Limpieza interna PC + pasta térmica', 'Limpieza completa sin GPU', '$70.000', '$105.000'],
+    ['Formateo Windows 11 + drivers', 'Sistema listo y actualizado', '$70.000', '$105.000'],
+    ['Formateo + Office + apps básicas', 'Instalación y configuración inicial', '$85.000', '$128.000'],
+    ['Optimización sin formateo', 'Ajustes de rendimiento y arranque', '$50.000', '$75.000'],
+    ['Optimización sin formateo GAMER', 'Puesta a punto para jugar', '$120.000', '$180.000'],
+    ['Limpieza de GPU / placa de video', 'Limpieza y mantenimiento térmico', '$70.000', '$105.000']
+  ]},
+  { key: 'notebook', label: 'Notebook', icon: '▤', items: [
+    ['Limpieza interna Notebook', 'Limpieza y pasta térmica', '$90.000', '$135.000'],
+    ['Formateo Windows 11 + drivers', 'Sistema listo y actualizado', '$70.000', '$105.000'],
+    ['Formateo + Office + apps básicas', 'Instalación y configuración inicial', '$85.000', '$128.000'],
+    ['Reparación motherboard', 'Diagnóstico y presupuesto según falla', 'desde $95.000', 'Consultar']
+  ]},
+  { key: 'backup', label: 'Backup', icon: '↥', items: [
+    ['Backup de archivos', 'Resguardo de documentos, fotos y datos', 'desde $20.000', 'desde $30.000'],
+    ['Atención remota', 'Asistencia y puesta a punto a distancia', '$90.000', '$135.000']
+  ]},
+  { key: 'playstation', label: 'PlayStation', icon: '△', items: consoles.filter(item => item.shortName.toLowerCase().includes('ps')).map(item => [item.name, item.includes, item.price, 'Consultar']) },
+  { key: 'xbox', label: 'Xbox', icon: '◉', items: consoles.filter(item => item.shortName.toLowerCase().includes('xbox')).map(item => [item.name, item.includes, item.price, 'Consultar']) }
+];
 ---
 <Fragment set:html={before} />
-{sections.map(html => <PriceSection {html} />)}
-<section class="section console-price-section" id="consolas">
-  <h2 class="sec-title">Service de <span>consolas</span></h2>
-  <p class="sec-sub">Mantenimiento preventivo para bajar temperatura, ruido y desgaste</p>
-  <div class="table-scroll"><table class="price-table"><thead><tr><th>Servicio</th><th>Incluye</th><th>Normal</th></tr></thead><tbody>
-    {consoles.map((console) => <tr><td><a href={`/consolas/${console.slug}.html`}>{console.name}</a></td><td>{console.includes}</td><td class="price-normal">{console.price}</td></tr>)}
-  </tbody></table></div>
-  <p class="service-note">El objetivo es ayudar a bajar la temperatura de trabajo, reducir el sonido del cooler y prevenir roturas asociadas al exceso de calor. El precio incluye mano de obra y los materiales indicados.</p>
+<section class="section price-catalog" id="catalogo-precios">
+  <div class="catalog-head">
+    <div><h2 class="sec-title">Precios <span>claros</span></h2><p class="sec-sub">Elegí el service que necesitás y encontrá el valor normal o urgente.</p></div>
+    <p>Los precios urgentes corresponden a trabajos coordinados con prioridad. En consolas la urgencia se confirma según disponibilidad, por eso figura como “Consultar”.</p>
+  </div>
+  <div class="price-groups">
+    {groups.map((group, index) => <section class={`price-group price-group-${group.key}`}>
+      <div class="price-group-head"><span class="price-group-kicker">0{index + 1} / SERVICIOS</span><h3>{group.icon} {group.label}</h3></div>
+      <div class="price-card-grid">
+        {group.items.map(([name, detail, normal, urgent]) => <article class="price-card">
+          <div class="price-card-top"><span class="price-card-icon">{group.icon}</span><span class="price-card-label">Service preventivo</span></div>
+          <h4>{name}</h4><p>{detail}</p>
+          <div class="price-values"><div><span>Normal</span><strong>{normal}</strong></div><div class="price-urgent"><span>Urgente</span><strong>{urgent}</strong></div></div>
+        </article>)}
+      </div>
+    </section>)}
+  </div>
+  <div class="catalog-actions"><a class="catalog-button catalog-button-primary" href="/turnos.html">Pedir turno →</a><a class="catalog-button" href="https://wa.me/5491121111111" target="_blank" rel="noreferrer">Consultar por WhatsApp</a></div>
 </section>
 <Fragment set:html={after} />
+
+<style is="global">
+  .price-catalog{padding-top:12px}.catalog-head{display:grid;grid-template-columns:1.2fr 1fr;gap:34px;align-items:end;margin-bottom:24px}.catalog-head p{margin:0;color:var(--text2);font-size:14px;line-height:1.55}.price-groups{display:grid;gap:14px}.price-group{padding:20px;border:1px solid var(--border);border-top:3px solid var(--red);border-radius:12px;background:var(--black2)}.price-group-playstation{border-top-color:#2878e8}.price-group-xbox{border-top-color:#28b85b}.price-group-backup{border-top-color:var(--amber)}.price-group-head{display:flex;align-items:baseline;gap:12px;margin-bottom:16px}.price-group-kicker{font:10px var(--mono);letter-spacing:.12em;color:var(--text3)}.price-group h3{font:800 32px/.9 var(--display);color:#fff}.price-group-playstation h3{color:#6ea6ff}.price-group-xbox h3{color:#53d88e}.price-group-backup h3{color:var(--amber)}.price-card-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.price-card{padding:16px;border:1px solid var(--border);border-radius:10px;background:var(--black);min-height:172px}.price-card-top{display:flex;justify-content:space-between;align-items:center}.price-card-icon{font-size:20px}.price-card-label{font:10px var(--mono);color:var(--text3);text-transform:uppercase;letter-spacing:.08em}.price-card h4{margin:14px 0 6px;font:700 22px/.95 var(--display);color:#fff}.price-card p{min-height:34px;margin:0;color:var(--text2);font-size:12px;line-height:1.4}.price-values{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:15px;padding-top:10px;border-top:1px solid var(--border)}.price-values span{display:block;font:10px var(--mono);color:var(--text3);text-transform:uppercase}.price-values strong{display:block;margin-top:4px;font:700 15px var(--mono);color:var(--red)}.price-urgent strong{color:var(--amber)}.price-group-playstation .price-values strong:first-child{color:#6ea6ff}.price-group-xbox .price-values strong:first-child{color:#53d88e}.catalog-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}.catalog-button{display:inline-flex;padding:12px 16px;border:1px solid var(--border2);border-radius:8px;color:var(--text);font:700 14px var(--display);text-transform:uppercase;text-decoration:none}.catalog-button-primary{background:var(--red);border-color:var(--red);color:#fff}.catalog-button:hover{border-color:var(--red)}@media(max-width:700px){.catalog-head{grid-template-columns:1fr;gap:12px}.price-card-grid{grid-template-columns:1fr}.price-card{min-height:0}.catalog-actions{flex-direction:column}.catalog-button{justify-content:center}}
+</style>
