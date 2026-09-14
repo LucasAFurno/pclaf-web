@@ -455,8 +455,8 @@ body{background:radial-gradient(900px 460px at 50% -220px,rgba(204,0,0,.16),tran
 .rc .rch.repair-card-summary{display:block;min-height:0;padding:17px;cursor:pointer;}.repair-card-summary .repair-card-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:13px;}.repair-card-summary .rcn{min-width:0;padding:0;border:0;background:none;color:#a9cbff;text-align:left;font:11px var(--mono);}.repair-card-summary .sb{margin:0!important;}.repair-card-summary .repair-summary-name{font-size:16px;font-weight:700;color:#fff;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}.repair-card-summary .repair-summary-equipment{font-size:12px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}.repair-card-summary .repair-summary-meta{display:flex;gap:7px;flex-wrap:wrap;margin:14px 0 15px;}.repair-card-summary .repair-summary-chip{font:10px var(--mono);color:var(--text2);border:1px solid var(--border2);border-radius:999px;padding:4px 8px;background:rgba(255,255,255,.025);}.repair-card-summary .repair-summary-chip.code{color:#9bc5ff;border-color:rgba(59,130,246,.35);}.repair-card-summary .repair-summary-chip.money{color:#fff;border-color:rgba(34,197,94,.28);}.repair-card-summary .repair-summary-chip.money.empty{color:var(--text3);border-color:var(--border);}.repair-card-summary .repair-card-foot{display:flex;justify-content:space-between;align-items:center;gap:8px;padding-top:12px;border-top:1px solid rgba(255,255,255,.06);font-size:11px;color:var(--text3);}.repair-card-summary .repair-card-foot strong{color:#a9cbff;font:10px var(--mono);font-weight:500;}.repair-card-summary .rcch{display:flex;align-items:center;justify-content:center;width:23px;height:23px;border:1px solid var(--border);border-radius:7px;}.rc.open .rch.repair-card-summary{border-bottom:1px solid rgba(255,255,255,.07);background:linear-gradient(90deg,rgba(255,255,255,.025),transparent 58%);}.rc.open .repair-card-summary .rcch{border-color:rgba(204,0,0,.38);color:#ffaaaa;}
 /* Desktop: las reparaciones cerradas se leen en dos columnas, como Proyectos Web. */
 @media(min-width:851px){
-  #view-rep .rlist{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:start;}
-  #view-rep .rlist>.rc.open,#view-rep .rlist>div:not(.rc){grid-column:1/-1;}
+  #view-rep .rlist,#view-consolas .rlist{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:start;}
+  #view-rep .rlist>.rc.open,#view-rep .rlist>div:not(.rc),#view-consolas .rlist>.rc.open,#view-consolas .rlist>div:not(.rc){grid-column:1/-1;}
   .rc.open .bgrid{grid-template-columns:minmax(0,1.12fr) minmax(330px,.88fr);gap:12px;}
   .rc.open .btop{grid-column:1/-1;}.rc.open .bmid{display:contents;}
   .rc.open .bsec-flow{grid-column:1;}.rc.open .bsec-perks{grid-column:2;align-self:stretch;display:flex;flex-direction:column;}
@@ -616,11 +616,11 @@ select.web-status,select.f-sel,select.sse{color-scheme:dark;}select.web-status o
       <div id="turnosList"><div class="empty"><div class="spinner"></div>Cargando...</div></div>
     </div>
 
-    <!-- ── CONSOLAS: catálogo y contenido, no bandeja de turnos ── -->
+    <!-- ── CONSOLAS: reparaciones de consolas, no turnos ── -->
     <div class="view" id="view-consolas">
-      <div class="console-admin-head"><div><div class="eyebrow-admin">CATÁLOGO · CONTENIDO</div><h2>Service de <span>consolas</span></h2></div><p>PlayStation y Xbox, organizados como Web. Los turnos de todas las categorías se gestionan únicamente desde <strong>Turnos</strong>.</p></div>
-      <div class="console-kpis"><div><b>7</b><span>Servicios publicados</span></div><div><b>2</b><span>Marcas</span></div><div><b>100%</b><span>Mantenimiento preventivo</span></div></div>
-      <div class="console-admin-grid" id="consolasList"></div>
+      <div class="frow"><div style="font-size:20px;font-weight:700;color:#fff;">Reparaciones de consolas</div><span style="font-size:12px;color:var(--text3);">Misma gestión que Reparaciones · trabajos reales de PlayStation y Xbox</span></div>
+      <div class="frow"><button class="fbtn active" onclick="setConsoleRepairFilter('todos',this)">Todos</button><button class="fbtn" onclick="setConsoleRepairFilter('espera',this)">Espera</button><button class="fbtn" onclick="setConsoleRepairFilter('proceso',this)">Proceso</button><button class="fbtn" onclick="setConsoleRepairFilter('listo',this)">Listos</button><button class="fbtn" onclick="setConsoleRepairFilter('entregado',this)">Entregados</button><input class="srch" id="consoleRepairSearch" placeholder="Buscar cliente, equipo, #número..." oninput="renderConsoleRepairs()"/></div>
+      <div id="consolasList" class="rlist"><div class="empty"><div class="spinner"></div>Cargando...</div></div>
     </div>
 
     <!-- ── AGENDA ── -->
@@ -1113,7 +1113,7 @@ function switchTab(name,btn){
   window.scrollTo({top:0,behavior:'smooth'});
   if(name==='met') renderMetrics();
   if(name==='turnos') loadTurnos();
-  if(name==='consolas') renderConsolasCatalog();
+  if(name==='consolas') loadConsoleRepairs();
   if(name==='agenda') renderAgenda();
   if(name==='tools') renderTools();
   if(name==='web') loadWebProjects();
@@ -1780,7 +1780,7 @@ function discountCanApplyToRepair(repair, client){
   return new Date(repair?.created_at||0) >= new Date(client.descuento_disponible_desde);
 }
 
-function renderCards(data){
+function renderCards(data,targetId='rlist'){
   const LB={espera:'En espera',proceso:'En reparación',listo:'Listo para retirar',entregado:'Entregado',cancelado:'Cancelado'};
   const IC={espera:'⏳',proceso:'🔧',listo:'✅',entregado:'📦',cancelado:'❌'};
 
@@ -1952,7 +1952,7 @@ function renderCards(data){
   </div>`;
   }).join('');
 
-  const totalPages=Math.ceil(totalCount/PAGE_SIZE);
+  const totalPages=targetId==='rlist'?Math.ceil(totalCount/PAGE_SIZE):1;
   const paginacion=totalPages>1?`
     <div style="display:flex;align-items:center;justify-content:center;gap:10px;padding:20px 0;border-top:1px solid var(--border);margin-top:8px;">
       <button onclick="goPage(${currentPage-1})" ${currentPage===0?'disabled':''} style="background:var(--black3);border:1px solid var(--border2);border-radius:8px;padding:8px 16px;color:${currentPage===0?'var(--text3)':'var(--text)'};cursor:pointer;font-size:13px;font-weight:600;">← Anterior</button>
@@ -1960,7 +1960,7 @@ function renderCards(data){
       <button onclick="goPage(${currentPage+1})" ${currentPage>=totalPages-1?'disabled':''} style="background:var(--black3);border:1px solid var(--border2);border-radius:8px;padding:8px 16px;color:${currentPage>=totalPages-1?'var(--text3)':'var(--text)'};cursor:pointer;font-size:13px;font-weight:600;">Siguiente →</button>
     </div>`:'';
 
-  document.getElementById('rlist').innerHTML=cards+paginacion;
+  document.getElementById(targetId).innerHTML=cards+paginacion;
   formatRepairCardHeaders(data);
   restoreOpenRepairCard().catch(()=>{});
 }
@@ -2789,6 +2789,7 @@ function scheduleRefreshVisibleReportActions(delay=600){
 }
 
 let allTurnos=[], turnoFilter='todos';
+let consoleRepairs=[], consoleRepairFilter='todos';
 
 async function loadTurnos(){
   document.getElementById('turnosList').innerHTML='<div class="empty"><div class="spinner"></div>Cargando...</div>';
@@ -2852,19 +2853,34 @@ function renderTurnos(){
   }).join('')+'</div>';
 }
 
-const CONSOLE_CATALOG=[
-  ['PlayStation 3','PlayStation','Limpieza + pasta térmica + pads si hace falta','$70.000','service-ps3'],
-  ['PlayStation 4 / Slim','PlayStation','Limpieza + pasta térmica + pads','$70.000','service-ps4-slim'],
-  ['PlayStation 4 Pro','PlayStation','Limpieza + pasta térmica + pads (más superficie)','$80.000','service-ps4-pro'],
-  ['PlayStation 5 Fat / Slim / Digital','PlayStation','Limpieza + metal líquido APU + pads','$120.000','service-ps5'],
-  ['Xbox One / One S / One X','Xbox','Limpieza + pasta térmica + pads','$75.000','service-xbox-one'],
-  ['Xbox Series S','Xbox','Limpieza + pasta térmica + pads','$75.000','service-xbox-series-s'],
-  ['Xbox Series X','Xbox','Limpieza + pasta térmica + pads','$90.000','service-xbox-series-x']
-];
-function renderConsolasCatalog(){
+const CONSOLE_REPAIR_RE=/playstation|xbox|consola|\bps[345]\b/i;
+const CONSOLE_REPAIR_SELECT='select=id,numero,problema,presupuesto,presupuesto_original,descuento_porcentaje,descuento_origen,descuento_aplicado_en,estado,urgente,fecha_entrega,created_at,equipo_id,equipos(id,nombre,icono,modelo,cliente_id,clientes(id,codigo,nombre,apellido,telefono,descuento_resena,descuento_resena_usado,descuento_origen,descuento_disponible_desde))';
+async function loadConsoleRepairs(){
   const target=document.getElementById('consolasList');
   if(!target)return;
-  target.innerHTML=CONSOLE_CATALOG.map(([name,brand,detail,price,slug])=>`<article class="console-admin-card ${brand.toLowerCase()}"><div class="console-admin-card-top"><span class="console-admin-brand">${brand} · service preventivo</span><span class="console-admin-price">${price}</span></div><h3>${name}</h3><p>${detail}</p><div class="console-admin-meta"><span>Urgente: <strong>Consultar</strong></span><a href="consolas/${slug}.html" target="_blank" rel="noopener noreferrer">Ver página ↗</a></div></article>`).join('')+'<div class="console-admin-note">Los turnos de PlayStation y Xbox no se separan de los demás: se buscan, confirman o cancelan desde <a onclick="switchTab(\'turnos\',document.querySelector(\'.tab[onclick*=turnos]\'))">Turnos</a>.</div>';
+  target.innerHTML='<div class="empty"><div class="spinner"></div>Cargando reparaciones...</div>';
+  try{
+    const res=await fetch(`${SUPA}/rest/v1/reparaciones?${CONSOLE_REPAIR_SELECT}&order=numero.desc&limit=200`,{headers:H});
+    if(!res.ok)throw new Error(await res.text());
+    consoleRepairs=(await res.json()||[]).filter(r=>CONSOLE_REPAIR_RE.test(`${r.problema||''} ${r.equipos?.nombre||''} ${r.equipos?.modelo||''}`));
+    renderConsoleRepairs();
+  }catch(e){target.innerHTML='<div class="empty">Error cargando reparaciones de consolas</div>';console.error('loadConsoleRepairs error',e);}
+}
+function setConsoleRepairFilter(filter,button){
+  consoleRepairFilter=filter;
+  document.querySelectorAll('#view-consolas .fbtn').forEach(b=>b.classList.remove('active'));
+  button.classList.add('active');
+  renderConsoleRepairs();
+}
+function renderConsoleRepairs(){
+  const target=document.getElementById('consolasList');
+  if(!target)return;
+  const q=(document.getElementById('consoleRepairSearch')?.value||'').toLowerCase().trim();
+  let list=consoleRepairFilter==='todos'?consoleRepairs:consoleRepairs.filter(r=>r.estado===consoleRepairFilter);
+  if(q)list=list.filter(r=>`${r.numero} ${r.problema||''} ${r.equipos?.nombre||''} ${r.equipos?.modelo||''} ${r.equipos?.clientes?.nombre||''} ${r.equipos?.clientes?.apellido||''}`.toLowerCase().includes(q));
+  if(!list.length){target.innerHTML='<div class="empty">Sin reparaciones de consolas</div>';return;}
+  pageRepairMap=Object.fromEntries(list.map(r=>[r.id,r]));
+  renderCards(list,'consolasList');
 }
 
 async function cambiarEstadoTurno(id,estado){
