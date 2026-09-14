@@ -1,5 +1,6 @@
 ---
-import SiteLayout from '../../layouts/SiteLayout.astro';
+import SectionedPageLayout from '../../layouts/SectionedPageLayout.astro';
+import { sectionedPageParts } from '../../lib/sectioned-page';
 import { consoles } from '../../data/consoles';
 
 export function getStaticPaths() {
@@ -7,54 +8,19 @@ export function getStaticPaths() {
 }
 
 const { console } = Astro.props;
-const canonical = `https://www.pclaf.com.ar/consolas/${console.slug}.html`;
-const isXbox = console.shortName.toLowerCase().includes('xbox');
-const accent = isXbox ? '#53d88e' : '#6ea6ff';
+const parts = sectionedPageParts('service-tecnico-pc-flores-floresta.html');
+const esc = (value: string) => value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+const internal = (html: string) => html.replace(/(href|src)="assets\//g, '$1="/assets/').replace(/href="(?!https?:|\/|#)([^"]+\.html(?:#[^"]*)?)"/g, 'href="/$1"');
+const beforeSections = internal(parts.beforeSections)
+  .replace(/<title>[^<]*<\/title>/, `<title>${esc(console.seoTitle)}<\/title>`)
+  .replace(/<meta name="description" content="[^"]*">/, `<meta name="description" content="${esc(console.description)}">`)
+  .replace(/<link rel="canonical" href="[^"]*">/, `<link rel="canonical" href="https://www.pclaf.com.ar/consolas/${console.slug}.html">`);
+const afterSections = internal(parts.afterSections);
+const sections = [
+  `<section class="hero"><video class="hero-bg-video" autoplay muted loop playsinline preload="metadata" aria-hidden="true"><source src="${esc(console.video)}" type="video/mp4"></video><div class="hero-copy"><div class="eyebrow">Service preventivo de consola · ${esc(console.shortName)}</div><h1>Service de <span>${esc(console.name)}</span> en Floresta</h1><p>PCLAF realiza limpieza y mantenimiento térmico para ayudar a bajar la temperatura, reducir el ruido del cooler y prevenir desgaste por exceso de calor. Solo hacemos service preventivo: no reparamos placas ni joysticks.</p><div class="hero-utility"><div class="hero-actions"><span class="hero-actions-kicker">¿Querés cuidar tu consola?</span><a class="primary hero-track-repair" href="/turnos.html?servicio=${console.slug}">Pedir turno de service →</a><div class="hero-actions-new"><span>También podés consultar el precio antes de traerla.</span><div><a href="/precios.html#consolas">Ver precios</a><a href="/turnos.html?servicio=${console.slug}">Elegir horario</a></div></div></div><div class="appointment-notice"><div class="appointment-notice-label">Importante</div>Atendemos únicamente con turno previo. Es un laboratorio cerrado, no un local a la calle.</div></div></div></section>`,
+  `<section class="service-overview"><div class="service-overview-head"><div><div class="eyebrow">${esc(console.shortName)} · Floresta</div><h2>Menos temperatura, <span>más tranquilidad</span></h2></div><p>${esc(console.includes)}. El objetivo es cuidar el sistema térmico para que la consola trabaje más estable.</p></div><div class="service-feature-grid"><article class="service-feature"><div class="service-feature-num">01 · LIMPIEZA</div><div class="service-feature-icon">🎮</div><h3>Interior limpio</h3><p>Retiramos polvo y suciedad acumulada para mejorar la circulación de aire.</p></article><article class="service-feature"><div class="service-feature-num">02 · TÉRMICO</div><div class="service-feature-icon">◉</div><h3>Materiales adecuados</h3><p>${esc(console.includes)} y revisión del sistema de disipación según el modelo.</p></article><article class="service-feature"><div class="service-feature-num">03 · CLARO</div><div class="service-feature-icon">✓</div><h3>Solo service preventivo</h3><p>No hacemos reparación de placas, cambios de piezas ni service de joysticks.</p></article></div><div class="process-wrap"><div class="process-title">Precio del service: <span>${esc(console.price)}</span></div><div class="process-grid"><article class="process-step"><div class="process-step-num">01</div><h3>Reservás un horario</h3><p>Elegís día y hora desde la página de turnos.</p></article><article class="process-step"><div class="process-step-num">02</div><h3>Hacemos el mantenimiento</h3><p>Trabajamos sobre limpieza y temperatura.</p></article><article class="process-step"><div class="process-step-num">03</div><h3>La retirás lista</h3><p>Te avisamos por WhatsApp cuando termina.</p></article></div></div></section>`,
+  `<section class="cta"><div class="cta-box"><h2>¿Tu consola calienta o hace mucho ruido?</h2><p>Pedí turno para un service preventivo de ${esc(console.name)}.</p><div class="cta-links"><a href="/turnos.html?servicio=${console.slug}">Pedir turno</a><a href="/precios.html#consolas">Ver precios</a><a href="/index.html">Volver al inicio</a></div></div></section>`
+];
 ---
-<SiteLayout title={console.seoTitle} description={console.description}>
-  <Fragment slot="head">
-    <link rel="stylesheet" href="/assets/pclaf-nav.css" />
-    <script src="/assets/pclaf-nav.js" defer></script>
-    <link rel="canonical" href={canonical} />
-    <meta property="og:title" content={console.seoTitle} />
-    <meta property="og:description" content={console.description} />
-  </Fragment>
-  <div class="console-main-page" style={`--console-accent:${accent}`}>
-    <main class="console-main-shell">
-      <section class="console-main-hero">
-        <video autoplay muted loop playsinline preload="metadata" aria-hidden="true"><source src={console.video} type="video/mp4" /></video>
-        <div class="console-main-shade"></div>
-        <div class="console-main-copy">
-          <span class="console-kicker">PCLAF / CONSOLAS / {console.shortName}</span>
-          <h1>Service de<br /><span>{console.name}</span></h1>
-          <p>{console.description}</p>
-          <a class="console-main-button" href={`/turnos.html?servicio=${console.slug}`}>Pedir turno →</a>
-        </div>
-      </section>
-      <section class="console-main-cards" aria-label="Información del service">
-        <article class="console-main-card console-main-card-price"><span>PRECIO</span><strong>{console.price}</strong><small>Mano de obra incluida</small></article>
-        <article class="console-main-card"><span>INCLUYE</span><p>{console.includes}</p></article>
-        <article class="console-main-card"><span>OBJETIVO</span><p>{console.benefit}</p></article>
-      </section>
-      <section class="console-main-section">
-        <span class="console-kicker">SERVICE PREVENTIVO</span>
-        <h2>Menos temperatura.<br /><em>Más tranquilidad.</em></h2>
-        <p class="console-main-lead">Trabajamos sobre la limpieza y el sistema térmico para ayudar a bajar la temperatura, reducir el ruido del cooler y prevenir desgaste por exceso de calor.</p>
-        <div class="console-main-info-grid">
-          <article class="console-main-info"><span>01</span><h3>Qué hacemos</h3><p>Limpiamos el interior y renovamos los materiales térmicos que corresponden a este modelo.</p></article>
-          <article class="console-main-info"><span>02</span><h3>Alcance claro</h3><p>Es solo service preventivo. No hacemos reparación de placas, cambios de piezas ni service de joysticks.</p></article>
-          <article class="console-main-info"><span>03</span><h3>Para qué sirve</h3><p>Una consola más limpia puede trabajar con mejor circulación de aire, menos ruido y mayor estabilidad.</p></article>
-        </div>
-      </section>
-      <section class="console-main-cta"><span class="console-kicker">¿LA CONSOLA CALIENTA O HACE MUCHO RUIDO?</span><h2>Dejala lista para <em>jugar.</em></h2><a class="console-main-button" href={`/turnos.html?servicio=${console.slug}`}>Agendar service →</a></section>
-    </main>
-    <footer class="console-main-footer"><span>© 2026 PCLAF · Servicio técnico · Floresta, CABA</span><a href="/precios.html#consolas">Volver a precios →</a></footer>
-  </div>
-</SiteLayout>
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800;900&family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
-:global(*){box-sizing:border-box}:global(body){margin:0;background:#080808;color:#f0f0f0;font-family:'Barlow',sans-serif}:global(a){color:inherit;text-decoration:none}
-.console-main-page{--red:#cc0000;--black2:#111;--text2:#bbb;--text3:#888;min-height:100vh;background:#080808}.console-main-shell{max-width:1100px;margin:0 auto;padding:28px 24px 48px}.console-main-hero{position:relative;min-height:370px;overflow:hidden;border:1px solid var(--console-accent);border-radius:12px;background:#111}.console-main-hero video,.console-main-shade{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}.console-main-hero video{opacity:.42;filter:contrast(1.15) saturate(.8) brightness(.6)}.console-main-shade{background:linear-gradient(90deg,rgba(8,8,8,.94),rgba(8,8,8,.48) 70%,rgba(8,8,8,.25))}.console-main-copy{position:relative;z-index:1;max-width:720px;padding:58px 48px}.console-kicker{font:10px 'JetBrains Mono',monospace;letter-spacing:.13em;color:var(--console-accent);text-transform:uppercase}.console-main-copy h1{margin:24px 0 16px;font:900 clamp(48px,7vw,78px)/.88 'Barlow Condensed',sans-serif;text-transform:uppercase}.console-main-copy h1 span,.console-main-section h2 em,.console-main-cta h2 em{color:var(--console-accent);font-style:normal}.console-main-copy p{max-width:600px;margin:0 0 24px;color:#ccc;font-size:16px;line-height:1.5}.console-main-button{display:inline-flex;padding:11px 14px;border-radius:5px;background:var(--red);color:#fff;font:700 15px 'Barlow Condensed',sans-serif;letter-spacing:.05em;text-transform:uppercase}.console-main-cards{display:grid;grid-template-columns:1fr 1.25fr 1.25fr;gap:10px;margin-top:15px}.console-main-card,.console-main-info{padding:20px;background:var(--black2);border:1px solid #252525;border-radius:10px}.console-main-card span{font:10px 'JetBrains Mono',monospace;color:var(--text3);letter-spacing:.1em}.console-main-card strong{display:block;margin:12px 0 2px;color:var(--console-accent);font:700 25px 'JetBrains Mono',monospace}.console-main-card small,.console-main-card p{display:block;margin:10px 0 0;color:var(--text2);font-size:14px;line-height:1.45}.console-main-section{padding:70px 0 30px}.console-main-section h2{margin:14px 0 12px;font:900 clamp(42px,6vw,66px)/.9 'Barlow Condensed',sans-serif;text-transform:uppercase}.console-main-lead{max-width:600px;margin:0 0 28px;color:var(--text2);font-size:16px;line-height:1.55}.console-main-info-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.console-main-info span{font:11px 'JetBrains Mono',monospace;color:var(--console-accent)}.console-main-info h3{margin:22px 0 8px;font:700 25px/1 'Barlow Condensed',sans-serif}.console-main-info p{margin:0;color:var(--text2);font-size:14px;line-height:1.5}.console-main-cta{padding:38px 40px;border:1px solid var(--red);border-radius:12px;background:rgba(204,0,0,.08)}.console-main-cta h2{margin:14px 0 22px;font:900 clamp(38px,5vw,58px)/.9 'Barlow Condensed',sans-serif;text-transform:uppercase}.console-main-footer{max-width:1100px;margin:0 auto;padding:24px;color:#555;border-top:1px solid #252525;display:flex;justify-content:space-between;gap:16px;font:10px 'JetBrains Mono',monospace;text-transform:uppercase}.console-main-footer a{color:#aaa}
-@media(max-width:720px){.console-main-shell{padding:20px 16px 38px}.console-main-copy{padding:42px 24px}.console-main-hero{min-height:430px}.console-main-cards,.console-main-info-grid{grid-template-columns:1fr}.console-main-section{padding-top:52px}.console-main-cta{padding:28px 24px}.console-main-footer{margin:0 16px;flex-direction:column}}
-</style>
+<SectionedPageLayout beforeSections={beforeSections} sections={sections} afterSections={afterSections} />
 
