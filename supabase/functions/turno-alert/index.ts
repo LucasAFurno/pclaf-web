@@ -91,6 +91,13 @@ function estimatedPrice(servicio: unknown, urgente: unknown) {
     "Reparación motherboard": ["desde $95.000", ""],
     "Revisión y diagnóstico": ["Sin cargo", ""],
     "Otro / No sé qué tiene": ["Presupuesto sin cargo", ""],
+    "Service de PlayStation 3": ["$70.000", ""],
+    "Service de PlayStation 4 / Slim": ["$70.000", ""],
+    "Service de PlayStation 4 Pro": ["$80.000", ""],
+    "Service de PlayStation 5 Fat / Slim / Digital": ["$120.000", ""],
+    "Service de Xbox One / One S / One X": ["$75.000", ""],
+    "Service de Xbox Series S": ["$75.000", ""],
+    "Service de Xbox Series X": ["$90.000", ""],
   };
   const [base, express] = prices[clean(servicio, 140)] || ["", ""];
   return (urgente && express) || base;

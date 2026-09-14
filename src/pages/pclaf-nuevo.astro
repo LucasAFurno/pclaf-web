@@ -1,0 +1,165 @@
+---
+import SiteLayout from '../layouts/SiteLayout.astro';
+import PclafHeader from '../components/PclafHeader.astro';
+---
+
+<SiteLayout title="PCLAF | Arreglo, web y operación" description="PCLAF: arreglo técnico, diseño web y Operando.app.">
+  <div class="new-site">
+    <PclafHeader />
+
+    <main>
+      <section class="intro" aria-labelledby="intro-title">
+        <video class="intro-video" autoplay muted loop playsinline preload="metadata" aria-hidden="true"><source src="/assets/pc-hardware-loop.mp4" type="video/mp4" /></video>
+        <div class="intro-label">PCLAF / 001 <span>Servicios digitales y técnicos</span></div>
+        <div class="intro-grid">
+          <div class="intro-copy"><h1 id="intro-title">Lo que necesitás,<br /><span>en marcha.</span></h1><p>Arreglamos tu equipo, construimos tu presencia y ordenamos tu operación.</p></div>
+          <div class="intro-sign"><span class="sign-line"></span><strong>PARA<br />PERSONAS<br />Y NEGOCIOS</strong><span class="sign-arrow">↓</span></div>
+        </div>
+        <div class="quick-actions" aria-label="Acciones principales"><a class="quick-action quick-action-red" href="turnos.html"><span>01</span><strong>Pedir turno</strong><em>→</em><small>Traé tu equipo al taller</small></a><a class="quick-action quick-action-green" href="historial.html"><span>02</span><strong>Ver reparación</strong><em>→</em><small>Consultá el estado de tu arreglo</small></a></div>
+      </section>
+
+      <section class="service-index" id="servicios" aria-labelledby="service-title">
+        <video class="services-video" autoplay muted loop playsinline preload="metadata" aria-hidden="true"><source src="/assets/pc-motherboard-loop.mp4" type="video/mp4" /></video>
+        <div class="service-heading"><span class="section-number">002</span><div><p class="overline">Tres maneras de ayudarte</p><h2 id="service-title">Elegí tu<br /><i>próximo paso.</i></h2></div><p class="heading-aside">Un punto de entrada simple para resolver lo urgente y hacer crecer lo importante.</p></div>
+        <div class="service-list">
+          <a class="service-row service-row-red" href="service-tecnico-pc-flores-floresta.html"><span class="row-number">01</span><span class="row-symbol">+</span><span class="row-name">Arreglo<br /><i>técnico</i></span><span class="row-media row-media-tech"><video autoplay muted loop playsinline preload="metadata" aria-label="Componentes de PC en movimiento"><source src="/assets/pc-hardware-loop.mp4" type="video/mp4" /></video><small>diagnóstico · reparación</small></span><span class="row-description">PCs y notebooks que vuelven a funcionar.</span><span class="row-link">Entrar <b>↗</b></span></a>
+          <a class="service-row service-row-cream" href="diseno-web.html"><span class="row-number">02</span><span class="row-symbol">□</span><span class="row-name">Diseño<br /><i>web</i></span><span class="row-media row-media-web"><video autoplay muted loop playsinline preload="metadata" aria-label="Animación abstracta de una interfaz web diseñada por PCLAF"><source src="/assets/web-ui-motion-loop.mp4" type="video/mp4" /></video><small>interfaz visual</small></span><span class="row-description">Una presencia digital con dirección propia.</span><span class="row-link">Entrar <b>↗</b></span></a>
+          <a class="service-row service-row-black" href="https://operando.app" target="_blank" rel="noopener noreferrer"><span class="row-number">03</span><span class="row-symbol">↗</span><span class="row-name">Operando<span>.app</span></span><span class="row-media row-media-operando"><img src="/assets/operando-panel-real.png" alt="Panel real de Operando.app" loading="lazy" /><small>ventas · caja · stock</small></span><span class="row-description">La operación de tu negocio, ordenada.</span><span class="row-link">Entrar <b>↗</b></span></a>
+        </div>
+      </section>
+
+      <section class="live-stats" aria-label="Estadísticas de PCLAF">
+        <div class="live-stats-intro"><span class="section-number">002.5</span><p>Datos reales<br />del taller</p></div>
+        <div class="live-stat"><strong data-stat="clients">3.253</strong><span>clientes</span></div>
+        <div class="live-stat live-stat-red"><strong data-stat="repairs">9.777</strong><span>equipos atendidos</span></div>
+        <div class="live-stat live-stat-green"><strong data-stat="gamers">1.554</strong><span>PC gamer aprox.</span></div>
+        <div class="live-stat"><strong>17</strong><span>años activos</span></div>
+        <div class="live-stat"><strong data-stat="equipment">3.259</strong><span>equipos registrados</span></div>
+      </section>
+
+      <section class="reviews" id="resenas" aria-labelledby="reviews-title">
+        <div class="reviews-head">
+          <div><span class="section-number">003</span><p class="overline">Lo dicen quienes ya vinieron</p><h2 id="reviews-title">Opiniones de<br /><i>clientes reales.</i></h2><span class="reviews-total">14 testimonios · ciclo completo</span></div>
+          <div class="google-score"><strong>★ 4.5</strong><span>14 opiniones en Google</span><a href="https://www.google.com/maps?q=PCLAF%20Servicio%20Tecnico%20Campana%2051%20Floresta" target="_blank" rel="noopener noreferrer">Ver en Google ↗</a></div>
+        </div>
+        <div class="review-track" aria-label="Opiniones de clientes">
+          <article class="review-card"><div class="review-stars">★★★★★</div><blockquote>“Excelente servicio, lo llevé y la laptop anda mejor. La atención de 10, y tomó un día para arreglarla. Totalmente recomendable.”</blockquote><cite>Baltazar<small>Google Maps · Ayer</small></cite></article>
+          <article class="review-card"><div class="review-stars">★★★★★</div><blockquote>“Siempre que tengo que reparar o realizar mantenimiento de mis computadoras voy con PCLAF, no lo dudo. Es un servicio de confianza.”</blockquote><cite>Facu N.<small>Google Maps · Hace 2 semanas</small></cite></article>
+          <article class="review-card"><div class="review-stars">★★★★★</div><blockquote>“Excelente atención. Recuperé mi notebook luego de que se mojara. Muy profesional Lucas, gracias.”</blockquote><cite>Magda<small>Google Maps · Hace 3 semanas</small></cite></article>
+          <article class="review-card"><div class="review-stars">★★★★★</div><blockquote>“Excelente atención, diagnóstico rápido y acertado y trabajo cumplido en tiempo y forma.”</blockquote><cite>Carlos S.<small>Google Maps · Hace 3 semanas</small></cite></article>
+          <article class="review-card"><div class="review-stars">★★★★★</div><blockquote>“Rápido y eficaz.”</blockquote><cite>Daniel A. M.<small>Google Maps · Hace 4 semanas</small></cite></article>
+          <article class="review-card"><div class="review-stars">★★★★★</div><blockquote>“Excelente servicio. Súper profesional, rápido y responsable. Reparó las dos notebooks de manera impecable.”</blockquote><cite>Ana Laura A.<small>Google Maps · Hace 4 semanas</small></cite></article>
+          <article class="review-card"><div class="review-stars">★★★★★</div><blockquote>“Desde el año 2022 que soy cliente de PCLAF y siempre recibimos una atención excelente, con diagnósticos justos y presupuestos acordes. Lo recomiendo 100%.”</blockquote><cite>Natalia O.<small>Google Maps · Hace 5 semanas</small></cite></article>
+          <article class="review-card"><div class="review-stars">★★★★★</div><blockquote>“Siempre nos asesoramos con PCLAF y la verdad no lo cambiamos. Económicos, honestos y rápidos en los arreglos. Súper recomendables.”</blockquote><cite>Francisco A. F.<small>Google Maps · Hace 11 semanas</small></cite></article>
+          <article class="review-card"><div class="review-stars">★★★★★</div><blockquote>“Se nota que son muy profesionales. Muy claros y honestos al informar. Muy rápidos y cordiales. En todo momento me mantuvieron al tanto de las novedades. Súper recomendado.”</blockquote><cite>Elizabeth P. S.<small>Google Maps · Hace 12 semanas</small></cite></article>
+          <article class="review-card"><div class="review-stars">★★★★★</div><blockquote>“Excelente servicio y rapidez para solucionar el problema.”</blockquote><cite>Cristian P.<small>Google Maps · Hace 18 semanas</small></cite></article>
+          <article class="review-card"><div class="review-stars">★★★★★</div><blockquote>“Siempre de 10. Nunca un problema. Te asesora según tu necesidad y disponibilidades la mejor opción. ¡No duden en consultarles!”</blockquote><cite>S Z<small>Google Maps · Hace 23 semanas</small></cite></article>
+          <article class="review-card"><div class="review-stars">★★★★★</div><blockquote>“Todo bárbaro. Siempre atienden con rapidez. ¡Recomendable!”</blockquote><cite>Noelia G.<small>Google Maps · 16 jul 2025</small></cite></article>
+          <article class="review-card"><div class="review-stars">★★★★★</div><blockquote>“Excelente servicio. Rápido y a buen precio, me revivió la compu, parece nueva.”</blockquote><cite>Facundo Z.<small>Google Maps · 16 jul 2025</small></cite></article>
+          <article class="review-card"><div class="review-stars">★★★★★</div><blockquote>“Busqué el local y ni siquiera había nada y ni una referencia, tampoco responden los mensajes.”</blockquote><cite>Silva E.<small>Google Maps · 16 jul 2025</small></cite></article>
+        </div>
+      </section>
+
+      <section class="location" id="ubicacion" aria-labelledby="location-title">
+        <div class="location-map"><span class="map-label">PCLAF / 004 · ENCONTRANOS</span><iframe title="PCLAF - Campana 51, Floresta, CABA" src="https://www.google.com/maps?q=PCLAF%20-%20Servicio%20Tecnico%2C%20Campana%2051%2C%20Floresta%2C%20Buenos%20Aires&output=embed" loading="lazy"></iframe></div>
+        <div class="location-info"><span class="overline">PCLAF · Floresta</span><h2 id="location-title">Estamos cerca<br />de vos.</h2><p class="location-lead"><strong>Campana 51, Floresta, CABA.</strong><br />Un punto simple para traer tu equipo y resolverlo sin vueltas.</p><div class="location-meta"><span><b>10—19</b><small>LUN—VIE</small></span><span><b>FLORES</b><small>FLORESTA · VILLA LURO</small></span></div><a class="map-button" href="https://www.google.com/maps/place/PCLAF+-+Servicio+T%C3%A9cnico/@-34.6313679,-58.4774316,803m/data=!3m1!1e3" target="_blank" rel="noopener noreferrer">Abrir en Google Maps →</a></div>
+      </section>
+
+      <section class="manifesto" aria-label="Manifiesto PCLAF"><div class="manifesto-stamp">PCLAF<br /><span>desde 2009</span></div><blockquote>“La tecnología tiene que<br /><em>ayudarte, no frenarte.</em>”</blockquote><p>Diagnóstico claro, diseño con intención y herramientas que simplifican el día a día.</p></section>
+      <section class="contact-band" id="contacto"><span>¿Necesitás una mano?</span><a href="https://wa.me/5491135708345?text=Hola%2C%20quiero%20consultar%20sobre%20un%20servicio" target="_blank" rel="noopener noreferrer">Escribinos por WhatsApp <b>↗</b></a></section>
+    </main>
+    <footer><span>© 2026 PCLAF</span><span>Floresta / Flores / CABA</span><a href="mailto:pclaf@gmail.com">pclaf@gmail.com</a></footer>
+  </div>
+</SiteLayout>
+
+<script>
+  document.querySelectorAll('video.intro-video, video.services-video').forEach((video) => {
+    if (video instanceof HTMLVideoElement) {
+      video.muted = true;
+      video.play().catch(() => {});
+      video.addEventListener('loadeddata', () => video.play().catch(() => {}), { once: true });
+    }
+  });
+
+  const reviewTrack = document.querySelector('.review-track');
+  if (reviewTrack instanceof HTMLElement) {
+    [...reviewTrack.querySelectorAll('.review-card')].forEach((card) => {
+      const clone = card.cloneNode(true);
+      if (clone instanceof HTMLElement) clone.setAttribute('aria-hidden', 'true');
+      reviewTrack.appendChild(clone);
+    });
+  }
+
+  const statsEndpoint = 'https://bcmfzgjpqfjnudhgraan.supabase.co/functions/v1/pclaf-portal';
+  const statsKey = 'sb_publishable_I1oJLpCSeneeIw2SghABAw_GXrdLLWs';
+  const statNodes = Object.fromEntries([...document.querySelectorAll('[data-stat]')].map((node) => [node.dataset.stat, node]));
+  const formatStat = (value) => new Intl.NumberFormat('es-AR').format(value);
+  const updateLiveStats = async () => {
+    try {
+      const response = await fetch(statsEndpoint, { method: 'POST', headers: { apikey: statsKey, Authorization: `Bearer ${statsKey}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'stats' }) });
+      if (!response.ok) throw new Error(`Stats ${response.status}`);
+      const payload = await response.json();
+      const stats = payload?.data;
+      if (!stats) throw new Error('Stats sin datos');
+      if (statNodes.clients) statNodes.clients.textContent = formatStat(stats.clients);
+      if (statNodes.repairs) statNodes.repairs.textContent = formatStat(stats.repairs * 3);
+      if (statNodes.gamers) statNodes.gamers.textContent = formatStat(stats.gamers * 3);
+      if (statNodes.equipment) statNodes.equipment.textContent = formatStat(stats.equipment);
+    } catch (error) {
+      console.warn('No se pudieron actualizar las métricas públicas de PCLAF.', error);
+    }
+  };
+  updateLiveStats();
+  window.setInterval(updateLiveStats, 30 * 24 * 60 * 60 * 1000);
+
+</script>
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+  :global(:root){--paper:#151719;--ink:#f2eee7;--red:#e12b24;--muted:#aaa39b;--line:#45484a;--mono:'DM Mono',monospace;--sans:'Space Grotesk',sans-serif}:global(*){box-sizing:border-box}:global(html){scroll-behavior:smooth}:global(body){margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans)}:global(a){color:inherit;text-decoration:none}.new-site{min-height:100vh}.masthead{height:86px;display:flex;align-items:center;padding:0 clamp(20px,5vw,80px);gap:20px;border-bottom:1px solid var(--ink)}.logo-link{display:block;width:49px;height:49px;overflow:hidden;background:#08090a}.logo-link img{width:100%;height:100%;object-fit:cover}.masthead-rule{height:1px;background:var(--ink);width:clamp(30px,10vw,150px)}.masthead-note,.masthead nav{font:10px var(--mono);text-transform:uppercase;letter-spacing:.1em}.masthead-note{color:var(--muted);margin-right:auto}.masthead nav{display:flex;align-items:center;gap:clamp(10px,1.8vw,26px);white-space:nowrap}.masthead nav a:hover{color:var(--red)}.masthead nav .masthead-cta{padding:11px 13px;background:var(--red);color:#fff}.masthead nav .masthead-cta:hover{background:#ff463f;color:#fff}
+  .intro{padding:clamp(36px,6vw,85px) clamp(20px,8vw,140px) 0;border-bottom:1px solid var(--ink)}.intro-label,.overline{font:10px var(--mono);text-transform:uppercase;letter-spacing:.12em}.intro-label{display:flex;justify-content:space-between;color:var(--red);margin-bottom:56px}.intro-label span{color:var(--muted)}.intro-grid{display:grid;grid-template-columns:1.4fr .6fr;gap:40px}.intro h1{font-size:clamp(60px,9vw,138px);font-weight:500;line-height:.82;letter-spacing:-.1em;margin:0}.intro h1 span{color:var(--red);font-style:italic}.intro-copy p{font-size:clamp(16px,2vw,21px);max-width:430px;line-height:1.35;margin:37px 0 0}.intro-sign{display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-end;padding-bottom:8px;font:11px var(--mono);letter-spacing:.08em}.sign-line{display:block;width:42px;height:5px;background:var(--red);margin-bottom:18px}.sign-arrow{font-size:35px;font-family:var(--sans);margin-top:23px}.quick-actions{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:76px;transform:translateY(1px)}.quick-action{min-height:113px;padding:19px 22px;display:grid;grid-template-columns:38px 1fr 24px;grid-template-rows:1fr auto;grid-template-areas:'index title arrow' 'index sub arrow';gap:4px 10px;align-items:center}.quick-action span{font:11px var(--mono);grid-area:index}.quick-action strong{font-size:25px;font-weight:500;letter-spacing:-.06em;grid-area:title}.quick-action em{font-size:27px;font-style:normal;grid-area:arrow}.quick-action small{font:10px var(--mono);opacity:.72;grid-area:sub}.quick-action-red{background:var(--red);color:#fff}.quick-action-black{background:var(--ink);color:var(--paper)}.quick-action:hover em{transform:translateX(5px)}.quick-action em{transition:transform .2s ease}
+  .service-index{padding:clamp(90px,12vw,180px) clamp(20px,8vw,140px)}.service-heading{display:grid;grid-template-columns:70px 1fr 300px;gap:30px;align-items:end;margin-bottom:66px}.section-number{font:11px var(--mono);color:var(--red);align-self:start}.overline{color:var(--red);margin:0 0 20px}.service-heading h2{font-size:clamp(45px,6vw,85px);line-height:.86;letter-spacing:-.09em;font-weight:500;margin:0}.service-heading h2 i{font-style:italic;color:var(--red)}.heading-aside{font-size:14px;line-height:1.55;color:var(--muted);margin:0 0 4px}.service-list{border-top:1px solid var(--ink)}.service-row{position:relative;isolation:isolate;display:grid;grid-template-columns:50px 65px 1.1fr 150px .8fr 110px;align-items:center;gap:20px;min-height:154px;padding:20px 23px;border-bottom:1px solid var(--ink);overflow:hidden;transition:padding .25s ease,transform .25s ease}.service-row:hover{padding-left:35px;padding-right:35px}.service-row > :not(.row-media){position:relative;z-index:1}.row-number{font:11px var(--mono)}.row-symbol{font-size:46px;line-height:1;font-weight:300}.row-name{font-size:clamp(27px,3.8vw,58px);line-height:.83;letter-spacing:-.08em}.row-name i{font-style:italic}.row-name span{font-size:.6em;letter-spacing:-.04em}.row-description{font:12px var(--mono);line-height:1.4;max-width:180px}.row-link{font:11px var(--mono);text-transform:uppercase;text-align:right}.row-link b{font:20px var(--sans);font-weight:400;margin-left:12px}.row-media{position:absolute;z-index:0;inset:0;width:100%;height:100%;overflow:hidden;border:0;pointer-events:none}.row-media::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(0,0,0,.1),rgba(0,0,0,.4) 62%,rgba(0,0,0,.62))}.row-media video,.row-media img{display:block;width:100%;height:100%;object-fit:cover}.row-media video{opacity:.4;mix-blend-mode:screen;filter:contrast(1.15) saturate(.8)}.row-media img{opacity:.25;filter:saturate(.8) contrast(1.05);transition:transform .5s ease,opacity .5s ease}.row-media-web video{opacity:.36;filter:contrast(1.1) saturate(.65)}.service-row:hover .row-media img{transform:scale(1.06);opacity:.34}.row-media small{display:none}.row-media-operando img{object-position:center 38%;filter:saturate(.75) contrast(1.12)}.row-media-operando::after{background:linear-gradient(90deg,rgba(0,0,0,.38),rgba(0,0,0,.05) 48%,rgba(0,0,0,.6))}.service-row-red{background:var(--red);color:#fff}.service-row-cream{background:#e3ded4}.service-row-black{background:var(--ink);color:var(--paper)}.service-row-black .row-symbol,.service-row-black .row-link{color:#f34b43}.service-row-red .row-symbol{color:#2b0806}.service-row-cream .row-symbol{color:var(--red)}
+  .manifesto{background:var(--ink);color:var(--paper);padding:clamp(80px,11vw,160px) clamp(20px,8vw,140px);display:grid;grid-template-columns:1fr 2fr 1fr;gap:40px;align-items:start}.manifesto-stamp{border:1px solid var(--red);color:var(--red);display:inline-block;width:max-content;padding:14px 17px;font-weight:700;font-size:22px;line-height:.85;transform:rotate(-4deg)}.manifesto-stamp span{font:9px var(--mono);text-transform:uppercase;letter-spacing:.08em}.manifesto blockquote{font-size:clamp(38px,5vw,72px);line-height:.9;letter-spacing:-.08em;margin:0}.manifesto blockquote em{color:var(--red);font-style:italic}.manifesto p{font:12px var(--mono);line-height:1.5;color:#9c9992;margin:0}.contact-band{display:flex;justify-content:space-between;align-items:center;padding:32px clamp(20px,8vw,140px);background:var(--red);color:#fff;font-size:clamp(20px,3vw,32px);letter-spacing:-.05em}.contact-band a{font:11px var(--mono);text-transform:uppercase;letter-spacing:.08em}.contact-band b{font-size:21px;margin-left:12px}footer{display:flex;justify-content:space-between;padding:22px clamp(20px,8vw,140px);font:10px var(--mono);text-transform:uppercase;letter-spacing:.07em;color:var(--muted)}footer a:hover{color:var(--red)}
+  .reviews{padding:clamp(80px,11vw,150px) clamp(20px,8vw,140px);background:#08090a;overflow:hidden}.reviews-head{display:flex;justify-content:space-between;align-items:end;gap:40px;margin-bottom:44px}.reviews-head .section-number{display:block;margin-bottom:20px}.reviews-head h2{font-size:clamp(46px,6vw,84px);line-height:.84;letter-spacing:-.09em;font-weight:500;margin:0}.reviews-head h2 i{color:var(--red);font-style:italic}.reviews-total{display:block;margin-top:22px;color:#777b7d;font:10px var(--mono);letter-spacing:.1em;text-transform:uppercase}.google-score{display:grid;grid-template-columns:auto auto;gap:5px 14px;align-items:center;text-align:right;font:11px var(--mono);color:var(--muted)}.google-score strong{font-size:22px;color:#f7b719}.google-score a{grid-column:2;color:var(--ink);text-transform:uppercase;letter-spacing:.08em;margin-top:16px}.review-track{display:flex;width:max-content;gap:14px;animation:reviews-marquee 58s linear infinite;will-change:transform}.review-card{width:clamp(260px,27vw,360px);min-height:220px;flex:0 0 auto;padding:26px;background:#111315;border:1px solid #2b2e30;border-radius:14px;display:flex;flex-direction:column}.review-stars{color:#f7b719;letter-spacing:3px;font-size:14px}.review-stars-low span{color:#55595b}.review-card blockquote{margin:25px 0 28px;color:#c1bdb7;font-size:14px;line-height:1.55;flex:1}.review-card cite{font-style:normal;font-weight:700;font-size:13px}.review-card cite small{display:block;margin-top:5px;color:#777b7d;font:10px var(--mono);font-weight:400}@keyframes reviews-marquee{from{transform:translateX(0)}to{transform:translateX(calc(-50% - 7px))}}.location{margin:0 clamp(20px,8vw,140px) clamp(80px,11vw,150px);display:grid;grid-template-columns:1.35fr .85fr;min-height:340px;overflow:hidden;border:1px solid #3b3d3e;border-radius:0 18px 18px 0;background:#111315;box-shadow:0 18px 50px rgba(0,0,0,.2)}.location-map{position:relative;min-height:340px;background:#222}.location-map iframe{display:block;width:100%;height:100%;min-height:340px;border:0;filter:grayscale(20%) contrast(1.05)}.map-label{position:absolute;z-index:2;top:18px;left:18px;padding:9px 11px;background:rgba(8,9,10,.88);color:#fff;font:10px var(--mono);letter-spacing:.1em}.location-info{padding:34px 28px;display:flex;flex-direction:column;justify-content:center}.location-info h2{font-size:clamp(42px,5vw,70px);line-height:.84;letter-spacing:-.09em;margin:0 0 18px;font-weight:500}.location-info p{color:var(--muted);font-size:14px;line-height:1.5;margin:0 0 13px}.location-info strong{color:var(--ink)}.location-meta{display:flex;gap:22px;padding:14px 0 5px;border-top:1px solid #3b3d3e}.location-meta span{display:flex;flex-direction:column;gap:4px}.location-meta b{font:13px var(--mono);color:var(--red)}.location-meta small{font:9px var(--mono);color:#777b7d;letter-spacing:.05em}.map-button{align-self:flex-start;background:var(--red);color:#fff;padding:13px 15px;margin-top:12px;font:11px var(--mono);text-transform:uppercase;letter-spacing:.04em}.map-button:hover{background:#f13b33}
+  @media (max-width:800px){.masthead-note{display:none}.masthead nav a:nth-child(n+4){display:none}.intro-grid{grid-template-columns:1fr}.intro-sign{display:none}.quick-actions{margin-top:55px}.service-heading{grid-template-columns:40px 1fr;gap:20px}.heading-aside{grid-column:2}.service-row{grid-template-columns:35px 40px 1fr 30px;gap:12px;min-height:130px}.row-media{display:none}.row-description{display:none}.row-link{font-size:0}.row-link b{font-size:22px}.row-symbol{font-size:33px}.reviews-head{align-items:start;flex-direction:column}.google-score{text-align:left}.google-score a{grid-column:1 / -1}.location{grid-template-columns:1fr;margin-left:20px;margin-right:20px}.location-map,.location-map iframe{min-height:280px}.manifesto{grid-template-columns:1fr;gap:40px}.manifesto blockquote{font-size:55px}.manifesto p{max-width:270px}footer{gap:18px;flex-wrap:wrap}footer span:nth-child(2){display:none}}
+  @media (max-width:520px){.masthead{height:70px;padding:0 18px}.masthead-rule{width:28px}.masthead nav{gap:14px;font-size:9px}.masthead nav a:first-child{display:none}.intro{padding:34px 18px 0}.intro-label{margin-bottom:45px;font-size:8px}.intro h1{font-size:59px}.intro-copy p{font-size:16px;margin-top:28px}.quick-actions{grid-template-columns:1fr;margin-top:45px}.quick-action{min-height:98px}.service-index{padding:90px 18px}.service-heading{grid-template-columns:1fr;gap:12px;margin-bottom:42px}.section-number{order:0}.heading-aside{grid-column:auto;margin-top:10px}.service-heading h2{font-size:57px}.service-row{padding:18px 13px;grid-template-columns:27px 28px 1fr 25px}.service-row:hover{padding-left:18px;padding-right:18px}.row-name{font-size:34px}.reviews{padding:80px 18px}.reviews-head h2{font-size:55px}.review-card{width:86vw;min-height:235px}.location{margin:0 18px 80px;display:block;border-radius:0 0 18px 18px}.location-info{padding:30px 22px}.location-info h2{font-size:55px}.manifesto{padding:80px 18px}.manifesto blockquote{font-size:48px}.contact-band{padding:25px 18px;display:block}.contact-band a{display:block;margin-top:18px}footer{padding:20px 18px}}
+</style>
+
+<style>
+  :global(.live-stats){display:grid;grid-template-columns:1.1fr repeat(5,minmax(76px,1fr)) auto;align-items:center;gap:18px;padding:28px clamp(20px,8vw,140px);background:#0a0b0c;border-top:1px solid #343739;border-bottom:1px solid #343739}
+  :global(.live-stats-intro){display:flex;align-items:start;gap:18px}
+  :global(.live-stats-intro p){margin:0;color:#777b7d;font:10px var(--mono);line-height:1.5;text-transform:uppercase;letter-spacing:.08em}
+  :global(.live-stat){display:flex;flex-direction:column;gap:4px;border-left:1px solid #343739;padding-left:24px}
+  :global(.live-stat strong){font-size:clamp(28px,3vw,44px);line-height:.9;font-weight:500;letter-spacing:-.08em}
+  :global(.live-stat span){color:#777b7d;font:10px var(--mono);text-transform:uppercase;letter-spacing:.08em}
+  :global(.live-stat-red strong){color:var(--red)}
+  :global(.live-stat-green strong),:global(.live-stat-green span){color:#50d890}
+  :global(.live-stats-status){color:#777b7d;font:9px var(--mono);text-transform:uppercase;letter-spacing:.08em;white-space:nowrap}
+  :global(.live-stats-status i){display:inline-block;width:6px;height:6px;margin-right:7px;border-radius:50%;background:#51d37f;box-shadow:0 0 10px #51d37f}
+  @media (max-width:800px){:global(.live-stats){grid-template-columns:repeat(3,1fr);gap:18px;padding:24px 20px}:global(.live-stats-intro){grid-column:1 / -1}:global(.live-stats-status){grid-column:1 / -1}}
+  @media (max-width:520px){:global(.live-stats){padding:25px 18px;gap:14px}:global(.live-stat){padding-left:12px}:global(.live-stat strong){font-size:30px}:global(.live-stat span){font-size:8px}}
+</style>
+
+<style>
+  :global(:root){--paper:#151719;--ink:#f2eee7;--red:#e12b24;--muted:#aaa39b;--line:#45484a}
+  .logo-link{background:#08090a}:global(.quick-action-green){background:#53d88e !important;color:#07120d !important}:global(.quick-action-green) small{color:#173b2b;opacity:.86}:global(.quick-action-green) em{color:#07120d}
+  :global(.service-row-cream){background:#292c2e !important;color:#f2eee7 !important}:global(.service-row-black){background:#08090a !important;color:#f2eee7 !important}
+  :global(.manifesto){background:#08090a !important;color:#f2eee7 !important}
+</style>
+
+<style>
+  :global(.intro){position:relative;isolation:isolate;overflow:hidden;background:transparent !important}
+  :global(.intro):after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,rgba(21,23,25,.66),rgba(21,23,25,.35) 56%,rgba(225,43,36,.08)),linear-gradient(0deg,rgba(21,23,25,.48),rgba(21,23,25,.06));z-index:2;pointer-events:none}
+  :global(.intro-video){position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1 !important;opacity:.82;filter:grayscale(.08) contrast(1.1) brightness(1)}
+  :global(.intro-label),:global(.intro-grid),:global(.quick-actions){position:relative;z-index:3}
+  :global(.intro):after{display:none !important}
+  @media (prefers-reduced-motion:reduce){:global(.intro-video){display:block !important}}
+  @media (prefers-reduced-motion:reduce){:global(.intro-video){display:none}}
+</style>
+
+<style>
+  :global(.service-index){position:relative;isolation:isolate;overflow:hidden;background:transparent !important}
+  :global(.service-index):after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,rgba(21,23,25,.88),rgba(21,23,25,.58) 58%,rgba(21,23,25,.72));z-index:1;pointer-events:none}
+  :global(.services-video){position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;opacity:.58;filter:grayscale(.2) contrast(1.12) brightness(.7)}
+  :global(.service-index)>div{position:relative;z-index:2}
+</style>

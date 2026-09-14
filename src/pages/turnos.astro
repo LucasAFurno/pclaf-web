@@ -1,9 +1,7 @@
 ---
-import AppointmentStep from '../components/AppointmentStep.astro';
-import { appointmentPageParts } from '../lib/appointment-page';
+import MainContentLayout from '../layouts/MainContentLayout.astro';
+import { mainPageParts } from '../lib/main-page';
 
-const { before, steps, after } = appointmentPageParts();
+const parts = mainPageParts('turnos.html');
 ---
-<Fragment set:html={before} />
-{steps.map(html => <AppointmentStep {html} />)}
-<Fragment set:html={after} />
+<MainContentLayout {...parts} />

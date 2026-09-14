@@ -6,6 +6,8 @@ const ALLOWED_ORIGINS = new Set([
   'https://pclaf.com.ar',
   'http://localhost:4321',
   'http://127.0.0.1:4321',
+  // Permite probar el flujo abriendo los HTML legacy directamente desde file://.
+  'null',
 ]);
 
 function cors(req: Request) {
@@ -84,6 +86,23 @@ async function availability(from: string, to: string) {
   return await api(`turnos?fecha=gte.${from}&fecha=lte.${to}&estado=neq.cancelado&select=fecha,hora`);
 }
 
+async function countRows(table: string, filter = '') {
+  if (!SUPABASE_URL || !SERVICE_ROLE_KEY) throw new Error('Configuración del servidor incompleta');
+  const headers = new Headers({ apikey: SERVICE_ROLE_KEY, Authorization: `Bearer ${SERVICE_ROLE_KEY}`, Prefer: 'count=exact' });
+  const response = await fetch(`${SUPABASE_URL}/rest/v1/${table}?select=id${filter}&limit=1`, { headers });
+  if (!response.ok) throw new Error(`Base de datos: ${response.status}`);
+  const range = response.headers.get('content-range') || '';
+  return Number(range.split('/')[1] || 0);
+}
+
+async function publicStats() {
+  const [clients, repairs] = await Promise.all([
+    countRows('clientes'),
+    countRows('reparaciones', '&estado=neq.cancelado')
+  ]);
+  return { clients, repairs, gamers: Math.round(repairs * 0.16), equipment: repairs };
+}
+
 async function book(input: Record<string, unknown>) {
   const nombre = text(input.nombre, 60);
   const apellido = text(input.apellido, 60);
@@ -135,6 +154,7 @@ Deno.serve(async (req) => {
         return response(req, result ? { data: result } : { data: null });
       }
       case 'availability': return response(req, { data: await availability(date(input.desde), date(input.hasta)) });
+      case 'stats': return response(req, { data: await publicStats() });
       case 'referral': {
         const client = await clientByCode(code(input.codigo));
         return response(req, { data: client ? { codigo: client.codigo, nombre: client.nombre, apellido: client.apellido } : null });

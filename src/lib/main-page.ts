@@ -3,17 +3,20 @@ import { legacyHtml } from './legacy-html';
 export function mainPageParts(filename: string) {
   const html = legacyHtml(filename);
   const mainStart = html.indexOf('<main');
-  const mainTagEnd = html.indexOf('>', mainStart);
-  const mainEnd = html.indexOf('</main>', mainTagEnd);
+  const bodyStart = html.indexOf('<body');
+  const contentStart = mainStart >= 0 ? mainStart : bodyStart;
+  const openTagEnd = html.indexOf('>', contentStart);
+  const contentEnd = mainStart >= 0 ? html.indexOf('</main>', openTagEnd) : html.indexOf('</body>', openTagEnd);
 
-  if (mainStart < 0 || mainTagEnd < 0 || mainEnd < 0) {
+  if (contentStart < 0 || openTagEnd < 0 || contentEnd < 0) {
     throw new Error(`No se pudo identificar el contenido principal de ${filename}.`);
   }
 
-  const mainClose = mainEnd + '</main>'.length;
+  const closeTag = mainStart >= 0 ? '</main>' : '</body>';
+  const contentClose = contentEnd + closeTag.length;
   return {
-    beforeMain: html.slice(0, mainStart),
-    main: html.slice(mainStart, mainClose),
-    afterMain: html.slice(mainClose)
+    beforeMain: html.slice(0, contentStart),
+    main: html.slice(contentStart, contentClose),
+    afterMain: html.slice(contentClose)
   };
 }

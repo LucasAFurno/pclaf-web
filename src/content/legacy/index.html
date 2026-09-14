@@ -1327,6 +1327,21 @@ body>section:not(.hub-home),body>.ticker-wrap,body>div{display:none!important;}@
   @media(prefers-reduced-motion:reduce){.hub-card-bg{animation:none;}}
 }
 </style>
+<style>
+.hub-grid{grid-template-columns:repeat(6,1fr)!important}.hub-grid>.hub-card:not(.hub-console){grid-column:span 2}.hub-grid>.hub-console{grid-column:span 3;min-height:220px!important}.hub-playstation{border-color:#2459a6!important;background:#0b1628!important}.hub-playstation .hub-card-kicker,.hub-playstation .hub-console-mark{color:#6ea6ff!important}.hub-playstation .hub-card-cta{background:#2463d4!important;color:#fff!important}.hub-xbox{border-color:#2f8d52!important;background:#0b2114!important}.hub-xbox .hub-card-kicker,.hub-xbox .hub-console-mark{color:#6ee58e!important}.hub-xbox .hub-card-cta{background:#36b95a!important;color:#07130a!important}.hub-console-mark{font-family:var(--display);font-size:35px;font-weight:900;line-height:1;margin:15px 0 8px}.hub-console h2{font-size:34px!important;margin-bottom:8px!important}.hub-console p{color:rgba(255,255,255,.72)}.hub-playstation::after{border-color:rgba(73,143,255,.34)}.hub-xbox::after{border-color:rgba(73,220,117,.28)}
+@media(max-width:780px){.hub-grid{grid-template-columns:1fr!important}.hub-grid>.hub-card:not(.hub-console),.hub-grid>.hub-console{grid-column:auto;min-height:260px!important}}
+</style>
+<style>
+.hub-grid>.hub-console{min-height:230px!important;height:230px!important;padding:20px 24px!important}.hub-console-mark{position:absolute;right:24px;top:20px;font-size:30px!important;margin:0!important}.hub-console h2{font-size:31px!important;margin:30px 0 5px!important}.hub-console p{font-size:13px!important;line-height:1.35!important;margin:6px 0 10px!important;max-width:440px!important}.hub-console .hub-card-cta{padding:8px 11px!important;font-size:14px!important}
+.hub-card-embed{border:0!important;inset:auto!important;position:absolute!important;top:-90px!important;left:0!important;width:100%!important;height:180%!important;transform:none!important;opacity:.62!important;visibility:visible!important;pointer-events:none!important;z-index:0!important;}
+.hub-playstation{background-image:linear-gradient(90deg,rgba(7,18,39,.82),rgba(7,18,39,.34))!important;}
+.hub-xbox{background-image:linear-gradient(90deg,rgba(7,31,18,.82),rgba(7,31,18,.34))!important;}
+.hub-console .hub-console-mark{position:absolute!important;right:24px!important;top:20px!important;z-index:2!important;margin:0!important;}
+.hub-console{box-sizing:border-box!important;padding-bottom:16px!important;}
+.hub-console::after{content:'';position:absolute;inset:0;z-index:1;pointer-events:none;background:transparent;}
+.hub-console>*:not(.hub-card-bg){position:relative;z-index:2;}
+@media(max-width:780px){.hub-grid>.hub-console{min-height:240px!important;height:240px!important}}
+</style>
 </head>
 <body>
 
@@ -1392,6 +1407,8 @@ body>section:not(.hub-home),body>.ticker-wrap,body>div{display:none!important;}@
     <a class="hub-card hub-repair" href="service-tecnico-pc-flores-floresta.html"><video class="hub-card-bg" autoplay muted loop playsinline preload="metadata" aria-hidden="true"><source src="/assets/pc-motherboard-loop.mp4" type="video/mp4"></video><span class="hub-card-kicker">01 · Taller</span><svg class="hub-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a4.5 4.5 0 0 0-5.9 5.9L3 18l3 3 5.8-5.8a4.5 4.5 0 0 0 5.9-5.9l-3 3-2.5-.5-.5-2.5 3-3Z"/></svg><h2>Servicio<br>técnico</h2><p>Reparación, mantenimiento y puesta a punto de PCs y notebooks.</p><span class="hub-card-cta">Ver reparaciones →</span></a>
     <a class="hub-card hub-web" href="diseno-web.html"><video class="hub-card-bg" autoplay muted loop playsinline preload="metadata" aria-hidden="true"><source src="/assets/web-design-office-loop.mp4" type="video/mp4"></video><span class="hub-card-kicker">02 · Presencia digital</span><svg class="hub-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M7 7h.01M10 7h.01M8 14h3M8 17h7"/></svg><h2>Diseño web<br>y landings</h2><p>Webs claras, rápidas y preparadas para convertir consultas en clientes.</p><span class="hub-card-cta">Ver diseños →</span></a>
     <a class="hub-card hub-control" href="https://operando.app" target="_blank" rel="noopener noreferrer"><img class="hub-card-bg hub-card-image" src="/assets/operando-panel-real.png" alt="" aria-hidden="true" loading="lazy"><span class="hub-card-kicker">03 · Gestión</span><svg class="hub-card-logo" viewBox="0 0 220 52" role="img" aria-labelledby="operando-title"><title id="operando-title">Operando.app</title><circle cx="25" cy="26" r="19" fill="#11151a" stroke="#ff1f2f" stroke-width="5"/><path d="M14 27l7 7 15-16" fill="none" stroke="#36dd55" stroke-linecap="round" stroke-linejoin="round" stroke-width="6"/><text x="54" y="35" fill="#f7f7f2" font-family="Arial, sans-serif" font-size="24" font-weight="700" letter-spacing="-1.5">Operando<tspan fill="#ff2638">.app</tspan></text></svg><h2>Operando<br><span>.app</span></h2><p>Una herramienta para organizar clientes, trabajos y presupuestos.</p><span class="hub-card-cta">Conocer Operando.app →</span></a>
+    <a class="hub-card hub-console hub-playstation" href="consolas.html"><iframe class="hub-card-bg hub-card-embed" src="https://www.youtube-nocookie.com/embed/RkC0l4iekYo?autoplay=1&mute=1&loop=1&playlist=RkC0l4iekYo&controls=0&modestbranding=1&rel=0&enablejsapi=1" title="PS5 Hardware Reveal Trailer" allow="autoplay; encrypted-media" aria-hidden="true"></iframe><span class="hub-card-kicker">04 · Consolas</span><span class="hub-console-mark" aria-hidden="true">PS5</span><h2>Sony<br>PlayStation</h2><p>Service preventivo para PS3, PS4 y PS5. Menos temperatura y ruido para seguir jugando.</p><span class="hub-card-cta">Ver services →</span></a>
+    <a class="hub-card hub-console hub-xbox" href="consolas.html"><iframe class="hub-card-bg hub-card-embed" src="https://www.youtube-nocookie.com/embed/mzDPNi77F24?autoplay=1&mute=1&loop=1&playlist=mzDPNi77F24&controls=0&modestbranding=1&rel=0&enablejsapi=1" title="Xbox Series X|S Consoles Announcement Trailer" allow="autoplay; encrypted-media" aria-hidden="true"></iframe><span class="hub-card-kicker">05 · Consolas</span><span class="hub-console-mark" aria-hidden="true">X</span><h2>Microsoft<br>Xbox Series X</h2><p>Service preventivo para Xbox One y Series. Cuidamos temperatura, rendimiento y cooler.</p><span class="hub-card-cta">Ver services →</span></a>
   </section>
   <section class="hub-intro">
     <h1>PCLAF para tu <span>equipo y tu negocio</span></h1>
@@ -2360,6 +2377,15 @@ document.querySelectorAll('.hero-flag-media, .hub-card-bg').forEach((video) => {
   } else {
     video.addEventListener('canplay', playBackground, { once: true });
   }
+});
+
+// Inicia los fondos de YouTube en mute sin mostrar el reproductor al usuario.
+document.querySelectorAll('.hub-card-embed').forEach((frame) => {
+  const playYouTubeBackground = () => {
+    frame.contentWindow?.postMessage(JSON.stringify({ event: 'command', func: 'playVideo', args: [] }), '*');
+  };
+  frame.addEventListener('load', playYouTubeBackground);
+  window.setTimeout(playYouTubeBackground, 1200);
 });
 
 </script>

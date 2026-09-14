@@ -1,7 +1,4 @@
 ---
-import ServiceArticleLayout from '../layouts/ServiceArticleLayout.astro';
-import { serviceArticleParts } from '../lib/service-article';
-
-const parts = serviceArticleParts('optimizacion-pc-lenta-floresta.html');
+import ModernServicePage from '../components/ModernServicePage.astro';
 ---
-<ServiceArticleLayout {...parts} />
+<ModernServicePage title="Optimización de PC lenta" accent="Que responda." description="Detectamos qué está frenando tu PC o notebook y optimizamos el sistema para que vuelva a responder." items={["Diagnóstico de rendimiento","Optimización del sistema","Recomendaciones claras"]} />

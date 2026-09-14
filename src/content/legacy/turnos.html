@@ -91,7 +91,9 @@ nav{background:var(--black2);border-bottom:2px solid var(--red);padding:0 24px;h
 .panel.active{display:block;}
 
 /* SERVICIO SELECTOR */
-.service-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:24px;}
+.service-grid{display:block;margin-bottom:24px;}
+.service-group{margin:0 0 16px;padding:20px;border:1px solid var(--border);border-top:4px solid var(--red);border-radius:14px;background:var(--black2);}
+.service-group-head{margin-bottom:16px}.service-group-kicker{display:block;margin-bottom:6px;font-family:var(--mono);font-size:10px;letter-spacing:.12em;color:var(--text3);text-transform:uppercase}.service-group-head h3{font-family:var(--display);font-size:30px;line-height:1;margin:0 0 6px;color:#fff}.service-group-head h3 span{color:var(--red)}.service-group-head p{font-size:12px;color:var(--text2);line-height:1.4}.service-group-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.service-group-playstation{border-top-color:#2878e8}.service-group-playstation .service-group-head h3 span{color:#63a4ff}.service-group-playstation .srv-card.selected{border-color:#2878e8;background:rgba(40,120,232,.1)}.service-group-playstation .srv-price{color:#63a4ff}.service-group-xbox{border-top-color:#28b85b}.service-group-xbox .service-group-head h3 span{color:#53d88e}.service-group-xbox .srv-card.selected{border-color:#28b85b;background:rgba(40,184,91,.1)}.service-group-xbox .srv-price{color:#53d88e}
 .srv-card{position:relative;isolation:isolate;overflow:hidden;background:var(--black2);border:2px solid var(--border);border-radius:12px;padding:16px;cursor:pointer;transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease,background .2s ease;}
 .srv-card::before{content:'';position:absolute;inset:0;z-index:0;opacity:0;background:radial-gradient(circle at 85% 10%,rgba(204,0,0,.18),transparent 48%);transition:opacity .2s ease;pointer-events:none;}
 .srv-card>*{position:relative;z-index:1;}
@@ -158,6 +160,15 @@ textarea.f-in{resize:none;height:80px;}
 .confirm-sub{font-size:15px;color:var(--text2);line-height:1.65;margin-bottom:28px;}
 .confirm-code{font-family:var(--mono);font-size:22px;color:var(--green);background:var(--green-dim);border:1px solid rgba(34,197,94,.2);border-radius:8px;padding:12px 24px;display:inline-block;margin-bottom:24px;}
 .confirm-details{font-size:14px;color:var(--text2);margin-bottom:12px;}
+.confirm-explanation{max-width:560px;margin:0 auto 18px;color:var(--text2);font-size:13px;line-height:1.55;}
+.confirm-actions{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin:18px auto 24px;}
+.confirm-actions a{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;}
+.confirm-actions .btn-primary{width:auto;margin-top:0;}
+.confirm-actions .btn-sec{min-height:44px;}
+.confirm-map{border-color:rgba(239,68,68,.65);color:#fff;}
+.confirm-track{border-color:rgba(34,197,94,.5);color:var(--green);}
+.confirm-map-frame{max-width:560px;height:190px;margin:18px auto 6px;border:1px solid var(--border2);border-radius:10px;overflow:hidden;background:var(--black2);}
+.confirm-map-frame iframe{width:100%;height:100%;border:0;display:block;filter:grayscale(.2) contrast(1.05);}
 .confirm-notice{padding:10px 14px;border:1px solid rgba(245,158,11,.4);border-radius:8px;background:#1a1306;color:var(--amber)!important;animation:notice-pulse 1.6s ease-in-out infinite;}
 
 /* MISC */
@@ -184,7 +195,7 @@ textarea.f-in{resize:none;height:80px;}
 .toggle-track.on .toggle-knob{transform:translateX(24px);}
 
 @media(max-width:480px){
-  .service-grid{grid-template-columns:1fr;}
+  .service-group{padding:16px}.service-group-cards{grid-template-columns:1fr;}
   .horarios-grid{grid-template-columns:repeat(3,1fr);}
   .f-row{grid-template-columns:1fr;}
 }
@@ -241,6 +252,10 @@ textarea.f-in{resize:none;height:80px;}
     </div>
 
     <div class="service-grid" id="serviceGrid">
+
+      <section class="service-group service-group-pc" aria-labelledby="pc-services-title">
+        <div class="service-group-head"><span class="service-group-kicker">01 / EQUIPOS</span><h3 id="pc-services-title">Service técnico de <span>PC y notebook</span></h3><p>Reparaciones, mantenimiento y puesta a punto.</p></div>
+        <div class="service-group-cards">
 
       <div class="srv-card" data-nombre="Limpieza interna PC + pasta térmica (sin GPU)" data-precio="$70.000" data-urgencia="$105.000" onclick="selServicio(this)">
         <div class="srv-icon">🧹</div>
@@ -313,17 +328,49 @@ textarea.f-in{resize:none;height:80px;}
         <div class="srv-price">desde $95.000</div>
       </div>
 
-      <div class="srv-card" data-nombre="Revisión y diagnóstico" data-precio="Sin cargo" data-urgencia="" onclick="selServicio(this)">
-        <div class="srv-icon">🔍</div>
-        <div class="srv-name">Revisión y diagnóstico</div>
-        <div class="srv-price">Sin cargo</div>
-      </div>
-
       <div class="srv-card" data-nombre="Otro / No sé qué tiene" data-precio="Presupuesto sin cargo" data-urgencia="" onclick="selServicio(this)">
         <div class="srv-icon">❓</div>
         <div class="srv-name">Otro / No sé qué tiene</div>
         <div class="srv-price">Presupuesto sin cargo</div>
       </div>
+
+        </div>
+      </section>
+
+      <section class="service-group service-group-playstation" aria-labelledby="playstation-services-title">
+        <div class="service-group-head"><span class="service-group-kicker">02 / CONSOLAS</span><h3 id="playstation-services-title">Sony <span>PlayStation</span></h3><p>Service preventivo para mantener tu consola fresca y silenciosa.</p></div>
+        <div class="service-group-cards">
+
+      <div class="srv-card" data-slug="service-ps3" data-nombre="Service de PlayStation 3" data-precio="$70.000" data-urgencia="" onclick="selServicio(this)">
+        <div class="srv-icon">🎮</div><div class="srv-name">Service de PlayStation 3</div><div class="srv-detail">Limpieza + pasta térmica + pads si hace falta · Solo service preventivo</div><div class="srv-price">$70.000</div>
+      </div>
+      <div class="srv-card" data-slug="service-ps4-slim" data-nombre="Service de PlayStation 4 / Slim" data-precio="$70.000" data-urgencia="" onclick="selServicio(this)">
+        <div class="srv-icon">🎮</div><div class="srv-name">Service de PlayStation 4 / Slim</div><div class="srv-detail">Limpieza + pasta térmica + pads · Solo service preventivo</div><div class="srv-price">$70.000</div>
+      </div>
+      <div class="srv-card" data-slug="service-ps4-pro" data-nombre="Service de PlayStation 4 Pro" data-precio="$80.000" data-urgencia="" onclick="selServicio(this)">
+        <div class="srv-icon">🎮</div><div class="srv-name">Service de PlayStation 4 Pro</div><div class="srv-detail">Limpieza + pasta térmica + pads · Mayor superficie</div><div class="srv-price">$80.000</div>
+      </div>
+      <div class="srv-card" data-slug="service-ps5" data-nombre="Service de PlayStation 5 Fat / Slim / Digital" data-precio="$120.000" data-urgencia="" onclick="selServicio(this)">
+        <div class="srv-icon">🎮</div><div class="srv-name">Service de PlayStation 5 Fat / Slim / Digital</div><div class="srv-detail">Limpieza + metal líquido APU + pads · Solo service preventivo</div><div class="srv-price">$120.000</div>
+      </div>
+
+        </div>
+      </section>
+
+      <section class="service-group service-group-xbox" aria-labelledby="xbox-services-title">
+        <div class="service-group-head"><span class="service-group-kicker">03 / CONSOLAS</span><h3 id="xbox-services-title">Microsoft <span>Xbox</span></h3><p>Service preventivo para cuidar temperatura, rendimiento y cooler.</p></div>
+        <div class="service-group-cards">
+      <div class="srv-card" data-slug="service-xbox-one" data-nombre="Service de Xbox One / One S / One X" data-precio="$75.000" data-urgencia="" onclick="selServicio(this)">
+        <div class="srv-icon">🎮</div><div class="srv-name">Service de Xbox One / One S / One X</div><div class="srv-detail">Limpieza + pasta térmica + pads · Solo service preventivo</div><div class="srv-price">$75.000</div>
+      </div>
+      <div class="srv-card" data-slug="service-xbox-series-s" data-nombre="Service de Xbox Series S" data-precio="$75.000" data-urgencia="" onclick="selServicio(this)">
+        <div class="srv-icon">🎮</div><div class="srv-name">Service de Xbox Series S</div><div class="srv-detail">Limpieza + pasta térmica + pads · Solo service preventivo</div><div class="srv-price">$75.000</div>
+      </div>
+      <div class="srv-card" data-slug="service-xbox-series-x" data-nombre="Service de Xbox Series X" data-precio="$90.000" data-urgencia="" onclick="selServicio(this)">
+        <div class="srv-icon">🎮</div><div class="srv-name">Service de Xbox Series X</div><div class="srv-detail">Limpieza + pasta térmica + pads · Solo service preventivo</div><div class="srv-price">$90.000</div>
+      </div>
+        </div>
+      </section>
 
     </div>
 
@@ -400,9 +447,15 @@ textarea.f-in{resize:none;height:80px;}
     <div class="confirm-screen">
       <div class="confirm-icon">✅</div>
       <div class="confirm-title">¡Turno solicitado!</div>
-      <div class="confirm-sub">Te vamos a confirmar por WhatsApp a la brevedad.<br>Tu número de turno:</div>
+      <div class="confirm-sub">Recibimos tu solicitud. Te vamos a confirmar el turno por WhatsApp a la brevedad.<br>Tu código de solicitud es:</div>
       <div class="confirm-code" id="confirmCode">#0000</div>
+      <div class="confirm-explanation">El código identifica tu solicitud en nuestro sistema. Guardalo para que podamos encontrar rápidamente tus datos y consultarnos por el estado; todavía no es un número de seguimiento automático.</div>
       <div class="confirm-details">📍 Campana 51, Floresta, CABA<br>Lunes a viernes · 10 a 19 hs</div>
+      <div class="confirm-map-frame"><iframe title="Ubicación de PCLAF en Google Maps" src="https://www.google.com/maps?q=Campana+51%2C+Floresta%2C+CABA&amp;output=embed" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe></div>
+      <div class="confirm-actions">
+        <a class="btn-sec confirm-map" href="https://www.google.com/maps/search/?api=1&amp;query=Campana+51%2C+Floresta%2C+CABA" target="_blank" rel="noopener">📍 Ver ubicación en Google Maps</a>
+        <a class="btn-sec confirm-track" id="confirmTrack" href="https://wa.me/5491135708345" target="_blank" rel="noopener">💬 Consultar estado por WhatsApp</a>
+      </div>
       <div class="confirm-notice" style="font-size:14px;margin-bottom:24px">Atendemos únicamente con turno previo. Trabajamos en un laboratorio cerrado, no en un local a la calle. Si no podés concurrir, por favor avisanos con anticipación para liberar el turno y la disponibilidad del técnico.</div>
       <a href="index.html" style="display:inline-block;background:var(--red);color:#fff;padding:12px 28px;border-radius:8px;font-family:var(--display);font-size:17px;font-weight:800;text-decoration:none;text-transform:uppercase;letter-spacing:.04em;">Volver al inicio</a>
     </div>
@@ -547,6 +600,9 @@ function selServicio(el){
   state.servicio = nombre;
   state.urgencia = urgenciaOn && !!urgencia;
   document.getElementById('btnNext1').disabled = false;
+  // La selección de una card ya confirma el servicio y lleva al calendario.
+  // El botón queda disponible como respaldo para teclado y lectores de pantalla.
+  if(document.getElementById('panel1')?.classList.contains('active')) goTo(2);
 }
 
 function toggleUrgencia(){
@@ -757,6 +813,8 @@ async function confirmarTurno(){
     const id=res?.id||'';
     const shortId='#T'+id.slice(0,6).toUpperCase();
     document.getElementById('confirmCode').textContent=shortId;
+    const confirmTrack=document.getElementById('confirmTrack');
+    if(confirmTrack) confirmTrack.href=`https://wa.me/5491135708345?text=${encodeURIComponent(`Hola, quiero consultar el estado de mi turno ${shortId}`)}`;
     // Show confirm
     document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
     document.getElementById('panelOK').classList.add('active');
@@ -773,6 +831,9 @@ async function confirmarTurno(){
 }
 
 // Init
+const requestedService=new URLSearchParams(location.search).get('servicio');
+const requestedCard=[...document.querySelectorAll('.srv-card')].find(card=>card.dataset.slug===requestedService);
+if(requestedCard) selServicio(requestedCard);
 renderCal();
 </script>
 </body>

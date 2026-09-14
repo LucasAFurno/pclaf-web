@@ -1,9 +1,17 @@
 ---
 import PriceSection from '../components/PriceSection.astro';
 import { pricePageParts } from '../lib/price-page';
-
+import { consoles } from '../data/consoles';
 const { before, sections, after } = pricePageParts();
 ---
 <Fragment set:html={before} />
 {sections.map(html => <PriceSection {html} />)}
+<section class="section console-price-section" id="consolas">
+  <h2 class="sec-title">Service de <span>consolas</span></h2>
+  <p class="sec-sub">Mantenimiento preventivo para bajar temperatura, ruido y desgaste</p>
+  <div class="table-scroll"><table class="price-table"><thead><tr><th>Servicio</th><th>Incluye</th><th>Normal</th></tr></thead><tbody>
+    {consoles.map((console) => <tr><td><a href={`/consolas/${console.slug}.html`}>{console.name}</a></td><td>{console.includes}</td><td class="price-normal">{console.price}</td></tr>)}
+  </tbody></table></div>
+  <p class="service-note">El objetivo es ayudar a bajar la temperatura de trabajo, reducir el sonido del cooler y prevenir roturas asociadas al exceso de calor. El precio incluye mano de obra y los materiales indicados.</p>
+</section>
 <Fragment set:html={after} />

@@ -527,6 +527,7 @@ select.web-status,select.f-sel,select.sse{color-scheme:dark;}select.web-status o
       <div class="tab active" onclick="switchTab('rep',this)">Reparaciones</div>
       <div class="tab tab-web" onclick="switchTab('web',this)">Web</div>
       <div class="tab" onclick="switchTab('turnos',this)">Turnos</div>
+      <div class="tab" onclick="switchTab('consolas',this)">Consolas</div>
       <div class="tab" onclick="switchTab('agenda',this)">Agenda</div>
       <div class="tab" onclick="switchTab('met',this)">Métricas</div>
       <div class="tab" onclick="switchTab('tools',this)">Herramientas</div>
@@ -609,6 +610,12 @@ select.web-status,select.f-sel,select.sse{color-scheme:dark;}select.web-status o
         <input class="srch" id="srchTurno" placeholder="Buscar nombre, teléfono, servicio..." oninput="renderTurnos()"/>
       </div>
       <div id="turnosList"><div class="empty"><div class="spinner"></div>Cargando...</div></div>
+    </div>
+
+    <!-- ── CONSOLAS ── -->
+    <div class="view" id="view-consolas">
+      <div class="frow"><div style="font-size:20px;font-weight:700;color:#fff;">Service de consolas</div><span style="font-size:12px;color:var(--text3);">Turnos de PlayStation y Xbox · solo mantenimiento preventivo</span></div>
+      <div id="consolasList"><div class="empty"><div class="spinner"></div>Cargando...</div></div>
     </div>
 
     <!-- ── AGENDA ── -->
@@ -1101,6 +1108,7 @@ function switchTab(name,btn){
   window.scrollTo({top:0,behavior:'smooth'});
   if(name==='met') renderMetrics();
   if(name==='turnos') loadTurnos();
+  if(name==='consolas') loadConsolas();
   if(name==='agenda') renderAgenda();
   if(name==='tools') renderTools();
   if(name==='web') loadWebProjects();
@@ -1257,7 +1265,7 @@ async function loadAllData(force=false){
       return allRows;
     };
 
-    const turnosSelect='select=id,nombre,apellido,telefono,nota,fecha,hora,estado&order=fecha.desc,hora.desc';
+  const turnosSelect='select=id,nombre,apellido,telefono,servicio,nota,fecha,hora,estado,urgente&order=fecha.desc,hora.desc';
     const [allRows,pasosRows,turnosRows]=await Promise.all([
       fetchPaged(`reparaciones?${select}`),
       fetchPaged(`pasos?${pasosSelect}&order=reparacion_id.asc,orden.asc,created_at.asc`),
@@ -2796,6 +2804,7 @@ function renderTurnos(){
   const q=(document.getElementById('srchTurno')?.value||'').toLowerCase().trim();
   let list=turnoFilter==='todos'?allTurnos:allTurnos.filter(t=>t.estado===turnoFilter);
   if(q) list=list.filter(t=>
+    (t.id?('#T'+String(t.id).slice(0,6).toUpperCase()):'').toLowerCase().includes(q)||
     (t.nombre||'').toLowerCase().includes(q)||
     (t.apellido||'').toLowerCase().includes(q)||
     (t.telefono||'').includes(q)||
@@ -2810,10 +2819,12 @@ function renderTurnos(){
   const cardOpacity={pendiente:'1',confirmado:'0.55',cancelado:'0.4'};
   document.getElementById('turnosList').innerHTML=`<div style="display:flex;flex-direction:column;gap:8px">`+list.map(t=>{
     const urgente=t.urgente||t.servicio?.includes('URGENTE')||false;
+    const codigoSolicitud=t.id?`#T${String(t.id).slice(0,6).toUpperCase()}`:'–';
     const urgBorder=urgente?`border-left:3px solid var(--amber);`:''
     return `
     <div data-turno-id="${t.id}" style="background:${urgente?'rgba(245,158,11,.06)':cardBg[t.estado]||'var(--black2)'};border:1px solid ${urgente?'rgba(245,158,11,.35)':cardBorder[t.estado]||'var(--border)'};${urgBorder}border-radius:10px;padding:14px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;opacity:${cardOpacity[t.estado]||'1'};${urgente?'animation:urgentePulse 2s ease-in-out infinite;':''}">
       <div style="font-family:var(--mono);font-size:11px;color:var(--text3);min-width:80px">
+        <div style="font-size:11px;color:var(--green);font-weight:700;margin-bottom:4px">${codigoSolicitud}</div>
         <div style="font-size:14px;color:#fff;font-weight:600">${t.fecha?new Date(t.fecha+'T12:00:00').toLocaleDateString('es-AR',{day:'numeric',month:'short'}):'–'}</div>
         <div>${t.hora||'–'}</div>
       </div>
@@ -2834,6 +2845,18 @@ function renderTurnos(){
       </div>
     </div>`;
   }).join('')+'</div>';
+}
+
+async function loadConsolas(){
+  document.getElementById('consolasList').innerHTML='<div class="empty"><div class="spinner"></div>Cargando...</div>';
+  try{allTurnos=await db('GET','turnos','?order=fecha.desc,hora.desc');renderConsolas();}catch(e){document.getElementById('consolasList').innerHTML='<div class="empty">Error cargando turnos de consolas</div>';}
+}
+
+function renderConsolas(){
+  const list=(allTurnos||[]).filter(t=>/playstation|ps[345]|xbox|consola/i.test((t.servicio||'')+' '+(t.nota||'')));
+  if(!list.length){document.getElementById('consolasList').innerHTML='<div class="empty">Todavía no hay turnos de consolas</div>';return;}
+  const colors={pendiente:'var(--amber)',confirmado:'var(--green)',cancelado:'var(--red)'};
+  document.getElementById('consolasList').innerHTML='<div style="display:flex;flex-direction:column;gap:8px">'+list.map(t=>`<div style="background:var(--black2);border:1px solid var(--border);border-left:3px solid var(--green);border-radius:10px;padding:16px;display:flex;align-items:center;gap:18px;flex-wrap:wrap"><div style="font-family:var(--mono);font-size:12px;color:var(--text3);min-width:90px"><strong style="display:block;color:#fff;font-size:15px">${t.fecha||'–'}</strong>${t.hora||'–'}</div><div style="flex:1;min-width:220px"><strong style="display:block;color:#fff;font-size:15px">${t.nombre||''} ${t.apellido||''}</strong><span style="display:block;color:var(--text2);font-size:12px;margin-top:4px">${t.telefono||''} · ${t.servicio||'Service de consola'}</span>${t.nota?`<span style="display:block;color:var(--text3);font-size:11px;margin-top:5px">${t.nota}</span>`:''}</div><span style="font-size:10px;font-weight:600;padding:4px 9px;border-radius:20px;background:var(--black3);color:${colors[t.estado]||'var(--text3)'}">${t.estado||'pendiente'}</span><select onchange="cambiarEstadoTurno('${t.id}',this.value)" style="background:var(--black3);border:1px solid var(--border2);border-radius:6px;padding:6px 8px;font-size:11px;color:var(--text2)"><option value="pendiente" ${t.estado==='pendiente'?'selected':''}>Pendiente</option><option value="confirmado" ${t.estado==='confirmado'?'selected':''}>Confirmado</option><option value="cancelado" ${t.estado==='cancelado'?'selected':''}>Cancelado</option></select></div>`).join('')+'</div>';
 }
 
 async function cambiarEstadoTurno(id,estado){
