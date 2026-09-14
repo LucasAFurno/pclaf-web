@@ -1197,9 +1197,8 @@ async function loadStats(){
 
 async function loadPage(){
   const q=(document.getElementById('srch')?.value||'').trim();
-  const offset=currentPage*PAGE_SIZE;
-
-  let filter=`order=numero.desc&limit=${PAGE_SIZE}&offset=${offset}`;
+  // Consolas tiene su propia bandeja: Reparaciones queda reservada para PC/notebook.
+  let filter='order=numero.desc&limit=500&offset=0';
   if(fSt!=='todos') filter+=`&estado=eq.${fSt}`;
   if(q && /^\d+$/.test(q)) filter+=`&numero=eq.${q.padStart(4,'0')}`;
   else if(q){
@@ -1234,7 +1233,10 @@ async function loadPage(){
     });
     const countHeader=res.headers.get('content-range');
     if(countHeader) totalCount=parseInt(countHeader.split('/')[1])||0;
-    const data=await res.json();
+    const rawData=await res.json();
+    const filteredData=(Array.isArray(rawData)?rawData:[]).filter(repair=>!isConsoleRepair(repair));
+    totalCount=filteredData.length;
+    const data=filteredData.slice(currentPage*PAGE_SIZE,(currentPage+1)*PAGE_SIZE);
 
     if(!Array.isArray(data)||!data.length){
       document.getElementById('rlist').innerHTML='<div class="empty">Sin reparaciones</div>';
@@ -2788,6 +2790,9 @@ function scheduleRefreshVisibleReportActions(delay=600){
   reportActionsRefreshTimer = setTimeout(refreshVisibleReportActions, delay);
 }
 
+function isConsoleRepair(repair){
+  return CONSOLE_REPAIR_RE.test(`${repair?.problema||''} ${repair?.equipos?.nombre||''} ${repair?.equipos?.modelo||''}`);
+}
 let allTurnos=[], turnoFilter='todos';
 let consoleRepairs=[], consoleRepairFilter='todos';
 
@@ -2862,7 +2867,7 @@ async function loadConsoleRepairs(){
   try{
     const res=await fetch(`${SUPA}/rest/v1/reparaciones?${CONSOLE_REPAIR_SELECT}&order=numero.desc&limit=200`,{headers:H});
     if(!res.ok)throw new Error(await res.text());
-    consoleRepairs=(await res.json()||[]).filter(r=>CONSOLE_REPAIR_RE.test(`${r.problema||''} ${r.equipos?.nombre||''} ${r.equipos?.modelo||''}`));
+    consoleRepairs=(await res.json()||[]).filter(isConsoleRepair);
     renderConsoleRepairs();
   }catch(e){target.innerHTML='<div class="empty">Error cargando reparaciones de consolas</div>';console.error('loadConsoleRepairs error',e);}
 }
