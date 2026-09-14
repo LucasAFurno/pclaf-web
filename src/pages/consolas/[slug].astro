@@ -3,14 +3,13 @@ import SiteLayout from '../../layouts/SiteLayout.astro';
 import { consoles } from '../../data/consoles';
 
 export function getStaticPaths() {
-  return consoles.map((console) => ({
-    params: { slug: console.slug },
-    props: { console }
-  }));
+  return consoles.map((item) => ({ params: { slug: item.slug }, props: { console: item } }));
 }
 
 const { console } = Astro.props;
 const canonical = `https://www.pclaf.com.ar/consolas/${console.slug}.html`;
+const isXbox = console.shortName.toLowerCase().includes('xbox');
+const accent = isXbox ? '#53d88e' : '#6ea6ff';
 ---
 <SiteLayout title={console.seoTitle} description={console.description}>
   <Fragment slot="head">
@@ -19,76 +18,43 @@ const canonical = `https://www.pclaf.com.ar/consolas/${console.slug}.html`;
     <link rel="canonical" href={canonical} />
     <meta property="og:title" content={console.seoTitle} />
     <meta property="og:description" content={console.description} />
-    <meta property="og:type" content="website" />
-    <script type="application/ld+json" set:html={JSON.stringify({
-      '@context': 'https://schema.org',
-      '@type': 'Service',
-      name: `Service ${console.name}`,
-      serviceType: 'Mantenimiento preventivo de consola',
-      description: console.description,
-      provider: { '@type': 'LocalBusiness', name: 'PCLAF', url: 'https://www.pclaf.com.ar' },
-      areaServed: 'Floresta, Flores y CABA',
-      offers: { '@type': 'Offer', price: console.price.replace(/[$.]/g, ''), priceCurrency: 'ARS', url: canonical }
-    })} />
   </Fragment>
-
-  <div class="console-page">
-    <nav class="legacy-nav" aria-label="Navegación principal">
-      <a class="nav-logo" href="/index.html" aria-label="PCLAF, inicio">
-        <span class="logo-wm">PC<em>LAF</em></span>
-        <span class="logo-sub">Servicio técnico</span>
-      </a>
-      <a class="nav-back" href="/precios.html#consolas">← Ver precios</a>
-      <a class="nav-wa" href="https://wa.me/5491135708345?text=Hola%2C%20quiero%20consultar%20por%20service%20de%20consola" target="_blank" rel="noopener noreferrer">WhatsApp ↗</a>
-    </nav>
-
-    <main>
-      <section class="console-hero" aria-labelledby="console-title">
-        <video autoplay muted loop playsinline preload="metadata" aria-hidden="true">
-          <source src={console.video} type="video/mp4" />
-        </video>
-        <div class="hero-shade"></div>
-        <div class="hero-content">
-          <p class="eyebrow">PCLAF / SERVICE PREVENTIVO / {console.shortName}</p>
-          <h1 id="console-title">Service de <span>{console.name}</span></h1>
+  <div class="console-main-page" style={`--console-accent:${accent}`}>
+    <main class="console-main-shell">
+      <section class="console-main-hero">
+        <video autoplay muted loop playsinline preload="metadata" aria-hidden="true"><source src={console.video} type="video/mp4" /></video>
+        <div class="console-main-shade"></div>
+        <div class="console-main-copy">
+          <span class="console-kicker">PCLAF / CONSOLAS / {console.shortName}</span>
+          <h1>Service de<br /><span>{console.name}</span></h1>
           <p>{console.description}</p>
-          <a class="button-red" href={`/turnos.html?servicio=${console.slug}`}>Pedir turno ↗</a>
+          <a class="console-main-button" href={`/turnos.html?servicio=${console.slug}`}>Pedir turno →</a>
         </div>
       </section>
-
-      <section class="section service-summary" aria-label={`Resumen del service de ${console.name}`}>
-        <div class="summary-card"><span>PRECIO NORMAL</span><strong>{console.price}</strong><small>Mano de obra incluida</small></div>
-        <div class="summary-card"><span>INCLUYE</span><p>{console.includes}</p></div>
-        <div class="summary-card"><span>OBJETIVO</span><p>{console.benefit}</p></div>
+      <section class="console-main-cards" aria-label="Información del service">
+        <article class="console-main-card console-main-card-price"><span>PRECIO</span><strong>{console.price}</strong><small>Mano de obra incluida</small></article>
+        <article class="console-main-card"><span>INCLUYE</span><p>{console.includes}</p></article>
+        <article class="console-main-card"><span>OBJETIVO</span><p>{console.benefit}</p></article>
       </section>
-
-      <section class="section content-section">
-        <h2 class="sec-title">Mantenimiento <span>preventivo</span></h2>
-        <p class="sec-sub">Bajar temperatura, reducir el ruido del cooler y ayudar a prevenir roturas</p>
-        <div class="info-grid">
-          <div class="panel"><h3>Qué hacemos</h3><p>Limpiamos el interior de la consola y renovamos los materiales térmicos que corresponden a este modelo. El objetivo es que el sistema de disipación trabaje correctamente.</p><p>Es un service preventivo: no hacemos reparación de placas, cambios de piezas ni service de joysticks.</p></div>
-          <div class="panel"><h3>Alcance claro</h3><ul><li>✓ Limpieza interna</li><li>✓ Pasta térmica y pads según modelo</li><li>✓ Revisión del sistema de disipación</li><li>× No reparamos fallas electrónicas</li><li>× No trabajamos con joysticks</li></ul></div>
+      <section class="console-main-section">
+        <span class="console-kicker">SERVICE PREVENTIVO</span>
+        <h2>Menos temperatura.<br /><em>Más tranquilidad.</em></h2>
+        <p class="console-main-lead">Trabajamos sobre la limpieza y el sistema térmico para ayudar a bajar la temperatura, reducir el ruido del cooler y prevenir desgaste por exceso de calor.</p>
+        <div class="console-main-info-grid">
+          <article class="console-main-info"><span>01</span><h3>Qué hacemos</h3><p>Limpiamos el interior y renovamos los materiales térmicos que corresponden a este modelo.</p></article>
+          <article class="console-main-info"><span>02</span><h3>Alcance claro</h3><p>Es solo service preventivo. No hacemos reparación de placas, cambios de piezas ni service de joysticks.</p></article>
+          <article class="console-main-info"><span>03</span><h3>Para qué sirve</h3><p>Una consola más limpia puede trabajar con mejor circulación de aire, menos ruido y mayor estabilidad.</p></article>
         </div>
       </section>
-
-      <section class="final-cta">
-        <p class="eyebrow">¿LA CONSOLA ESTÁ CALIENTE O HACE MUCHO RUIDO?</p>
-        <h2>Dejala lista para <span>jugar.</span></h2>
-        <a class="button-red" href={`/turnos.html?servicio=${console.slug}`}>Agendar service ↗</a>
-      </section>
+      <section class="console-main-cta"><span class="console-kicker">¿LA CONSOLA CALIENTA O HACE MUCHO RUIDO?</span><h2>Dejala lista para <em>jugar.</em></h2><a class="console-main-button" href={`/turnos.html?servicio=${console.slug}`}>Agendar service →</a></section>
     </main>
-
-    <footer><span>© 2026 PCLAF · Servicio técnico · Floresta, CABA</span><a href="/precios.html#consolas">Volver a precios ↗</a></footer>
+    <footer class="console-main-footer"><span>© 2026 PCLAF · Servicio técnico · Floresta, CABA</span><a href="/precios.html#consolas">Volver a precios →</a></footer>
   </div>
 </SiteLayout>
-
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800;900&family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
 :global(*){box-sizing:border-box}:global(body){margin:0;background:#080808;color:#f0f0f0;font-family:'Barlow',sans-serif}:global(a){color:inherit;text-decoration:none}
-.console-page{--red:#cc0000;--black2:#111;--black3:#171717;--text2:#bbb;--text3:#888;min-height:100vh;background:#080808}
-.legacy-nav{height:62px;display:flex;align-items:center;gap:14px;padding:0 24px;background:#0f0f0f;border-bottom:2px solid var(--red);position:sticky;top:0;z-index:10}
-.nav-logo{display:flex;align-items:center;gap:10px}.logo-wm{font:800 18px 'Barlow Condensed',sans-serif}.logo-wm em{color:var(--red);font-style:normal}.logo-sub{font:10px 'JetBrains Mono',monospace;color:#444;text-transform:uppercase}.nav-back,.nav-wa{padding:8px 16px;border-radius:6px;font-size:13px;font-weight:700}.nav-back{margin-left:auto;background:var(--red)}.nav-wa{background:#25d366}
-.console-hero{position:relative;min-height:510px;overflow:hidden;border-bottom:1px solid #252525}.console-hero video,.hero-shade{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}.console-hero video{opacity:.48;filter:contrast(1.15) saturate(.75) brightness(.65)}.hero-shade{background:linear-gradient(90deg,rgba(8,8,8,.94),rgba(8,8,8,.6) 65%,rgba(8,8,8,.28)),linear-gradient(0deg,rgba(8,8,8,.8),transparent 60%)}.hero-content{position:relative;z-index:1;max-width:900px;padding:clamp(72px,10vw,130px) clamp(24px,8vw,140px)}.eyebrow{font:10px 'JetBrains Mono',monospace;letter-spacing:.13em;color:var(--red);text-transform:uppercase}.console-hero h1{max-width:800px;margin:26px 0 18px;font:900 clamp(52px,8vw,92px)/.9 'Barlow Condensed',sans-serif}.console-hero h1 span,.final-cta h2 span{color:var(--red)}.console-hero p:not(.eyebrow){max-width:600px;color:#ccc;font-size:18px;line-height:1.5;margin:0 0 28px}.button-red{display:inline-block;padding:12px 17px;background:var(--red);border-radius:6px;color:#fff;font:700 12px 'Barlow Condensed',sans-serif;text-transform:uppercase}
-.section{max-width:900px;margin:0 auto;padding:48px 24px}.service-summary{display:grid;grid-template-columns:1fr 1.2fr 1.2fr;gap:0;padding-top:0;padding-bottom:0;background:#111;border-bottom:1px solid #252525}.summary-card{padding:28px 24px;border-right:1px solid #252525}.summary-card:last-child{border-right:0}.summary-card span{font:10px 'JetBrains Mono',monospace;color:var(--text3);letter-spacing:.1em}.summary-card strong{display:block;margin:12px 0 3px;font:700 30px 'JetBrains Mono',monospace;color:var(--red)}.summary-card p,.summary-card small{display:block;margin:10px 0 0;color:var(--text2);font-size:15px;line-height:1.45}.summary-card small{font:11px 'JetBrains Mono',monospace;color:var(--text3)}.sec-title{margin:0;font:800 42px/1 'Barlow Condensed',sans-serif;text-transform:uppercase}.sec-title span{color:var(--red)}.sec-sub{margin:8px 0 24px;color:var(--text3);font-size:15px}.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}.panel{padding:24px;background:#111;border:1px solid #252525;border-radius:8px}.panel h3{margin:0 0 14px;color:#fff;font:700 24px 'Barlow Condensed',sans-serif}.panel p,.panel li{color:var(--text2);font-size:15px;line-height:1.5}.panel ul{list-style:none;padding:0;margin:0}.panel li{margin:8px 0}.panel li:nth-last-child(-n+2){color:#e68b87}.final-cta{padding:72px 24px;text-align:center;background:#111;border-top:2px solid var(--red)}.final-cta h2{margin:16px 0 28px;font:800 clamp(44px,7vw,72px)/.9 'Barlow Condensed',sans-serif;text-transform:uppercase}.console-page footer{display:flex;justify-content:space-between;gap:16px;padding:24px;font:10px 'JetBrains Mono',monospace;text-transform:uppercase;color:#555;border-top:1px solid #252525}.console-page footer a{color:#aaa}
-@media(max-width:700px){.legacy-nav{padding:0 14px}.logo-sub{display:none}.nav-wa{display:none}.console-hero{min-height:560px}.hero-content{padding:76px 20px}.console-hero h1{font-size:58px}.console-hero p:not(.eyebrow){font-size:16px}.section{padding:38px 18px}.service-summary,.info-grid{grid-template-columns:1fr}.summary-card{border-right:0;border-bottom:1px solid #252525}.summary-card:last-child{border-bottom:0}.final-cta{padding:60px 18px}.console-page footer{flex-direction:column}}
+.console-main-page{--red:#cc0000;--black2:#111;--text2:#bbb;--text3:#888;min-height:100vh;background:#080808}.console-main-shell{max-width:1100px;margin:0 auto;padding:28px 24px 48px}.console-main-hero{position:relative;min-height:370px;overflow:hidden;border:1px solid var(--console-accent);border-radius:12px;background:#111}.console-main-hero video,.console-main-shade{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}.console-main-hero video{opacity:.42;filter:contrast(1.15) saturate(.8) brightness(.6)}.console-main-shade{background:linear-gradient(90deg,rgba(8,8,8,.94),rgba(8,8,8,.48) 70%,rgba(8,8,8,.25))}.console-main-copy{position:relative;z-index:1;max-width:720px;padding:58px 48px}.console-kicker{font:10px 'JetBrains Mono',monospace;letter-spacing:.13em;color:var(--console-accent);text-transform:uppercase}.console-main-copy h1{margin:24px 0 16px;font:900 clamp(48px,7vw,78px)/.88 'Barlow Condensed',sans-serif;text-transform:uppercase}.console-main-copy h1 span,.console-main-section h2 em,.console-main-cta h2 em{color:var(--console-accent);font-style:normal}.console-main-copy p{max-width:600px;margin:0 0 24px;color:#ccc;font-size:16px;line-height:1.5}.console-main-button{display:inline-flex;padding:11px 14px;border-radius:5px;background:var(--red);color:#fff;font:700 15px 'Barlow Condensed',sans-serif;letter-spacing:.05em;text-transform:uppercase}.console-main-cards{display:grid;grid-template-columns:1fr 1.25fr 1.25fr;gap:10px;margin-top:15px}.console-main-card,.console-main-info{padding:20px;background:var(--black2);border:1px solid #252525;border-radius:10px}.console-main-card span{font:10px 'JetBrains Mono',monospace;color:var(--text3);letter-spacing:.1em}.console-main-card strong{display:block;margin:12px 0 2px;color:var(--console-accent);font:700 25px 'JetBrains Mono',monospace}.console-main-card small,.console-main-card p{display:block;margin:10px 0 0;color:var(--text2);font-size:14px;line-height:1.45}.console-main-section{padding:70px 0 30px}.console-main-section h2{margin:14px 0 12px;font:900 clamp(42px,6vw,66px)/.9 'Barlow Condensed',sans-serif;text-transform:uppercase}.console-main-lead{max-width:600px;margin:0 0 28px;color:var(--text2);font-size:16px;line-height:1.55}.console-main-info-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.console-main-info span{font:11px 'JetBrains Mono',monospace;color:var(--console-accent)}.console-main-info h3{margin:22px 0 8px;font:700 25px/1 'Barlow Condensed',sans-serif}.console-main-info p{margin:0;color:var(--text2);font-size:14px;line-height:1.5}.console-main-cta{padding:38px 40px;border:1px solid var(--red);border-radius:12px;background:rgba(204,0,0,.08)}.console-main-cta h2{margin:14px 0 22px;font:900 clamp(38px,5vw,58px)/.9 'Barlow Condensed',sans-serif;text-transform:uppercase}.console-main-footer{max-width:1100px;margin:0 auto;padding:24px;color:#555;border-top:1px solid #252525;display:flex;justify-content:space-between;gap:16px;font:10px 'JetBrains Mono',monospace;text-transform:uppercase}.console-main-footer a{color:#aaa}
+@media(max-width:720px){.console-main-shell{padding:20px 16px 38px}.console-main-copy{padding:42px 24px}.console-main-hero{min-height:430px}.console-main-cards,.console-main-info-grid{grid-template-columns:1fr}.console-main-section{padding-top:52px}.console-main-cta{padding:28px 24px}.console-main-footer{margin:0 16px;flex-direction:column}}
 </style>
+
