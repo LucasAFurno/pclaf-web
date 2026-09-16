@@ -1342,6 +1342,15 @@ body>section:not(.hub-home),body>.ticker-wrap,body>div{display:none!important;}@
 .hub-console>*:not(.hub-card-bg){position:relative;z-index:2;}
 @media(max-width:780px){.hub-grid>.hub-console{min-height:240px!important;height:240px!important}}
 </style>
+<style>
+/* Los fondos multimedia de las tarjetas deben quedar siempre contenidos.
+   En pantallas táctiles no se aplica @media(hover:hover), y sin estas reglas
+   el video/imagen absoluta podía escaparse y cubrir el resto de la página. */
+.hub-card{position:relative;overflow:hidden;}
+.hub-card>*{position:relative;z-index:1;}
+.hub-card>.hub-card-bg{position:absolute;inset:0;z-index:0;}
+.hub-card>.hub-card-embed{position:absolute!important;z-index:0!important;}
+</style>
 </head>
 <body>
 
