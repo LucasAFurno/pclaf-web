@@ -811,6 +811,7 @@ select.web-status,select.f-sel,select.sse{color-scheme:dark;}select.web-status o
           <option value="🖨️">🖨️ Impresora</option>
           <option value="📱">📱 Celular / Tablet</option>
           <option value="🎮">🎮 Consola</option>
+          <option value="🕹️">🕹️ Joystick</option>
           <option value="🖱️">🖱️ Periférico</option>
         </select>
       </div>
@@ -2466,6 +2467,7 @@ async function openModalFromTurno(nom, ape, tel, servicio, nota, urgente){
     'Limpieza de GPU / placa de video': {normal:'$70.000', urgente:'$105.000'},
     'Backup de archivos':                    {normal:'desde $20.000', urgente:'desde $30.000'},
     'Atención remota':                       {normal:'$90.000', urgente:'$135.000'},
+    'Reparación de joystick':                 {normal:'$65.000', urgente:''},
   };
   const match=Object.entries(PRECIOS).find(([k])=>servicio&&servicio.includes(k));
   if(match){
@@ -2513,7 +2515,8 @@ function closeModal(){document.getElementById('modal').classList.remove('open');
 
 function syncEquipmentIcon(){
   const type=document.getElementById('mTipo')?.value||'pc';
-  const icon={pc:'💻',consola:'🎮',celular:'📱',otro:'🖱️'}[type]||'💻';
+  const current=document.getElementById('mIco')?.value||'';
+  const icon=type==='consola'&&current==='🕹️'?'🕹️':({pc:'💻',consola:'🎮',celular:'📱',otro:'🖱️'}[type]||'💻');
   const ico=document.getElementById('mIco');
   if(ico) ico.value=icon;
   const fields=document.getElementById('cellphoneFields');
@@ -2521,7 +2524,7 @@ function syncEquipmentIcon(){
 }
 function syncEquipmentType(){
   const icon=document.getElementById('mIco')?.value||'';
-  const type=icon==='📱'?'celular':icon==='🎮'?'consola':icon==='🖱️'?'otro':'pc';
+  const type=icon==='📱'?'celular':(icon==='🎮'||icon==='🕹️')?'consola':icon==='🖱️'?'otro':'pc';
   const select=document.getElementById('mTipo');
   if(select) select.value=type;
   syncEquipmentIcon();
@@ -2978,7 +2981,7 @@ function renderTurnos(){
   }).join('')+'</div>';
 }
 
-const CONSOLE_REPAIR_RE=/playstation|xbox|consola|\bps[345]\b/i;
+const CONSOLE_REPAIR_RE=/playstation|xbox|consola|joystick|joysticks|gamepad|control|\bps[345]\b/i;
 const CELLPHONE_RE=/celular|telefono|teléfono|iphone|ipad|samsung|motorola|xiaomi|redmi|huawei|oppo|realme|oneplus|alcatel|nokia/i;
 function repairSelectForClients(){return `select=id,numero,problema,presupuesto,presupuesto_original,descuento_porcentaje,descuento_origen,descuento_aplicado_en,estado,urgente,fecha_entrega,created_at,equipo_id,equipos(${equipmentFields()},clientes(id,codigo,nombre,apellido,telefono,descuento_resena,descuento_resena_usado,descuento_origen,descuento_disponible_desde))`;}
 async function loadConsoleRepairs(){

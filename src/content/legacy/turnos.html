@@ -202,6 +202,12 @@ textarea.f-in{resize:none;height:80px;}
 </style>
   <link rel="stylesheet" href="assets/pclaf-nav.css">
   <script src="assets/pclaf-nav.js" defer></script>
+<style>
+.service-group-joystick{border-top-color:#f0bd2d}
+.service-group-joystick .service-group-head h3 span{color:#f0bd2d}
+.service-group-joystick .srv-card.selected{border-color:#f0bd2d;background:rgba(240,189,45,.1)}
+.service-group-joystick .srv-price{color:#f0bd2d}
+</style>
 </head>
 <body>
 
@@ -369,6 +375,13 @@ textarea.f-in{resize:none;height:80px;}
       <div class="srv-card" data-slug="service-xbox-series-x" data-nombre="Service de Xbox Series X" data-precio="$90.000" data-urgencia="" onclick="selServicio(this)">
         <div class="srv-icon">🎮</div><div class="srv-name">Service de Xbox Series X</div><div class="srv-detail">Limpieza + pasta térmica + pads · Solo service preventivo</div><div class="srv-price">$90.000</div>
       </div>
+        </div>
+      </section>
+
+      <section class="service-group service-group-joystick" aria-labelledby="joystick-services-title">
+        <div class="service-group-head"><span class="service-group-kicker">04 / PERIFÉRICOS</span><h3 id="joystick-services-title">Reparación de <span>joysticks</span></h3><p>Limpiamos, revisamos el drift y cambiamos el stick si la limpieza no lo soluciona.</p></div>
+        <div class="service-group-cards">
+          <div class="srv-card" data-slug="joystick" data-nombre="Reparación de joystick" data-precio="$65.000" data-urgencia="" onclick="selServicio(this)"><div class="srv-icon">🕹️</div><div class="srv-name">Reparación de joystick</div><div class="srv-detail">Mano de obra $65.000 con limpieza para prevenir drift. Si no se soluciona, se evalúa el cambio del stick.<br><br><strong>Drift 1 stick:</strong> $40.000 · <strong>2 sticks:</strong> $80.000<br><strong>Limpieza sin drift:</strong> $25.000–30.000<br>Placa, pads, pistas, USB, batería, gatillos o botones: presupuesto.</div><div class="srv-price">$65.000</div></div>
         </div>
       </section>
 
