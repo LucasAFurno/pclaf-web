@@ -2891,11 +2891,13 @@ function scheduleRefreshVisibleReportActions(delay=600){
 
 function isConsoleRepair(repair){
   const e=repair?.equipos||{};
-  return e.tipo_equipo==='consola' || e.icono==='🎮' || CONSOLE_REPAIR_RE.test(`${repair?.problema||''} ${e.nombre||''} ${e.modelo||''}`);
+  const text=`${repair?.problema||''} ${e.nombre||''} ${e.modelo||''}`;
+  return e.tipo_equipo==='consola' || (!e.tipo_equipo && CONSOLE_REPAIR_RE.test(text));
 }
 function isCellphoneRepair(repair){
   const e=repair?.equipos||{};
-  return e.tipo_equipo==='celular' || e.icono==='📱' || CELLPHONE_RE.test(`${repair?.problema||''} ${e.nombre||''} ${e.modelo||''} ${e.marca||''}`);
+  const text=`${repair?.problema||''} ${e.nombre||''} ${e.modelo||''} ${e.marca||''}`;
+  return e.tipo_equipo==='celular' || (!e.tipo_equipo && CELLPHONE_RE.test(text) && !/(notebook|laptop|pc|computadora|windows|gpu|pasta|office|book)/i.test(text));
 }
 function renderCellphoneDetails(repair,equipe={}){
   if(!isCellphoneRepair(repair)) return '';
