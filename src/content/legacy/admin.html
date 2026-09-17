@@ -455,8 +455,8 @@ body{background:radial-gradient(900px 460px at 50% -220px,rgba(204,0,0,.16),tran
 .rc .rch.repair-card-summary{display:block;min-height:0;padding:17px;cursor:pointer;}.repair-card-summary .repair-card-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:13px;}.repair-card-summary .rcn{min-width:0;padding:0;border:0;background:none;color:#a9cbff;text-align:left;font:11px var(--mono);}.repair-card-summary .sb{margin:0!important;}.repair-card-summary .repair-summary-name{font-size:16px;font-weight:700;color:#fff;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}.repair-card-summary .repair-summary-equipment{font-size:12px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}.repair-card-summary .repair-summary-meta{display:flex;gap:7px;flex-wrap:wrap;margin:14px 0 15px;}.repair-card-summary .repair-summary-chip{font:10px var(--mono);color:var(--text2);border:1px solid var(--border2);border-radius:999px;padding:4px 8px;background:rgba(255,255,255,.025);}.repair-card-summary .repair-summary-chip.code{color:#9bc5ff;border-color:rgba(59,130,246,.35);}.repair-card-summary .repair-summary-chip.money{color:#fff;border-color:rgba(34,197,94,.28);}.repair-card-summary .repair-summary-chip.money.empty{color:var(--text3);border-color:var(--border);}.repair-card-summary .repair-card-foot{display:flex;justify-content:space-between;align-items:center;gap:8px;padding-top:12px;border-top:1px solid rgba(255,255,255,.06);font-size:11px;color:var(--text3);}.repair-card-summary .repair-card-foot strong{color:#a9cbff;font:10px var(--mono);font-weight:500;}.repair-card-summary .rcch{display:flex;align-items:center;justify-content:center;width:23px;height:23px;border:1px solid var(--border);border-radius:7px;}.rc.open .rch.repair-card-summary{border-bottom:1px solid rgba(255,255,255,.07);background:linear-gradient(90deg,rgba(255,255,255,.025),transparent 58%);}.rc.open .repair-card-summary .rcch{border-color:rgba(204,0,0,.38);color:#ffaaaa;}
 /* Desktop: las reparaciones cerradas se leen en dos columnas, como Proyectos Web. */
 @media(min-width:851px){
-  #view-rep .rlist,#view-consolas .rlist{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:start;}
-  #view-rep .rlist>.rc.open,#view-rep .rlist>div:not(.rc),#view-consolas .rlist>.rc.open,#view-consolas .rlist>div:not(.rc){grid-column:1/-1;}
+  #view-rep .rlist,#view-consolas .rlist,#view-celulares .rlist{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:start;}
+  #view-rep .rlist>.rc.open,#view-rep .rlist>div:not(.rc),#view-consolas .rlist>.rc.open,#view-consolas .rlist>div:not(.rc),#view-celulares .rlist>.rc.open,#view-celulares .rlist>div:not(.rc){grid-column:1/-1;}
   .rc.open .bgrid{grid-template-columns:minmax(0,1.12fr) minmax(330px,.88fr);gap:12px;}
   .rc.open .btop{grid-column:1/-1;}.rc.open .bmid{display:contents;}
   .rc.open .bsec-flow{grid-column:1;}.rc.open .bsec-perks{grid-column:2;align-self:stretch;display:flex;flex-direction:column;}
@@ -484,9 +484,10 @@ select.web-status,select.f-sel,select.sse{color-scheme:dark;}select.web-status o
 /* Orden y color de las áreas principales */
 .tab-rep{color:#ff9d9d}.tab-rep.active{color:#ff9d9d;background:rgba(204,0,0,.14);border-color:rgba(204,0,0,.5)}
 .tab-console{color:#7af0a8}.tab-console.active{color:#7af0a8;background:rgba(34,197,94,.13);border-color:rgba(34,197,94,.45)}
+.tab-cell{color:#ffb7e1}.tab-cell.active{color:#ffb7e1;background:rgba(236,72,153,.13);border-color:rgba(236,72,153,.45)}
 .tab-web{color:#9bc5ff}.tab-web.active{color:#9bc5ff;background:rgba(59,130,246,.14);border-color:rgba(59,130,246,.45)}
 .tab-turnos{color:#ffd18b}.tab-turnos.active{color:#ffd18b;background:rgba(245,158,11,.13);border-color:rgba(245,158,11,.45)}
-@media(max-width:650px){.tab-rep.active{color:#ff6868;border-top-color:#ff6868;background:rgba(204,0,0,.1)}.tab-console.active{color:#53d88e;border-top-color:#53d88e;background:rgba(34,197,94,.08)}.tab-web.active{color:#6ea6ff;border-top-color:#6ea6ff;background:rgba(59,130,246,.08)}.tab-turnos.active{color:#fbbf24;border-top-color:#fbbf24;background:rgba(245,158,11,.08)}}
+@media(max-width:650px){.tab-rep.active{color:#ff6868;border-top-color:#ff6868;background:rgba(204,0,0,.1)}.tab-console.active{color:#53d88e;border-top-color:#53d88e;background:rgba(34,197,94,.08)}.tab-cell.active{color:#f472b6;border-top-color:#f472b6;background:rgba(236,72,153,.08)}.tab-web.active{color:#6ea6ff;border-top-color:#6ea6ff;background:rgba(59,130,246,.08)}.tab-turnos.active{color:#fbbf24;border-top-color:#fbbf24;background:rgba(245,158,11,.08)}}
 </style>
 </head>
 <body>
@@ -536,6 +537,7 @@ select.web-status,select.f-sel,select.sse{color-scheme:dark;}select.web-status o
     <div class="tabs">
       <div class="tab tab-rep active" onclick="switchTab('rep',this)">Reparaciones</div>
       <div class="tab tab-console" onclick="switchTab('consolas',this)">Consolas</div>
+      <div class="tab tab-cell" onclick="switchTab('celulares',this)">Celulares</div>
       <div class="tab tab-web" onclick="switchTab('web',this)">Web</div>
       <div class="tab tab-turnos" onclick="switchTab('turnos',this)">Turnos</div>
       <div class="tab" onclick="switchTab('agenda',this)">Agenda</div>
@@ -627,6 +629,12 @@ select.web-status,select.f-sel,select.sse{color-scheme:dark;}select.web-status o
       <div class="frow"><div style="font-size:20px;font-weight:700;color:#fff;">Reparaciones de consolas</div><span style="font-size:12px;color:var(--text3);">Misma gestión que Reparaciones · trabajos reales de PlayStation y Xbox</span></div>
       <div class="frow"><button class="fbtn active" onclick="setConsoleRepairFilter('todos',this)">Todos</button><button class="fbtn" onclick="setConsoleRepairFilter('espera',this)">Espera</button><button class="fbtn" onclick="setConsoleRepairFilter('proceso',this)">Proceso</button><button class="fbtn" onclick="setConsoleRepairFilter('listo',this)">Listos</button><button class="fbtn" onclick="setConsoleRepairFilter('entregado',this)">Entregados</button><input class="srch" id="consoleRepairSearch" placeholder="Buscar cliente, equipo, #número..." oninput="renderConsoleRepairs()"/></div>
       <div id="consolasList" class="rlist"><div class="empty"><div class="spinner"></div>Cargando...</div></div>
+    </div>
+
+    <div class="view" id="view-celulares">
+      <div class="frow"><div style="font-size:20px;font-weight:700;color:#fff;">Reparaciones de celulares</div><span style="font-size:12px;color:var(--text3);">Misma gestión que Reparaciones · equipos, IMEI y accesorios</span></div>
+      <div class="frow"><button class="fbtn active" onclick="setCellphoneRepairFilter('todos',this)">Todos</button><button class="fbtn" onclick="setCellphoneRepairFilter('espera',this)">Espera</button><button class="fbtn" onclick="setCellphoneRepairFilter('proceso',this)">Proceso</button><button class="fbtn" onclick="setCellphoneRepairFilter('listo',this)">Listos</button><button class="fbtn" onclick="setCellphoneRepairFilter('entregado',this)">Entregados</button><input class="srch" id="cellphoneRepairSearch" placeholder="Buscar cliente, equipo, IMEI, #número..." oninput="renderCellphoneRepairs()"/><button class="abtn" onclick="openModal('celular')">＋ Nuevo celular</button></div>
+      <div id="celularesList" class="rlist"><div class="empty"><div class="spinner"></div>Cargando...</div></div>
     </div>
 
     <!-- ── AGENDA ── -->
@@ -767,7 +775,9 @@ select.web-status,select.f-sel,select.sse{color-scheme:dark;}select.web-status o
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><div><label class="f-lbl">Nombre</label><input class="f-in" id="mNom" placeholder="Ej: Lucas" oninput="previsualizarCodigoCliente()"/></div><div><label class="f-lbl">Apellido</label><input class="f-in" id="mApe" placeholder="Ej: Méndez" oninput="previsualizarCodigoCliente()"/></div></div>
       <div><label class="f-lbl">Teléfono</label><input class="f-in" id="mTel" placeholder="Ej: 11 5823-9201"/></div>
       <div><label class="f-lbl">Equipo</label><input class="f-in" id="mEq" placeholder="Ej: Notebook HP"/></div>
+      <div><label class="f-lbl">Tipo de equipo</label><select class="f-sel" id="mTipo" onchange="syncEquipmentIcon()"><option value="pc">PC / Notebook</option><option value="consola">Consola</option><option value="celular">Celular / Tablet</option><option value="otro">Otro</option></select></div>
       <div><label class="f-lbl">Modelo</label><input class="f-in" id="mMod" placeholder="Ej: Pavilion 15-eh1"/></div>
+      <div id="cellphoneFields" class="full" style="display:none;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px"><div><label class="f-lbl">Marca</label><input class="f-in" id="mMarca" placeholder="Ej: Samsung"/></div><div><label class="f-lbl">IMEI / serie</label><input class="f-in" id="mImei" placeholder="IMEI o número de serie"/></div><div><label class="f-lbl">Accesorios recibidos</label><input class="f-in" id="mAccesorios" placeholder="Cargador, funda, SIM..."/></div><div><label class="f-lbl">Estado físico</label><input class="f-in" id="mEstadoFisico" placeholder="Pantalla rota, marcas..."/></div><div class="full"><label class="f-lbl">Clave / patrón <span style="color:var(--text3)">(solo interno)</span></label><input class="f-in" id="mClave" placeholder="Opcional" autocomplete="off"/></div></div>
       <div>
         <label class="f-lbl">Número de reparación</label>
         <div class="num-badge">
@@ -781,7 +791,7 @@ select.web-status,select.f-sel,select.sse{color-scheme:dark;}select.web-status o
       <input type="hidden" id="mUrgente" value=""/>
       <div>
         <label class="f-lbl">Ícono del equipo</label>
-        <select class="f-sel" id="mIco" style="margin-bottom:0">
+        <select class="f-sel" id="mIco" style="margin-bottom:0" onchange="syncEquipmentType()">
           <option value="💻">💻 Notebook</option>
           <option value="🖥️">🖥️ PC escritorio</option>
           <option value="🎮🖥️">🎮🖥️ PC Gamer</option>
@@ -811,6 +821,12 @@ select.web-status,select.f-sel,select.sse{color-scheme:dark;}select.web-status o
       <div><label class="f-lbl">Teléfono</label><input class="f-in" id="eTel" placeholder="Teléfono"/></div>
       <div><label class="f-lbl">Equipo</label><input class="f-in" id="eEq" placeholder="Ej: Notebook HP"/></div>
       <div><label class="f-lbl">Modelo</label><input class="f-in" id="eMod" placeholder="Ej: Pavilion 15-eh1"/></div>
+      <div><label class="f-lbl">Tipo</label><select class="f-sel" id="eTipo"><option value="pc">PC / Notebook</option><option value="consola">Consola</option><option value="celular">Celular / Tablet</option><option value="otro">Otro</option></select></div>
+      <div><label class="f-lbl">Marca</label><input class="f-in" id="eMarca" placeholder="Marca"/></div>
+      <div><label class="f-lbl">IMEI / serie</label><input class="f-in" id="eImei" placeholder="IMEI o número de serie"/></div>
+      <div><label class="f-lbl">Accesorios</label><input class="f-in" id="eAccesorios" placeholder="Accesorios recibidos"/></div>
+      <div><label class="f-lbl">Estado físico</label><input class="f-in" id="eEstadoFisico" placeholder="Estado del equipo"/></div>
+      <div><label class="f-lbl">Clave / patrón</label><input class="f-in" id="eClave" placeholder="Opcional" autocomplete="off"/></div>
       <div><label class="f-lbl">Problema</label><input class="f-in" id="eProb" placeholder="Problema reportado"/></div>
       <div><label class="f-lbl">Presupuesto</label><input class="f-in" id="ePres" placeholder="$0.000" inputmode="numeric" oninput="formatArsInput(this)" style="font-family:var(--mono)"/></div>
       <div><label class="f-lbl">Fecha estimada de entrega</label><input class="f-in" id="eFest" placeholder="Ej: 25 mar"/></div>
@@ -1121,6 +1137,7 @@ function switchTab(name,btn){
   if(name==='met') renderMetrics();
   if(name==='turnos') loadTurnos();
   if(name==='consolas') loadConsoleRepairs();
+  if(name==='celulares') loadCellphoneRepairs();
   if(name==='agenda') renderAgenda();
   if(name==='tools') renderTools();
   if(name==='web') loadWebProjects();
@@ -1231,7 +1248,7 @@ async function loadPage(){
     }
   }
 
-  const select=`select=id,numero,problema,presupuesto,presupuesto_original,descuento_porcentaje,descuento_origen,descuento_aplicado_en,estado,urgente,fecha_entrega,created_at,equipo_id,equipos(id,nombre,icono,modelo,cliente_id,clientes(id,codigo,nombre,apellido,telefono,descuento_resena,descuento_resena_usado,descuento_origen,descuento_disponible_desde))`;
+  const select=`select=id,numero,problema,presupuesto,presupuesto_original,descuento_porcentaje,descuento_origen,descuento_aplicado_en,estado,urgente,fecha_entrega,created_at,equipo_id,equipos(id,nombre,icono,modelo,tipo_equipo,marca,imei,accesorios,estado_fisico,clave_dispositivo,cliente_id,clientes(id,codigo,nombre,apellido,telefono,descuento_resena,descuento_resena_usado,descuento_origen,descuento_disponible_desde))`;
 
   try{
     document.getElementById('rlist').innerHTML='<div class="empty"><div class="spinner"></div>Cargando...</div>';
@@ -1241,7 +1258,7 @@ async function loadPage(){
     const countHeader=res.headers.get('content-range');
     if(countHeader) totalCount=parseInt(countHeader.split('/')[1])||0;
     const rawData=await res.json();
-    const filteredData=(Array.isArray(rawData)?rawData:[]).filter(repair=>!isConsoleRepair(repair));
+    const filteredData=(Array.isArray(rawData)?rawData:[]).filter(repair=>!isConsoleRepair(repair)&&!isCellphoneRepair(repair));
     totalCount=filteredData.length;
     const data=filteredData.slice(currentPage*PAGE_SIZE,(currentPage+1)*PAGE_SIZE);
 
@@ -1260,7 +1277,7 @@ async function loadPage(){
 
 async function loadAllData(force=false){
   if(allDataPromise && !force) return allDataPromise;
-  const select='select=id,numero,problema,presupuesto,estado,urgente,fecha_entrega,created_at,equipo_id,equipos(id,nombre,icono,modelo,cliente_id,clientes(id,codigo,nombre,apellido,telefono))&order=numero.desc';
+  const select='select=id,numero,problema,presupuesto,estado,urgente,fecha_entrega,created_at,equipo_id,equipos(id,nombre,icono,modelo,tipo_equipo,marca,imei,accesorios,estado_fisico,clave_dispositivo,cliente_id,clientes(id,codigo,nombre,apellido,telefono))&order=numero.desc';
   const pasosSelect='select=reparacion_id,created_at,orden,fecha';
   const batchSize=1000;
   allDataPromise=(async()=>{
@@ -1842,6 +1859,7 @@ function renderCards(data,targetId='rlist'){
               <div class="main-data">
                 <div class="details-grid">
                 <div id="equipoSpecs-${r.id}" class="equipo-specs">${renderEquipmentSnapshot(r.id)}</div>
+                ${renderCellphoneDetails(r,e)}
                 <div class="cir"><span class="cil">Nombre</span><span class="civ">${c.nombre||'-'}${c.apellido?' '+c.apellido:''}</span></div>
                 <div class="cir"><span class="cil">Telefono</span><span class="civ">${c.telefono||'-'}</span></div>
                 <div class="cir"><span class="cil">Codigo</span><span class="civ">${c.codigo||'-'}</span></div>
@@ -2373,10 +2391,12 @@ function abrirWA(telefono, msgEncoded){
 }
 
 // MODAL — número automático
-async function openModal(){
+async function openModal(type='pc'){
   document.getElementById('modal').classList.add('open');
   setClientMode('existing');
   document.getElementById('mNum').value='Calculando...';
+  document.getElementById('mTipo').value=type;
+  syncEquipmentIcon();
   try{
     const reps=await db('GET','reparaciones','?select=numero&order=created_at.desc');
     let max=0;
@@ -2472,6 +2492,22 @@ async function openModalFromTurno(nom, ape, tel, servicio, nota, urgente){
   switchTab('rep',document.querySelector('.tab[onclick*="rep"]'));
 }
 function closeModal(){document.getElementById('modal').classList.remove('open');}
+
+function syncEquipmentIcon(){
+  const type=document.getElementById('mTipo')?.value||'pc';
+  const icon={pc:'💻',consola:'🎮',celular:'📱',otro:'🖱️'}[type]||'💻';
+  const ico=document.getElementById('mIco');
+  if(ico) ico.value=icon;
+  const fields=document.getElementById('cellphoneFields');
+  if(fields) fields.style.display=type==='celular'?'grid':'none';
+}
+function syncEquipmentType(){
+  const icon=document.getElementById('mIco')?.value||'';
+  const type=icon==='📱'?'celular':icon==='🎮'?'consola':icon==='🖱️'?'otro':'pc';
+  const select=document.getElementById('mTipo');
+  if(select) select.value=type;
+  syncEquipmentIcon();
+}
 
 let clientSearchTimer;
 let clientMode='existing';
@@ -2589,6 +2625,12 @@ async function crearRep(){
   const budget=document.getElementById('mPres');formatArsInput(budget);
   const pres=budget.value.trim();
   const ico=document.getElementById('mIco').value;
+  const tipo=document.getElementById('mTipo').value;
+  const marca=document.getElementById('mMarca').value.trim();
+  const imei=document.getElementById('mImei').value.trim();
+  const accesorios=document.getElementById('mAccesorios').value.trim();
+  const estadoFisico=document.getElementById('mEstadoFisico').value.trim();
+  const clave=document.getElementById('mClave').value.trim();
   const urgente=document.getElementById('mUrgente').value==='1';
   if((clientMode!=='new'&&!cod)||!nom||!eq||!num||!prob){toast('Completá los campos obligatorios',true);return;}
   try{
@@ -2603,7 +2645,7 @@ async function crearRep(){
     else if(clArr?.length){cid=clArr[0].id;}
     else if(existingByData){cid=existingByData.id;toast(`Se usó el cliente existente ${existingByData.codigo||''}`);}
     else{const nv=await db('POST','clientes','',{codigo:cod||null,nombre:nom,apellido:ape,telefono:tel});cid=nv[0].id;document.getElementById('mCod').value=nv[0].codigo||'';}
-    const er=await db('POST','equipos','',{cliente_id:cid,nombre:eq,modelo:mod,icono:ico});
+    const er=await db('POST','equipos','',{cliente_id:cid,nombre:eq,modelo:mod,icono:ico,tipo_equipo:tipo,marca:marca||null,imei:imei||null,accesorios:accesorios||null,estado_fisico:estadoFisico||null,clave_dispositivo:clave||null});
     const aplicarDescuentoAhora=document.getElementById('mApplyDiscount').checked;
     const rr=await db('POST','reparaciones','',{equipo_id:er[0].id,numero:num,problema:prob,presupuesto:pres,estado:'espera',urgente,descuento_aplicado_manual:aplicarDescuentoAhora});
     const repair=rr?.[0]||{};
@@ -2615,7 +2657,7 @@ async function crearRep(){
     const hoy=new Date().toLocaleDateString('es-AR',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
     await db('POST','pasos','',{reparacion_id:repair.id,orden:1,titulo:'Equipo ingresado',nota:`Comprobante #${num}. ${prob}`,estado:'done',fecha:hoy,icono:'check'});
     closeModal();
-    ['mCod','mNom','mApe','mTel','mEq','mMod','mProb','mPres','mUrgente'].forEach(id=>document.getElementById(id).value='');
+    ['mCod','mNom','mApe','mTel','mEq','mMod','mProb','mPres','mUrgente','mMarca','mImei','mAccesorios','mEstadoFisico','mClave'].forEach(id=>document.getElementById(id).value='');
     delete document.getElementById('mCod').dataset.clientId;hideClientResults();
     updateDiscountOverride(null);
     await loadPage();
@@ -2821,10 +2863,21 @@ function scheduleRefreshVisibleReportActions(delay=600){
 }
 
 function isConsoleRepair(repair){
-  return CONSOLE_REPAIR_RE.test(`${repair?.problema||''} ${repair?.equipos?.nombre||''} ${repair?.equipos?.modelo||''}`);
+  const e=repair?.equipos||{};
+  return e.tipo_equipo==='consola' || CONSOLE_REPAIR_RE.test(`${repair?.problema||''} ${e.nombre||''} ${e.modelo||''}`);
+}
+function isCellphoneRepair(repair){
+  const e=repair?.equipos||{};
+  return e.tipo_equipo==='celular' || CELLPHONE_RE.test(`${repair?.problema||''} ${e.nombre||''} ${e.modelo||''} ${e.marca||''}`);
+}
+function renderCellphoneDetails(repair,equipe={}){
+  if(!isCellphoneRepair(repair)) return '';
+  const fields=[['Marca',equipe.marca],['IMEI / serie',equipe.imei],['Accesorios',equipe.accesorios],['Estado físico',equipe.estado_fisico],['Clave / patrón',equipe.clave_dispositivo]];
+  return `<div class="cir cellphone-detail" style="border-left:2px solid #ec4899;padding-left:10px!important"><span class="cil" style="color:#f9a8d4">Datos del celular</span><span class="civ" style="display:flex;gap:10px;flex-wrap:wrap">${fields.filter(([,value])=>value).map(([label,value])=>`<span><b style="color:var(--text3);font:9px var(--mono)">${escapeHtml(label)}:</b> ${escapeHtml(value)}</span>`).join('')}</span></div>`;
 }
 let allTurnos=[], turnoFilter='todos';
 let consoleRepairs=[], consoleRepairFilter='todos';
+let cellphoneRepairs=[], cellphoneRepairFilter='todos';
 
 async function loadTurnos(){
   document.getElementById('turnosList').innerHTML='<div class="empty"><div class="spinner"></div>Cargando...</div>';
@@ -2889,7 +2942,8 @@ function renderTurnos(){
 }
 
 const CONSOLE_REPAIR_RE=/playstation|xbox|consola|\bps[345]\b/i;
-const CONSOLE_REPAIR_SELECT='select=id,numero,problema,presupuesto,presupuesto_original,descuento_porcentaje,descuento_origen,descuento_aplicado_en,estado,urgente,fecha_entrega,created_at,equipo_id,equipos(id,nombre,icono,modelo,cliente_id,clientes(id,codigo,nombre,apellido,telefono,descuento_resena,descuento_resena_usado,descuento_origen,descuento_disponible_desde))';
+const CELLPHONE_RE=/celular|telefono|teléfono|iphone|ipad|samsung|motorola|xiaomi|redmi|huawei|oppo|realme|oneplus|alcatel|nokia/i;
+const CONSOLE_REPAIR_SELECT='select=id,numero,problema,presupuesto,presupuesto_original,descuento_porcentaje,descuento_origen,descuento_aplicado_en,estado,urgente,fecha_entrega,created_at,equipo_id,equipos(id,nombre,icono,modelo,tipo_equipo,marca,imei,accesorios,estado_fisico,clave_dispositivo,cliente_id,clientes(id,codigo,nombre,apellido,telefono,descuento_resena,descuento_resena_usado,descuento_origen,descuento_disponible_desde))';
 async function loadConsoleRepairs(){
   const target=document.getElementById('consolasList');
   if(!target)return;
@@ -2916,6 +2970,33 @@ function renderConsoleRepairs(){
   if(!list.length){target.innerHTML='<div class="empty">Sin reparaciones de consolas</div>';return;}
   pageRepairMap=Object.fromEntries(list.map(r=>[r.id,r]));
   renderCards(list,'consolasList');
+}
+async function loadCellphoneRepairs(){
+  const target=document.getElementById('celularesList');
+  if(!target)return;
+  target.innerHTML='<div class="empty"><div class="spinner"></div>Cargando reparaciones...</div>';
+  try{
+    const res=await fetch(`${SUPA}/rest/v1/reparaciones?${CONSOLE_REPAIR_SELECT}&order=numero.desc&limit=500`,{headers:H});
+    if(!res.ok)throw new Error(await res.text());
+    cellphoneRepairs=(await res.json()||[]).filter(isCellphoneRepair);
+    renderCellphoneRepairs();
+  }catch(e){target.innerHTML='<div class="empty">Error cargando reparaciones de celulares</div>';console.error('loadCellphoneRepairs error',e);}
+}
+function setCellphoneRepairFilter(filter,button){
+  cellphoneRepairFilter=filter;
+  document.querySelectorAll('#view-celulares .fbtn').forEach(b=>b.classList.remove('active'));
+  button.classList.add('active');
+  renderCellphoneRepairs();
+}
+function renderCellphoneRepairs(){
+  const target=document.getElementById('celularesList');
+  if(!target)return;
+  const q=(document.getElementById('cellphoneRepairSearch')?.value||'').toLowerCase().trim();
+  let list=cellphoneRepairFilter==='todos'?cellphoneRepairs:cellphoneRepairs.filter(r=>r.estado===cellphoneRepairFilter);
+  if(q)list=list.filter(r=>`${r.numero} ${r.problema||''} ${r.equipos?.nombre||''} ${r.equipos?.modelo||''} ${r.equipos?.marca||''} ${r.equipos?.imei||''} ${r.equipos?.clientes?.nombre||''} ${r.equipos?.clientes?.apellido||''}`.toLowerCase().includes(q));
+  if(!list.length){target.innerHTML='<div class="empty">Sin reparaciones de celulares</div>';return;}
+  pageRepairMap=Object.fromEntries(list.map(r=>[r.id,r]));
+  renderCards(list,'celularesList');
 }
 
 async function cambiarEstadoTurno(id,estado){
@@ -3163,6 +3244,12 @@ function editarRep(id){
   document.getElementById('eTel').value=c.telefono||'';
   document.getElementById('eEq').value=e.nombre||'';
   document.getElementById('eMod').value=e.modelo||'';
+  document.getElementById('eTipo').value=e.tipo_equipo||'otro';
+  document.getElementById('eMarca').value=e.marca||'';
+  document.getElementById('eImei').value=e.imei||'';
+  document.getElementById('eAccesorios').value=e.accesorios||'';
+  document.getElementById('eEstadoFisico').value=e.estado_fisico||'';
+  document.getElementById('eClave').value=e.clave_dispositivo||'';
   document.getElementById('eProb').value=r.problema||'';
   document.getElementById('ePres').value=getBudgetBase(r);
   document.getElementById('eFest').value=r.fecha_entrega||'';
@@ -3176,7 +3263,7 @@ async function guardarEdicion(){
   const cid=document.getElementById('eClId').value;
   try{
     await db('PATCH','clientes',`?id=eq.${cid}`,{nombre:document.getElementById('eNom').value.trim(),apellido:document.getElementById('eApe').value.trim(),telefono:normalizePhoneInput(document.getElementById('eTel').value)});
-    await db('PATCH','equipos',`?id=eq.${eid}`,{nombre:document.getElementById('eEq').value.trim(),modelo:document.getElementById('eMod').value.trim()});
+    await db('PATCH','equipos',`?id=eq.${eid}`,{nombre:document.getElementById('eEq').value.trim(),modelo:document.getElementById('eMod').value.trim(),tipo_equipo:document.getElementById('eTipo').value,marca:document.getElementById('eMarca').value.trim()||null,imei:document.getElementById('eImei').value.trim()||null,accesorios:document.getElementById('eAccesorios').value.trim()||null,estado_fisico:document.getElementById('eEstadoFisico').value.trim()||null,clave_dispositivo:document.getElementById('eClave').value.trim()||null});
     const budget=document.getElementById('ePres');formatArsInput(budget);
     await db('PATCH','reparaciones',`?id=eq.${rid}`,{problema:document.getElementById('eProb').value.trim(),presupuesto:budget.value.trim(),fecha_entrega:document.getElementById('eFest').value.trim()});
     closeEdit();
