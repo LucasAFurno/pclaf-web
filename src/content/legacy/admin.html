@@ -488,6 +488,19 @@ select.web-status,select.f-sel,select.sse{color-scheme:dark;}select.web-status o
 .tab-web{color:#9bc5ff}.tab-web.active{color:#9bc5ff;background:rgba(59,130,246,.14);border-color:rgba(59,130,246,.45)}
 .tab-turnos{color:#ffd18b}.tab-turnos.active{color:#ffd18b;background:rgba(245,158,11,.13);border-color:rgba(245,158,11,.45)}
 @media(max-width:650px){.tab-rep.active{color:#ff6868;border-top-color:#ff6868;background:rgba(204,0,0,.1)}.tab-console.active{color:#53d88e;border-top-color:#53d88e;background:rgba(34,197,94,.08)}.tab-cell.active{color:#f472b6;border-top-color:#f472b6;background:rgba(236,72,153,.08)}.tab-web.active{color:#6ea6ff;border-top-color:#6ea6ff;background:rgba(59,130,246,.08)}.tab-turnos.active{color:#fbbf24;border-top-color:#fbbf24;background:rgba(245,158,11,.08)}}
+/* Barra compacta: conserva el estado y las acciones, pero libera espacio para el menú. */
+.topbar{height:48px;padding:0 12px;gap:6px;}
+.topbar>svg{width:28px;height:28px;}
+.logo-wm{font-size:15px;}
+.abadge{font-size:8px;padding:3px 6px;}
+.deploy-meta{gap:4px;}
+.deploy-chip{font-size:9px;padding:2px 5px;border-radius:3px;}
+.tabs{gap:0;margin-left:5px;}
+.tab{font-size:11px;padding:5px 8px;border-radius:5px;}
+.tr{gap:4px;}
+.ibtn{font-size:10px;padding:5px 7px;border-radius:5px;}
+@media(max-width:1100px){.logo-wm{display:none;}.deploy-meta{display:none;}.tabs{margin-left:2px;}.tab{padding-left:7px;padding-right:7px;}}
+@media(max-width:650px){.topbar{height:auto;padding:6px 9px;gap:5px;}.topbar>svg{width:27px;height:27px;}.tab[onclick*="consolas"]::before{content:"🎮";}.tab[onclick*="celulares"]::before{content:"📱";}.tab[onclick*="web"]::before{content:"🌐";}}
 </style>
 </head>
 <body>
