@@ -1261,13 +1261,14 @@ async function loadPage(){
     }
   }
 
-  const select=`select=id,numero,problema,presupuesto,presupuesto_original,descuento_porcentaje,descuento_origen,descuento_aplicado_en,estado,urgente,fecha_entrega,created_at,equipo_id,equipos(id,nombre,icono,modelo,tipo_equipo,marca,imei,accesorios,estado_fisico,clave_dispositivo,cliente_id,clientes(id,codigo,nombre,apellido,telefono,descuento_resena,descuento_resena_usado,descuento_origen,descuento_disponible_desde))`;
+  const select=`select=id,numero,problema,presupuesto,presupuesto_original,descuento_porcentaje,descuento_origen,descuento_aplicado_en,estado,urgente,fecha_entrega,created_at,equipo_id,equipos(${equipmentFields()},clientes(id,codigo,nombre,apellido,telefono,descuento_resena,descuento_resena_usado,descuento_origen,descuento_disponible_desde))`;
 
   try{
     document.getElementById('rlist').innerHTML='<div class="empty"><div class="spinner"></div>Cargando...</div>';
     const res=await fetch(`${SUPA}/rest/v1/reparaciones?${select}&${filter}`,{
       headers:{...H,'Prefer':'count=exact'}
     });
+    if(!res.ok) throw new Error(await res.text());
     const countHeader=res.headers.get('content-range');
     if(countHeader) totalCount=parseInt(countHeader.split('/')[1])||0;
     const rawData=await res.json();
@@ -1283,6 +1284,10 @@ async function loadPage(){
     rememberRepairs(data);
     renderCards(data);
   }catch(e){
+    if(cellphoneSchemaAvailable&&cellphoneSchemaError(e)){
+      cellphoneSchemaAvailable=false;
+      return loadPage();
+    }
     document.getElementById('rlist').innerHTML='<div class="empty">Error cargando datos</div>';
     console.error('loadPage error',e);
   }
@@ -1290,7 +1295,7 @@ async function loadPage(){
 
 async function loadAllData(force=false){
   if(allDataPromise && !force) return allDataPromise;
-  const select='select=id,numero,problema,presupuesto,estado,urgente,fecha_entrega,created_at,equipo_id,equipos(id,nombre,icono,modelo,tipo_equipo,marca,imei,accesorios,estado_fisico,clave_dispositivo,cliente_id,clientes(id,codigo,nombre,apellido,telefono))&order=numero.desc';
+  const select=`select=id,numero,problema,presupuesto,estado,urgente,fecha_entrega,created_at,equipo_id,equipos(${equipmentFields()},clientes(id,codigo,nombre,apellido,telefono))&order=numero.desc`;
   const pasosSelect='select=reparacion_id,created_at,orden,fecha';
   const batchSize=1000;
   allDataPromise=(async()=>{
@@ -2658,7 +2663,16 @@ async function crearRep(){
     else if(clArr?.length){cid=clArr[0].id;}
     else if(existingByData){cid=existingByData.id;toast(`Se usó el cliente existente ${existingByData.codigo||''}`);}
     else{const nv=await db('POST','clientes','',{codigo:cod||null,nombre:nom,apellido:ape,telefono:tel});cid=nv[0].id;document.getElementById('mCod').value=nv[0].codigo||'';}
-    const er=await db('POST','equipos','',{cliente_id:cid,nombre:eq,modelo:mod,icono:ico,tipo_equipo:tipo,marca:marca||null,imei:imei||null,accesorios:accesorios||null,estado_fisico:estadoFisico||null,clave_dispositivo:clave||null});
+    const equipmentPayload={cliente_id:cid,nombre:eq,modelo:mod,icono:ico};
+    if(cellphoneSchemaAvailable) Object.assign(equipmentPayload,{tipo_equipo:tipo,marca:marca||null,imei:imei||null,accesorios:accesorios||null,estado_fisico:estadoFisico||null,clave_dispositivo:clave||null});
+    let er;
+    try{er=await db('POST','equipos','',equipmentPayload);}
+    catch(error){
+      if(!cellphoneSchemaAvailable||!cellphoneSchemaError(error)) throw error;
+      cellphoneSchemaAvailable=false;
+      er=await db('POST','equipos','',{cliente_id:cid,nombre:eq,modelo:mod,icono:ico});
+      toast('Celular creado. Aplicá la migración para guardar IMEI y datos adicionales.');
+    }
     const aplicarDescuentoAhora=document.getElementById('mApplyDiscount').checked;
     const rr=await db('POST','reparaciones','',{equipo_id:er[0].id,numero:num,problema:prob,presupuesto:pres,estado:'espera',urgente,descuento_aplicado_manual:aplicarDescuentoAhora});
     const repair=rr?.[0]||{};
@@ -2877,11 +2891,11 @@ function scheduleRefreshVisibleReportActions(delay=600){
 
 function isConsoleRepair(repair){
   const e=repair?.equipos||{};
-  return e.tipo_equipo==='consola' || CONSOLE_REPAIR_RE.test(`${repair?.problema||''} ${e.nombre||''} ${e.modelo||''}`);
+  return e.tipo_equipo==='consola' || e.icono==='🎮' || CONSOLE_REPAIR_RE.test(`${repair?.problema||''} ${e.nombre||''} ${e.modelo||''}`);
 }
 function isCellphoneRepair(repair){
   const e=repair?.equipos||{};
-  return e.tipo_equipo==='celular' || CELLPHONE_RE.test(`${repair?.problema||''} ${e.nombre||''} ${e.modelo||''} ${e.marca||''}`);
+  return e.tipo_equipo==='celular' || e.icono==='📱' || CELLPHONE_RE.test(`${repair?.problema||''} ${e.nombre||''} ${e.modelo||''} ${e.marca||''}`);
 }
 function renderCellphoneDetails(repair,equipe={}){
   if(!isCellphoneRepair(repair)) return '';
@@ -2891,6 +2905,14 @@ function renderCellphoneDetails(repair,equipe={}){
 let allTurnos=[], turnoFilter='todos';
 let consoleRepairs=[], consoleRepairFilter='todos';
 let cellphoneRepairs=[], cellphoneRepairFilter='todos';
+let cellphoneSchemaAvailable=true;
+const EXTENDED_EQUIPMENT_FIELDS='id,nombre,icono,modelo,tipo_equipo,marca,imei,accesorios,estado_fisico,clave_dispositivo,cliente_id';
+const LEGACY_EQUIPMENT_FIELDS='id,nombre,icono,modelo,cliente_id';
+function cellphoneSchemaError(error){
+  const text=String(error?.message||error||'');
+  return /PGRST204|could not find the .*column of 'equipos'|schema cache/i.test(text);
+}
+function equipmentFields(){return cellphoneSchemaAvailable?EXTENDED_EQUIPMENT_FIELDS:LEGACY_EQUIPMENT_FIELDS;}
 
 async function loadTurnos(){
   document.getElementById('turnosList').innerHTML='<div class="empty"><div class="spinner"></div>Cargando...</div>';
@@ -2956,17 +2978,20 @@ function renderTurnos(){
 
 const CONSOLE_REPAIR_RE=/playstation|xbox|consola|\bps[345]\b/i;
 const CELLPHONE_RE=/celular|telefono|teléfono|iphone|ipad|samsung|motorola|xiaomi|redmi|huawei|oppo|realme|oneplus|alcatel|nokia/i;
-const CONSOLE_REPAIR_SELECT='select=id,numero,problema,presupuesto,presupuesto_original,descuento_porcentaje,descuento_origen,descuento_aplicado_en,estado,urgente,fecha_entrega,created_at,equipo_id,equipos(id,nombre,icono,modelo,tipo_equipo,marca,imei,accesorios,estado_fisico,clave_dispositivo,cliente_id,clientes(id,codigo,nombre,apellido,telefono,descuento_resena,descuento_resena_usado,descuento_origen,descuento_disponible_desde))';
+function repairSelectForClients(){return `select=id,numero,problema,presupuesto,presupuesto_original,descuento_porcentaje,descuento_origen,descuento_aplicado_en,estado,urgente,fecha_entrega,created_at,equipo_id,equipos(${equipmentFields()},clientes(id,codigo,nombre,apellido,telefono,descuento_resena,descuento_resena_usado,descuento_origen,descuento_disponible_desde))`;}
 async function loadConsoleRepairs(){
   const target=document.getElementById('consolasList');
   if(!target)return;
   target.innerHTML='<div class="empty"><div class="spinner"></div>Cargando reparaciones...</div>';
   try{
-    const res=await fetch(`${SUPA}/rest/v1/reparaciones?${CONSOLE_REPAIR_SELECT}&order=numero.desc&limit=200`,{headers:H});
+    const res=await fetch(`${SUPA}/rest/v1/reparaciones?${repairSelectForClients()}&order=numero.desc&limit=200`,{headers:H});
     if(!res.ok)throw new Error(await res.text());
     consoleRepairs=(await res.json()||[]).filter(isConsoleRepair);
     renderConsoleRepairs();
-  }catch(e){target.innerHTML='<div class="empty">Error cargando reparaciones de consolas</div>';console.error('loadConsoleRepairs error',e);}
+  }catch(e){
+    if(cellphoneSchemaAvailable&&cellphoneSchemaError(e)){cellphoneSchemaAvailable=false;return loadConsoleRepairs();}
+    target.innerHTML='<div class="empty">Error cargando reparaciones de consolas</div>';console.error('loadConsoleRepairs error',e);
+  }
 }
 function setConsoleRepairFilter(filter,button){
   consoleRepairFilter=filter;
@@ -2989,11 +3014,14 @@ async function loadCellphoneRepairs(){
   if(!target)return;
   target.innerHTML='<div class="empty"><div class="spinner"></div>Cargando reparaciones...</div>';
   try{
-    const res=await fetch(`${SUPA}/rest/v1/reparaciones?${CONSOLE_REPAIR_SELECT}&order=numero.desc&limit=500`,{headers:H});
+    const res=await fetch(`${SUPA}/rest/v1/reparaciones?${repairSelectForClients()}&order=numero.desc&limit=500`,{headers:H});
     if(!res.ok)throw new Error(await res.text());
     cellphoneRepairs=(await res.json()||[]).filter(isCellphoneRepair);
     renderCellphoneRepairs();
-  }catch(e){target.innerHTML='<div class="empty">Error cargando reparaciones de celulares</div>';console.error('loadCellphoneRepairs error',e);}
+  }catch(e){
+    if(cellphoneSchemaAvailable&&cellphoneSchemaError(e)){cellphoneSchemaAvailable=false;return loadCellphoneRepairs();}
+    target.innerHTML='<div class="empty">Error cargando reparaciones de celulares</div>';console.error('loadCellphoneRepairs error',e);
+  }
 }
 function setCellphoneRepairFilter(filter,button){
   cellphoneRepairFilter=filter;
@@ -3276,7 +3304,15 @@ async function guardarEdicion(){
   const cid=document.getElementById('eClId').value;
   try{
     await db('PATCH','clientes',`?id=eq.${cid}`,{nombre:document.getElementById('eNom').value.trim(),apellido:document.getElementById('eApe').value.trim(),telefono:normalizePhoneInput(document.getElementById('eTel').value)});
-    await db('PATCH','equipos',`?id=eq.${eid}`,{nombre:document.getElementById('eEq').value.trim(),modelo:document.getElementById('eMod').value.trim(),tipo_equipo:document.getElementById('eTipo').value,marca:document.getElementById('eMarca').value.trim()||null,imei:document.getElementById('eImei').value.trim()||null,accesorios:document.getElementById('eAccesorios').value.trim()||null,estado_fisico:document.getElementById('eEstadoFisico').value.trim()||null,clave_dispositivo:document.getElementById('eClave').value.trim()||null});
+    const equipmentChanges={nombre:document.getElementById('eEq').value.trim(),modelo:document.getElementById('eMod').value.trim()};
+    if(cellphoneSchemaAvailable) Object.assign(equipmentChanges,{tipo_equipo:document.getElementById('eTipo').value,marca:document.getElementById('eMarca').value.trim()||null,imei:document.getElementById('eImei').value.trim()||null,accesorios:document.getElementById('eAccesorios').value.trim()||null,estado_fisico:document.getElementById('eEstadoFisico').value.trim()||null,clave_dispositivo:document.getElementById('eClave').value.trim()||null});
+    try{await db('PATCH','equipos',`?id=eq.${eid}`,equipmentChanges);}
+    catch(error){
+      if(!cellphoneSchemaAvailable||!cellphoneSchemaError(error)) throw error;
+      cellphoneSchemaAvailable=false;
+      await db('PATCH','equipos',`?id=eq.${eid}`,{nombre:equipmentChanges.nombre,modelo:equipmentChanges.modelo});
+      toast('Cambios básicos guardados. Aplicá la migración para editar datos de celular.');
+    }
     const budget=document.getElementById('ePres');formatArsInput(budget);
     await db('PATCH','reparaciones',`?id=eq.${rid}`,{problema:document.getElementById('eProb').value.trim(),presupuesto:budget.value.trim(),fecha_entrega:document.getElementById('eFest').value.trim()});
     closeEdit();
