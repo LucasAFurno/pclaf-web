@@ -53,11 +53,53 @@ const pageTitle = 'seviyummy — dibujos kawaii';
         {title:'Mermay', emoji:'🧜‍♀️', art:'e', tags:['anime','cute']},
         {title:'Bat buddy', emoji:'🦇', art:'f', tags:['halloween','anime']}
       ];
+      const demoArtwork = [
+        {title:'Starry Cat', image:'https://picsum.photos/seed/seviyummy-01/800/800', tags:['anime','cute','fantasy']},
+        {title:'Pumpkin Picnic', image:'https://picsum.photos/seed/seviyummy-02/800/800', tags:['halloween','cute','seasonal']},
+        {title:'Mew Moon', image:'https://picsum.photos/seed/seviyummy-03/800/800', tags:['pokemon','anime','night']},
+        {title:'Tiny Dragon', image:'https://picsum.photos/seed/seviyummy-04/800/800', tags:['fantasy','cute','original']},
+        {title:'Cherry Spirit', image:'https://picsum.photos/seed/seviyummy-05/800/800', tags:['anime','nature','original']},
+        {title:'Haunted Tea', image:'https://picsum.photos/seed/seviyummy-06/800/800', tags:['halloween','food','cute']},
+        {title:'Psyduck Daydream', image:'https://picsum.photos/seed/seviyummy-07/800/800', tags:['pokemon','cute','dreamy']},
+        {title:'Cloud Bunny', image:'https://picsum.photos/seed/seviyummy-08/800/800', tags:['cute','fantasy','nature']},
+        {title:'Moon Rabbit', image:'https://picsum.photos/seed/seviyummy-09/800/800', tags:['anime','night','cute']},
+        {title:'Witchy Potion', image:'https://picsum.photos/seed/seviyummy-10/800/800', tags:['halloween','fantasy','original']},
+        {title:'Eevee Garden', image:'https://picsum.photos/seed/seviyummy-11/800/800', tags:['pokemon','nature','cute']},
+        {title:'Pastel Planet', image:'https://picsum.photos/seed/seviyummy-12/800/800', tags:['anime','fantasy','pastel']},
+        {title:'Spooky Ramen', image:'https://picsum.photos/seed/seviyummy-13/800/800', tags:['halloween','food','anime']},
+        {title:'Koi Wishes', image:'https://picsum.photos/seed/seviyummy-14/800/800', tags:['anime','nature','dreamy']},
+        {title:'Mimikyu Mood', image:'https://picsum.photos/seed/seviyummy-15/800/800', tags:['pokemon','halloween','dark']},
+        {title:'Bunny Mail', image:'https://picsum.photos/seed/seviyummy-16/800/800', tags:['cute','original','pastel']},
+        {title:'Sunset Familiar', image:'https://picsum.photos/seed/seviyummy-17/800/800', tags:['fantasy','nature','original']},
+        {title:'Candy Ghost', image:'https://picsum.photos/seed/seviyummy-18/800/800', tags:['halloween','cute','pastel']},
+        {title:'Pikachu Picnic', image:'https://picsum.photos/seed/seviyummy-19/800/800', tags:['pokemon','cute','food']},
+        {title:'Magic Notebook', image:'https://picsum.photos/seed/seviyummy-20/800/800', tags:['anime','original','fantasy']},
+        {title:'Little Bat', image:'https://picsum.photos/seed/seviyummy-21/800/800', tags:['halloween','cute','night']},
+        {title:'Ocean Mermaid', image:'https://picsum.photos/seed/seviyummy-22/800/800', tags:['anime','fantasy','nature']},
+        {title:'Bulbasaur Bloom', image:'https://picsum.photos/seed/seviyummy-23/800/800', tags:['pokemon','nature','cute']},
+        {title:'Cozy Slime', image:'https://picsum.photos/seed/seviyummy-24/800/800', tags:['cute','fantasy','pastel']},
+        {title:'Autumn Fox', image:'https://picsum.photos/seed/seviyummy-25/800/800', tags:['seasonal','nature','cute']},
+        {title:'Midnight Cafe', image:'https://picsum.photos/seed/seviyummy-26/800/800', tags:['anime','food','night']},
+        {title:'Gengar Party', image:'https://picsum.photos/seed/seviyummy-27/800/800', tags:['pokemon','halloween','dark']},
+        {title:'Fairy Pocket', image:'https://picsum.photos/seed/seviyummy-28/800/800', tags:['fantasy','cute','pastel']},
+        {title:'Strawberry Mood', image:'https://picsum.photos/seed/seviyummy-29/800/800', tags:['food','cute','pastel']},
+        {title:'Forest Sprite', image:'https://picsum.photos/seed/seviyummy-30/800/800', tags:['fantasy','nature','original']},
+        {title:'Halloween Parade', image:'https://picsum.photos/seed/seviyummy-31/800/800', tags:['halloween','seasonal','original']},
+        {title:'Jigglypuff Song', image:'https://picsum.photos/seed/seviyummy-32/800/800', tags:['pokemon','anime','cute']},
+        {title:'Tiny UFO', image:'https://picsum.photos/seed/seviyummy-33/800/800', tags:['anime','fantasy','original']},
+        {title:'Lavender Ghost', image:'https://picsum.photos/seed/seviyummy-34/800/800', tags:['halloween','pastel','cute']},
+        {title:'Rainy Puddle', image:'https://picsum.photos/seed/seviyummy-35/800/800', tags:['nature','dreamy','original']},
+        {title:'Paw Bakery', image:'https://picsum.photos/seed/seviyummy-36/800/800', tags:['food','cute','anime']},
+        {title:'Comet Wishes', image:'https://picsum.photos/seed/seviyummy-37/800/800', tags:['night','dreamy','fantasy']},
+        {title:'Chikorita Charm', image:'https://picsum.photos/seed/seviyummy-38/800/800', tags:['pokemon','nature','cute']},
+        {title:'Pumpkin Moon', image:'https://picsum.photos/seed/seviyummy-39/800/800', tags:['halloween','night','seasonal']},
+        {title:'Rainbow Charm', image:'https://picsum.photos/seed/seviyummy-40/800/800', tags:['cute','pastel','original']}
+      ];
       const gallery = document.querySelector('#gallery'); const count = document.querySelector('#count'); const search = document.querySelector('#gallery-search'); const filterRoot=document.querySelector('#filters'); const selectionBar=document.querySelector('#selection-bar'); const selectionCount=document.querySelector('#selection-count'); const selectionNames=document.querySelector('#selection-names'); const selectionCopy=document.querySelector('#selection-copy'); const selectionClear=document.querySelector('#selection-clear');
       let customs = JSON.parse(localStorage.getItem('mochi-moon-art') || '[]'); let active='all'; let query=''; const selected=new Map();
       function selectionKey(x){return `${x.title}|${x.image||x.emoji||''}`}
       function updateSelection(){selectionBar.hidden=!selected.size;selectionCount.textContent=selected.size;selectionNames.textContent=[...selected.values()].join(' · ')}
-      function render(){const all=[...customs,...defaults];renderFilters(all);const shown=all.filter(x=>{const tags=[...(x.tags||[]),...(x.hiddenTags||[])];const matchesMood=active==='all'||tags.includes(active);const haystack=[x.title,...tags].join(' ').toLowerCase();return matchesMood&&(!query||haystack.includes(query))});count.textContent=`${shown.length.toString().padStart(2,'0')} artworks`;gallery.innerHTML=shown.length?shown.map(x=>{const key=encodeURIComponent(selectionKey(x));return `<article class="card${selected.has(selectionKey(x))?' is-selected':''}" data-selection-key="${key}" tabindex="0" role="button" aria-pressed="${selected.has(selectionKey(x))}"><div class="art ${x.art||'a'}" ${x.image?`style="background-image:url('${x.image}');background-size:cover;background-position:center"`:''}>${x.image?'':`<span aria-hidden="true">${x.emoji||'✦'}</span>`}</div><div class="card-info"><div class="card-title">${x.title}</div><div class="tags">${(x.tags||[]).map(t=>`<span class="tag">#${t}</span>`).join('')}</div></div></article>`}).join(''):`<div class="empty">No artworks found with that name or tag. Try another search ✦</div>`;updateSelection()}
+      function render(){const all=[...customs,...defaults,...demoArtwork];renderFilters(all);const shown=all.filter(x=>{const tags=[...(x.tags||[]),...(x.hiddenTags||[])];const matchesMood=active==='all'||tags.includes(active);const haystack=[x.title,...tags].join(' ').toLowerCase();return matchesMood&&(!query||haystack.includes(query))});count.textContent=`${shown.length.toString().padStart(2,'0')} artworks`;gallery.innerHTML=shown.length?shown.map(x=>{const key=encodeURIComponent(selectionKey(x));return `<article class="card${selected.has(selectionKey(x))?' is-selected':''}" data-selection-key="${key}" tabindex="0" role="button" aria-pressed="${selected.has(selectionKey(x))}"><div class="art ${x.art||'a'}" ${x.image?`style="background-image:url('${x.image}');background-size:cover;background-position:center"`:''}>${x.image?'':`<span aria-hidden="true">${x.emoji||'✦'}</span>`}</div><div class="card-info"><div class="card-title">${x.title}</div><div class="tags">${(x.tags||[]).map(t=>`<span class="tag">#${t}</span>`).join('')}</div></div></article>`}).join(''):`<div class="empty">No artworks found with that name or tag. Try another search ✦</div>`;updateSelection()}
       function filterLabel(tag){return tag==='pokemon'?'Pokémon':tag.charAt(0).toUpperCase()+tag.slice(1)}
       function renderFilters(all){const publicTags=[...new Set(all.flatMap(x=>x.tags||[]))];filterRoot.innerHTML=[['all','All'],...publicTags.map(tag=>[tag,filterLabel(tag)])].map(([value,label])=>`<button class="filter${active===value?' active':''}" data-filter="${value}">${label}</button>`).join('');filterRoot.querySelectorAll('.filter').forEach(btn=>btn.addEventListener('click',()=>{active=btn.dataset.filter;render()}))}
       function toggleCard(card){const key=decodeURIComponent(card.dataset.selectionKey);const title=card.querySelector('.card-title').textContent;if(selected.has(key))selected.delete(key);else selected.set(key,title);render()}
