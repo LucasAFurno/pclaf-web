@@ -1418,7 +1418,7 @@ body>section:not(.hub-home),body>.ticker-wrap,body>div{display:none!important;}@
     <a class="hub-card hub-control" href="https://operando.app" target="_blank" rel="noopener noreferrer"><img class="hub-card-bg hub-card-image" src="/assets/operando-panel-real.png" alt="" aria-hidden="true" loading="lazy"><span class="hub-card-kicker">03 · Gestión</span><svg class="hub-card-logo" viewBox="0 0 220 52" role="img" aria-labelledby="operando-title"><title id="operando-title">Operando.app</title><circle cx="25" cy="26" r="19" fill="#11151a" stroke="#ff1f2f" stroke-width="5"/><path d="M14 27l7 7 15-16" fill="none" stroke="#36dd55" stroke-linecap="round" stroke-linejoin="round" stroke-width="6"/><text x="54" y="35" fill="#f7f7f2" font-family="Arial, sans-serif" font-size="24" font-weight="700" letter-spacing="-1.5">Operando<tspan fill="#ff2638">.app</tspan></text></svg><h2>Operando<br><span>.app</span></h2><p>Una herramienta para organizar clientes, trabajos y presupuestos.</p><span class="hub-card-cta">Conocer Operando.app →</span></a>
     <a class="hub-card hub-console hub-playstation" href="consolas.html"><iframe class="hub-card-bg hub-card-embed" src="https://www.youtube-nocookie.com/embed/RkC0l4iekYo?autoplay=1&mute=1&loop=1&playlist=RkC0l4iekYo&controls=0&modestbranding=1&rel=0&enablejsapi=1" title="PS5 Hardware Reveal Trailer" allow="autoplay; encrypted-media" aria-hidden="true"></iframe><span class="hub-card-kicker">04 · Consolas</span><span class="hub-console-mark" aria-hidden="true">PS5</span><h2>Sony<br>PlayStation</h2><p>Service preventivo para PS3, PS4 y PS5. Menos temperatura y ruido para seguir jugando.</p><span class="hub-card-cta">Ver services →</span></a>
     <a class="hub-card hub-console hub-xbox" href="consolas.html"><iframe class="hub-card-bg hub-card-embed" src="https://www.youtube-nocookie.com/embed/mzDPNi77F24?autoplay=1&mute=1&loop=1&playlist=mzDPNi77F24&controls=0&modestbranding=1&rel=0&enablejsapi=1" title="Xbox Series X|S Consoles Announcement Trailer" allow="autoplay; encrypted-media" aria-hidden="true"></iframe><span class="hub-card-kicker">05 · Consolas</span><span class="hub-console-mark" aria-hidden="true">X</span><h2>Microsoft<br>Xbox Series X</h2><p>Service preventivo para Xbox One y Series. Cuidamos temperatura, rendimiento y cooler.</p><span class="hub-card-cta">Ver services →</span></a>
-    <div class="hub-metrics" aria-label="Experiencia de PCLAF"><div class="hub-metric hub-metric-red"><strong data-stat="clients">2.090+</strong><small>Clientes atendidos</small></div><div class="hub-metric hub-metric-blue"><strong data-stat="repairs">3.261+</strong><small>Reparaciones de PC</small></div><div class="hub-metric hub-metric-amber"><strong data-stat="gamers">1.245+</strong><small>PC gamer</small></div><div class="hub-metric hub-metric-green"><strong data-stat="consoles">823+</strong><small>Consolas</small></div></div>
+    <div class="hub-metrics" aria-label="Experiencia de PCLAF"><div class="hub-metric hub-metric-red"><strong data-stat="clients">0+</strong><small>Clientes atendidos</small></div><div class="hub-metric hub-metric-blue"><strong data-stat="repairs">0+</strong><small>Reparaciones de PC</small></div><div class="hub-metric hub-metric-amber"><strong data-stat="gamers">0+</strong><small>PC gamer</small></div><div class="hub-metric hub-metric-green"><strong data-stat="consoles">0+</strong><small>Consolas</small></div></div>
   </section>
   <section class="hub-intro">
     <h1>PCLAF para tu <span>equipo y tu negocio</span></h1>
@@ -1428,15 +1428,30 @@ body>section:not(.hub-home),body>.ticker-wrap,body>div{display:none!important;}@
 
 <script>
 const publicStatsFallback={clients:2090,repairs:3261,gamers:1245,consoles:823};
+function animatePublicStat(node,target){
+  const end=Math.max(0,Math.round(Number(target)||0));
+  const duration=1500;
+  const startTime=performance.now();
+  const reducedMotion=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const render=value=>{node.textContent=`${Math.round(value).toLocaleString('es-AR')}+`;};
+  if(reducedMotion){render(end);return;}
+  const tick=now=>{
+    const progress=Math.min((now-startTime)/duration,1);
+    const eased=1-Math.pow(1-progress,3);
+    render(end*eased);
+    if(progress<1)requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
+}
 function paintPublicStats(stats){
   const values={clients:stats.clients,repairs:stats.repairs,gamers:stats.gamers,consoles:stats.consoles};
-  Object.entries(values).forEach(([key,value])=>{const node=document.querySelector(`[data-stat="${key}"]`);if(node)node.textContent=`${Number(value||0).toLocaleString('es-AR')}+`;});
+  Object.entries(values).forEach(([key,value])=>{const node=document.querySelector(`[data-stat="${key}"]`);if(node)animatePublicStat(node,value);});
 }
 fetch('https://bcmfzgjpqfjnudhgraan.supabase.co/functions/v1/pclaf-portal',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'stats'})}).then(response=>response.ok?response.json():Promise.reject(new Error('stats unavailable'))).then(payload=>paintPublicStats(payload.data||publicStatsFallback)).catch(()=>paintPublicStats(publicStatsFallback));
 </script>
 
 <style>
-.hub-metrics{grid-column:1/-1;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;margin:1px 0;background:var(--border);border:1px solid var(--border);border-radius:10px;overflow:hidden}.hub-metric{padding:13px 16px;background:rgba(15,15,15,.9);border-top:2px solid var(--border)}.hub-metric strong{display:block;font-family:var(--display);font-size:28px;line-height:1;font-weight:900;color:#fff}.hub-metric strong span{font-size:.65em}.hub-metric small{display:block;margin-top:5px;color:var(--text3);font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase}.hub-metric-red{border-top-color:var(--red)}.hub-metric-red strong{color:#f06b6b}.hub-metric-blue{border-top-color:#3b82f6}.hub-metric-blue strong{color:#74a2ff}.hub-metric-amber{border-top-color:#f0bd2d}.hub-metric-amber strong{color:#f0bd2d}.hub-metric-green{border-top-color:#28b85b}.hub-metric-green strong{color:#53d88e}@media(max-width:780px){.hub-metrics{grid-column:auto;grid-template-columns:repeat(2,minmax(0,1fr));margin:0}.hub-metric{padding:12px}.hub-metric strong{font-size:24px}}
+.hub-metrics{grid-column:1/-1;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;margin:1px 0;background:var(--border);border:1px solid var(--border);border-radius:10px;overflow:hidden}.hub-metric{padding:13px 16px;background:rgba(15,15,15,.9);border-top:2px solid var(--border)}.hub-metric strong{display:block;font-family:var(--display);font-size:28px;line-height:1;font-weight:900;color:#fff;font-variant-numeric:tabular-nums}.hub-metric strong span{font-size:.65em}.hub-metric small{display:block;margin-top:5px;color:var(--text3);font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase}.hub-metric-red{border-top-color:var(--red)}.hub-metric-red strong{color:#f06b6b}.hub-metric-blue{border-top-color:#3b82f6}.hub-metric-blue strong{color:#74a2ff}.hub-metric-amber{border-top-color:#f0bd2d}.hub-metric-amber strong{color:#f0bd2d}.hub-metric-green{border-top-color:#28b85b}.hub-metric-green strong{color:#53d88e}@media(max-width:780px){.hub-metrics{grid-column:auto;grid-template-columns:repeat(2,minmax(0,1fr));margin:0}.hub-metric{padding:12px}.hub-metric strong{font-size:24px}}
 </style>
 
 <!-- â”€â”€â”€ SEGUIMIENTO DESTACADO â”€â”€â”€ -->
