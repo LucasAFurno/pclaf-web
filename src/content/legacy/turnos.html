@@ -405,6 +405,8 @@ textarea.f-in{resize:none;height:80px;}
       <div class="cal-day-name">Sáb</div>
     </div>
     <div class="cal-grid" id="calGrid"></div>
+    <div id="availabilityStatus" role="status" aria-live="polite"></div>
+    <button class="btn-sec" id="availabilityRetry" type="button" hidden onclick="renderCal()">Reintentar disponibilidad</button>
 
     <div id="horasSection" style="display:none">
       <div class="section-title-sm" style="font-size:16px;margin-bottom:4px">Horario disponible</div>
@@ -466,6 +468,7 @@ textarea.f-in{resize:none;height:80px;}
       <div class="confirm-details">📍 Campana 51, Floresta, CABA<br>Lunes a viernes · 10 a 19 hs</div>
       <div class="confirm-map-frame"><iframe title="Ubicación de PCLAF en Google Maps" src="https://www.google.com/maps?q=Campana+51%2C+Floresta%2C+CABA&amp;output=embed" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe></div>
       <div class="confirm-actions">
+        <a class="btn-sec" id="confirmSend" target="_blank" rel="noopener noreferrer" hidden>💬 Enviar mi solicitud por WhatsApp</a>
         <a class="btn-sec confirm-map" href="https://www.google.com/maps/search/?api=1&amp;query=Campana+51%2C+Floresta%2C+CABA" target="_blank" rel="noopener">📍 Ver ubicación en Google Maps</a>
         <a class="btn-sec confirm-track" id="confirmTrack" href="https://wa.me/5491135708345" target="_blank" rel="noopener">💬 Consultar estado por WhatsApp</a>
       </div>
@@ -483,7 +486,7 @@ const H={apikey:KEY,Authorization:`Bearer ${KEY}`,'Content-Type':'application/js
 const PORTAL_URL=`${SUPA}/functions/v1/pclaf-portal`;
 
 async function portal(action,payload={}){
-  const r=await fetch(PORTAL_URL,{method:'POST',headers:{apikey:KEY,Authorization:`Bearer ${KEY}`,'Content-Type':'application/json'},body:JSON.stringify({action,...payload})});
+  const r=await fetch(PORTAL_URL,{method:'POST',headers:{apikey:KEY,Authorization:`Bearer ${KEY}`,'Content-Type':'application/json'},body:JSON.stringify({action,...payload}),signal:AbortSignal.timeout(15000)});
   const body=await r.json().catch(()=>({}));
   if(!r.ok) throw new Error(body.error||'No se pudo completar la solicitud');
   return body.data;
@@ -566,7 +569,7 @@ async function lookupReferral(strict=false){
 async function goTo(n){
   if(n===3){
     // validate paso 2
-    if(!state.fecha||!state.hora) return;
+    if(!state.fecha||!state.hora||!slotAvailable(state.fecha,state.hora)) return;
   }
   if(n===4){
     const nom=sanitizePlainText(document.getElementById('tNom').value,60);
@@ -677,43 +680,81 @@ const FERIADOS = new Set([
 ]);
 
 let occupiedSlots={}; // fecha -> [horas ocupadas]
+let availableMonth=null;
+let calendarRequest=0;
+
+function argentinaNow(){
+  const parts=new Intl.DateTimeFormat('en-CA',{timeZone:'America/Argentina/Buenos_Aires',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).formatToParts(new Date());
+  const values=Object.fromEntries(parts.map(part=>[part.type,part.value]));
+  return {date:`${values.year}-${values.month}-${values.day}`,time:`${values.hour}:${values.minute}`};
+}
+
+function slotAvailable(dateStr,hour,slots=occupiedSlots){
+  const now=argentinaNow();
+  const day=new Date(`${dateStr}T12:00:00Z`).getUTCDay();
+  return availableMonth===dateStr.slice(0,7)&&dateStr>=now.date&&
+    (dateStr!==now.date||hour>now.time)&&day!==0&&day!==6&&!FERIADOS.has(dateStr)&&
+    HORAS.includes(hour)&&!horariosSimuladosOcupados(dateStr).includes(hour)&&
+    (slots[dateStr]||[]).filter(value=>value===hour).length<2;
+}
 
 async function loadOccupied(year,month){
-  try{
     const from=`${year}-${String(month+1).padStart(2,'0')}-01`;
-    const to=`${year}-${String(month+1).padStart(2,'0')}-31`;
+    const lastDay=new Date(Date.UTC(year,month+1,0)).getUTCDate();
+    const to=`${year}-${String(month+1).padStart(2,'0')}-${String(lastDay).padStart(2,'0')}`;
     const t=await portal('availability',{desde:from,hasta:to});
-    occupiedSlots={};
-    (t||[]).forEach(x=>{
-      if(!occupiedSlots[x.fecha]) occupiedSlots[x.fecha]=[];
-      occupiedSlots[x.fecha].push(x.hora);
+    if(!Array.isArray(t)) throw new Error('Respuesta de disponibilidad inválida');
+    const slots={};
+    t.forEach(x=>{
+      if(!slots[x.fecha]) slots[x.fecha]=[];
+      slots[x.fecha].push(x.hora);
     });
-  }catch(e){occupiedSlots={};}
+    return slots;
 }
 
 async function renderCal(){
-  const now=new Date(); now.setDate(1);
-  now.setMonth(now.getMonth()+state.calOffset);
-  const year=now.getFullYear(), month=now.getMonth();
-  document.getElementById('calMonth').textContent=now.toLocaleDateString('es-AR',{month:'long',year:'numeric'}).replace(/^\w/,c=>c.toUpperCase());
-
-  await loadOccupied(year,month);
-
-  const firstDay=new Date(year,month,1).getDay();
-  const daysInMonth=new Date(year,month+1,0).getDate();
-  const today=new Date(); today.setHours(0,0,0,0);
+  const request=++calendarRequest;
+  availableMonth=null;
+  state.fecha=null; state.hora='';
+  document.getElementById('btnNext2').disabled=true;
+  document.getElementById('horasSection').style.display='none';
+  const status=document.getElementById('availabilityStatus');
+  const retry=document.getElementById('availabilityRetry');
+  status.textContent='Consultando disponibilidad…';
+  retry.hidden=true;
   const grid=document.getElementById('calGrid');
+  grid.innerHTML='';
+  const today=argentinaNow().date;
+  const now=new Date(`${today.slice(0,7)}-01T12:00:00Z`);
+  now.setUTCMonth(now.getUTCMonth()+state.calOffset);
+  const year=now.getUTCFullYear(), month=now.getUTCMonth();
+  document.getElementById('calMonth').textContent=now.toLocaleDateString('es-AR',{month:'long',year:'numeric',timeZone:'UTC'}).replace(/^\w/,c=>c.toUpperCase());
+  try{
+    const slots=await loadOccupied(year,month);
+    if(request!==calendarRequest) return;
+    occupiedSlots=slots;
+    availableMonth=`${year}-${String(month+1).padStart(2,'0')}`;
+    status.textContent='';
+  }catch(error){
+    if(request!==calendarRequest) return;
+    occupiedSlots={};
+    status.textContent='No pudimos consultar la disponibilidad. Reintentá para elegir un horario o escribinos por WhatsApp.';
+    retry.hidden=false;
+    return;
+  }
+  const firstDay=new Date(Date.UTC(year,month,1)).getUTCDay();
+  const daysInMonth=new Date(Date.UTC(year,month+1,0)).getUTCDate();
   let html='';
   for(let i=0;i<firstDay;i++) html+=`<div class="cal-cell"></div>`;
   for(let d=1;d<=daysInMonth;d++){
-    const date=new Date(year,month,d);
+    const date=new Date(Date.UTC(year,month,d));
     const dateStr=`${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-    const dow=date.getDay();
-    const isPast=date<today;
+    const dow=date.getUTCDay();
+    const isPast=dateStr<today;
     const isWeekend=dow===0||dow===6;
     const isHoliday=FERIADOS.has(dateStr);
     const isBlocked=isPast||isWeekend||isHoliday;
-    const isToday=date.getTime()===today.getTime();
+    const isToday=dateStr===today;
     const isSelected=state.fecha===dateStr;
     let cls='cal-cell this-month';
     if(isBlocked) cls+=' past';
@@ -731,26 +772,26 @@ async function renderCal(){
 function calNav(d){state.calOffset+=d;if(state.calOffset<0)state.calOffset=0;renderCal();}
 
 async function selFecha(dateStr,d){
+  if(availableMonth!==dateStr.slice(0,7)) return;
   state.fecha=dateStr; state.hora='';
   document.getElementById('btnNext2').disabled=true;
-  renderCal();
+  document.querySelectorAll('.cal-cell').forEach(cell=>cell.classList.toggle('selected-day',cell.textContent===String(d)&&cell.classList.contains('available')));
   // Show hours
   const sec=document.getElementById('horasSection');
   const date=new Date(dateStr+'T12:00:00');
   const lbl=date.toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long'});
   document.getElementById('horasLabel').textContent=lbl.charAt(0).toUpperCase()+lbl.slice(1);
-  const occupied=occupiedSlots[dateStr]||[];
-  const simulatedOccupied=horariosSimuladosOcupados(dateStr);
   // Max 2 per slot for simplicity
   document.getElementById('horasGrid').innerHTML=HORAS.map(h=>{
-    const occ=occupied.filter(x=>x===h).length;
-    const full=occ>=2||simulatedOccupied.includes(h);
-    return `<div class="hora-btn${full?' ocupado':''}" onclick="${full?'':'selHora(\''+h+'\',this)'}">${h}${full?'<br><span style="font-size:9px">Ocupado</span>':''}</div>`;
+    const full=!slotAvailable(dateStr,h);
+    const past=dateStr===argentinaNow().date&&h<=argentinaNow().time;
+    return `<div class="hora-btn${full?' ocupado':''}" onclick="${full?'':'selHora(\''+h+'\',this)'}">${h}${full?`<br><span style="font-size:9px">${past?'Horario pasado':'Ocupado'}</span>`:''}</div>`;
   }).join('');
   sec.style.display='block';
 }
 
 function selHora(h,el){
+  if(!state.fecha||!slotAvailable(state.fecha,h)) return;
   document.querySelectorAll('.hora-btn').forEach(b=>b.classList.remove('selected'));
   el.classList.add('selected');
   state.hora=h;
@@ -783,7 +824,7 @@ function buildResumen(){
 async function confirmarTurno(){
   const btn=document.getElementById('btnConfirm');
   btn.disabled=true; btn.textContent='Enviando...';
-  if(!state.fecha||!HORAS.includes(state.hora)||horariosSimuladosOcupados(state.fecha).includes(state.hora)){
+  if(!state.fecha||!slotAvailable(state.fecha,state.hora)){
     btn.disabled=false; btn.textContent='Confirmar turno';
     alert('Ese horario ya no está disponible. Elegí otro, por favor.');
     return;
@@ -822,6 +863,13 @@ async function confirmarTurno(){
     if(refCliente?.codigo) notaParts.push('Referido por: '+refCliente.codigo);
     if(eq) notaParts.push('Equipo: '+eq);
     if(nota) notaParts.push('Problema: '+nota);
+    const [bookingYear,bookingMonth]=state.fecha.split('-').map(Number);
+    const freshSlots=await loadOccupied(bookingYear,bookingMonth-1);
+    if(!slotAvailable(state.fecha,state.hora,freshSlots)){
+      await renderCal();
+      await goTo(2);
+      throw new Error('Ese horario ya no está disponible. Elegí otro día y horario.');
+    }
     const res=await portal('book',{nombre:nom,apellido:ape,telefono:tel,servicio:state.servicio,fecha:state.fecha,hora:state.hora,nota:notaParts.filter(part=>!part.startsWith('Referido por:')).join(' | '),referido:refIngresado,urgente:state.urgencia||false});
     const id=res?.id||'';
     const shortId='#T'+id.slice(0,6).toUpperCase();
@@ -831,15 +879,17 @@ async function confirmarTurno(){
     // Show confirm
     document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
     document.getElementById('panelOK').classList.add('active');
-    // Open WA to PCLAF (notify)
-    setTimeout(()=>{
+    // El visitante abre WhatsApp con un clic directo, sin ventanas emergentes automáticas.
       const refNombre=refCliente?[refCliente.nombre,refCliente.apellido].filter(Boolean).join(' ').trim():'';
       const msg=encodeURIComponent(`🗓️ *Nuevo turno solicitado*\n\n*${nom} ${ape}*\n📱 ${tel}\n${refCliente?.codigo?'🎁 Recomendó: '+(refNombre||refCliente.codigo)+' ('+refCliente.codigo+')\n🎁 10% activado para ese usuario\n':''}🔧 ${state.servicio}${state.urgencia?' ⚡ URGENTE':''}\n💰 ${state.precio}\n📆 ${state.fecha} a las ${state.hora}hs\n💻 ${eq||'Sin especificar'}\n${nota?'📝 '+nota+'\n':''}\nRef: ${shortId}`);
-      window.open(`https://wa.me/5491135708345?text=${msg}`,'_blank');
-    }, 800);
+      const confirmSend=document.getElementById('confirmSend');
+      confirmSend.href=`https://wa.me/5491135708345?text=${msg}`;
+      confirmSend.hidden=false;
   }catch(e){
+    console.error('No se pudo guardar el turno', e);
     btn.disabled=false; btn.textContent='Confirmar turno';
-    alert('Error al guardar el turno. Intentá de nuevo o escribinos por WhatsApp.');
+    const detail=e instanceof Error && e.message ? `\n\nDetalle: ${e.message}` : '';
+    alert(`No pudimos guardar el turno. Intentá de nuevo o escribinos por WhatsApp.${detail}`);
   }
 }
 

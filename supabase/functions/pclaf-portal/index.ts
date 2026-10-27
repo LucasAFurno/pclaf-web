@@ -36,7 +36,18 @@ function code(value: unknown) {
 
 function date(value: unknown) {
   const result = text(value, 10);
-  return /^\d{4}-\d{2}-\d{2}$/.test(result) ? result : '';
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(result)) return '';
+  const parsed = new Date(`${result}T12:00:00Z`);
+  return Number.isFinite(parsed.getTime()) && parsed.toISOString().slice(0, 10) === result ? result : '';
+}
+
+function todayBuenosAires() {
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/Argentina/Buenos_Aires',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(new Date());
 }
 
 function id(value: unknown) {
@@ -126,7 +137,18 @@ async function book(input: Record<string, unknown>) {
   const nota = text(input.nota, 300);
   const referido = code(input.referido);
   if (!nombre || !telefono || !servicio || !fecha || !/^\d{2}:\d{2}$/.test(hora)) throw new Error('Datos del turno inválidos');
-  if (fecha < new Date().toISOString().slice(0, 10)) throw new Error('La fecha debe ser futura');
+  // El calendario público usa la hora local de Argentina. No comparar contra
+  // UTC: cerca de medianoche UTC se podía rechazar “hoy” aunque todavía fuera
+  // una fecha válida para el cliente en Buenos Aires.
+  if (fecha < todayBuenosAires()) throw new Error('La fecha debe ser futura');
+  const currentTime = new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'America/Argentina/Buenos_Aires', hour: '2-digit', minute: '2-digit', hourCycle: 'h23',
+  }).format(new Date());
+  const hours = ['10:00','10:30','11:00','11:30','12:00','12:30','14:00','14:30','15:00','15:30','16:00','16:30','17:00','17:30','18:00','18:30'];
+  const weekday = new Date(`${fecha}T12:00:00Z`).getUTCDay();
+  if (!hours.includes(hora) || weekday === 0 || weekday === 6 || (fecha === todayBuenosAires() && hora <= currentTime)) {
+    throw new Error('Ese horario ya no está disponible');
+  }
   const occupied = await api(`turnos?fecha=eq.${fecha}&hora=eq.${encodeURIComponent(hora)}&estado=neq.cancelado&select=id`);
   if ((occupied || []).length >= 2) throw new Error('Ese horario ya no está disponible');
   let referralNote = '';
