@@ -1,0 +1,112 @@
+{
+  "cafe-bruma": {
+    "title": "Diseño web para cafeterías",
+    "description": "Landing para cafeterías con menú, WhatsApp, horarios y pedidos. PCLAF crea páginas web adaptadas a cada negocio.",
+    "plan": "Mini Web"
+  },
+  "casa-amapola": {
+    "title": "Diseño web para librerías",
+    "description": "Web para librerías, editoriales y tiendas culturales con catálogo y consultas por WhatsApp.",
+    "plan": "Landing esencial"
+  },
+  "bruma": {
+    "title": "Diseño web para marcas de ropa",
+    "description": "Tienda visual para indumentaria, colecciones y ventas por WhatsApp.",
+    "plan": "Catálogo comercial"
+  },
+  "estudio-23": {
+    "title": "Diseño web para estudios creativos",
+    "description": "Portfolio y landing para agencias, diseñadores y servicios creativos.",
+    "plan": "Landing comercial"
+  },
+  "forme": {
+    "title": "Diseño web para arquitectos",
+    "description": "Web para estudios de arquitectura, reformas e interiores con proyectos destacados.",
+    "plan": "Landing comercial"
+  },
+  "alma": {
+    "title": "Diseño web para bienestar y terapias",
+    "description": "Web con agenda, actividades y reservas para espacios de bienestar.",
+    "plan": "Landing esencial"
+  },
+  "altura": {
+    "title": "Diseño web para inmobiliarias",
+    "description": "Catálogo inmobiliario con propiedades, filtros y consultas directas.",
+    "plan": "Catálogo comercial"
+  },
+  "movi": {
+    "title": "Diseño web para talleres y bicicleterías",
+    "description": "Web para talleres, servicios y comercios de barrio con turnos por WhatsApp.",
+    "plan": "Landing esencial"
+  },
+  "corte-09": {
+    "title": "Diseño web para barberías",
+    "description": "Web para barberías y peluquerías con turnos, servicios y reservas.",
+    "plan": "Landing esencial"
+  },
+  "obra-clara": {
+    "title": "Diseño web para constructoras y reformas",
+    "description": "Landing para captar presupuestos de reformas, obras y servicios profesionales.",
+    "plan": "Landing comercial"
+  },
+  "luna-roja": {
+    "title": "Diseño web para restaurantes y bares",
+    "description": "Web gastronómica con menú, reservas y consultas por WhatsApp.",
+    "plan": "Landing comercial"
+  },
+  "pulso": {
+    "title": "Landing page para software y SaaS",
+    "description": "Página para explicar un producto digital y conseguir demos comerciales.",
+    "plan": "Landing comercial"
+  },
+  "flor-de-sol": {
+    "title": "Diseño web para florerías",
+    "description": "Catálogo online para florerías, regalos y pedidos por WhatsApp.",
+    "plan": "Catálogo comercial"
+  },
+  "vital": {
+    "title": "Diseño web para gimnasios",
+    "description": "Web para gimnasios, entrenadores, clases y turnos online.",
+    "plan": "Landing esencial"
+  },
+  "nube": {
+    "title": "Diseño web para eventos",
+    "description": "Landing para eventos, celebraciones y producción con consultas directas.",
+    "plan": "Landing comercial"
+  },
+  "archivo": {
+    "title": "Tienda web para marcas de autor",
+    "description": "Web para colecciones, objetos y marcas de nicho con catálogo visual.",
+    "plan": "Catálogo comercial"
+  },
+  "nexa": {
+    "title": "Diseño web para plataformas digitales",
+    "description": "Ejemplo de landing de producto con propuesta de valor, funciones y llamada a la acción. Nexa muestra una estética tecnológica con formas y contraste.",
+    "plan": "Landing comercial"
+  },
+  "institucional": {
+    "title": "Diseño de sitio web institucional",
+    "description": "Ejemplo de sitio de cinco páginas para una consultora: inicio, servicios, equipo, preguntas y contacto. Norte Estudio organiza la información y facilita las consultas.",
+    "plan": "Sitio institucional"
+  },
+  "institucional-servicios": {
+    "title": "Página de servicios para una consultora",
+    "description": "Ejemplo de presentación de servicios de consultoría con alcance, beneficios y acceso al contacto. Parte del sitio institucional ficticio Norte Estudio.",
+    "plan": "Sitio institucional"
+  },
+  "institucional-nosotros": {
+    "title": "Página de equipo y enfoque institucional",
+    "description": "Ejemplo de página Nosotros para explicar el enfoque y generar confianza en una consultora. Parte del sitio institucional ficticio Norte Estudio.",
+    "plan": "Sitio institucional"
+  },
+  "institucional-faq": {
+    "title": "Página de preguntas frecuentes institucional",
+    "description": "Ejemplo de preguntas frecuentes para aclarar cómo trabaja una consultora antes de una reunión. Parte del sitio institucional ficticio Norte Estudio.",
+    "plan": "Sitio institucional"
+  },
+  "institucional-contacto": {
+    "title": "Página de contacto para una consultora",
+    "description": "Ejemplo de página de contacto para convertir el interés en una consulta. Parte del sitio institucional ficticio Norte Estudio, diseñado por PCLAF.",
+    "plan": "Sitio institucional"
+  }
+}

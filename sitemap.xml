@@ -2,19 +2,19 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://www.pclaf.com.ar/</loc>
-    <lastmod>2026-08-06</lastmod>
+    <lastmod>2026-10-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
     <loc>https://www.pclaf.com.ar/diseno-web.html</loc>
-    <lastmod>2026-08-06</lastmod>
+    <lastmod>2026-10-27</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://www.pclaf.com.ar/precios.html</loc>
-    <lastmod>2026-09-12</lastmod>
+    <lastmod>2026-10-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
@@ -28,7 +28,7 @@
   <url><loc>https://www.pclaf.com.ar/consolas/service-ps5.html</loc><lastmod>2026-09-12</lastmod><changefreq>monthly</changefreq><priority>0.9</priority></url>
   <url>
     <loc>https://www.pclaf.com.ar/turnos.html</loc>
-    <lastmod>2026-07-09</lastmod>
+    <lastmod>2026-10-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -80,4 +80,26 @@
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
+  <url><loc>https://www.pclaf.com.ar/demos/cafe-bruma.html</loc><changefreq>monthly</changefreq></url>
+  <url><loc>https://www.pclaf.com.ar/demos/casa-amapola.html</loc><changefreq>monthly</changefreq></url>
+  <url><loc>https://www.pclaf.com.ar/demos/bruma.html</loc><changefreq>monthly</changefreq></url>
+  <url><loc>https://www.pclaf.com.ar/demos/estudio-23.html</loc><changefreq>monthly</changefreq></url>
+  <url><loc>https://www.pclaf.com.ar/demos/forme.html</loc><changefreq>monthly</changefreq></url>
+  <url><loc>https://www.pclaf.com.ar/demos/alma.html</loc><changefreq>monthly</changefreq></url>
+  <url><loc>https://www.pclaf.com.ar/demos/altura.html</loc><changefreq>monthly</changefreq></url>
+  <url><loc>https://www.pclaf.com.ar/demos/movi.html</loc><changefreq>monthly</changefreq></url>
+  <url><loc>https://www.pclaf.com.ar/demos/corte-09.html</loc><changefreq>monthly</changefreq></url>
+  <url><loc>https://www.pclaf.com.ar/demos/obra-clara.html</loc><changefreq>monthly</changefreq></url>
+  <url><loc>https://www.pclaf.com.ar/demos/luna-roja.html</loc><changefreq>monthly</changefreq></url>
+  <url><loc>https://www.pclaf.com.ar/demos/pulso.html</loc><changefreq>monthly</changefreq></url>
+  <url><loc>https://www.pclaf.com.ar/demos/flor-de-sol.html</loc><changefreq>monthly</changefreq></url>
+  <url><loc>https://www.pclaf.com.ar/demos/vital.html</loc><changefreq>monthly</changefreq></url>
+  <url><loc>https://www.pclaf.com.ar/demos/nube.html</loc><changefreq>monthly</changefreq></url>
+  <url><loc>https://www.pclaf.com.ar/demos/archivo.html</loc><changefreq>monthly</changefreq></url>
+  <url><loc>https://www.pclaf.com.ar/demos/nexa.html</loc><changefreq>monthly</changefreq></url>
+  <url><loc>https://www.pclaf.com.ar/demos/institucional.html</loc><changefreq>monthly</changefreq></url>
+  <url><loc>https://www.pclaf.com.ar/demos/institucional-servicios.html</loc><changefreq>monthly</changefreq></url>
+  <url><loc>https://www.pclaf.com.ar/demos/institucional-nosotros.html</loc><changefreq>monthly</changefreq></url>
+  <url><loc>https://www.pclaf.com.ar/demos/institucional-faq.html</loc><changefreq>monthly</changefreq></url>
+  <url><loc>https://www.pclaf.com.ar/demos/institucional-contacto.html</loc><changefreq>monthly</changefreq></url>
 </urlset>

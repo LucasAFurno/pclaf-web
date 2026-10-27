@@ -1,7 +1,9 @@
 import { legacyHtml } from './legacy-html';
+import { demoDirectory } from './demo-page';
 
 export function mainPageParts(filename: string) {
-  const html = legacyHtml(filename);
+  const source = legacyHtml(filename);
+  const html = filename === 'diseno-web.html' ? source.replace('</main>', `${demoDirectory()}</main>`) : source;
   const mainStart = html.indexOf('<main');
   const bodyStart = html.indexOf('<body');
   const contentStart = mainStart >= 0 ? mainStart : bodyStart;

@@ -31,7 +31,7 @@ jobs:
         run: npm ci
 
       - name: Generar la version publicable
-        run: npm run build
+        run: npm run check
 
       - name: Subir dist a GitHub Pages
         uses: actions/upload-pages-artifact@v3
