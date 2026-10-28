@@ -41,7 +41,7 @@ const groups = [
     <p>Los precios urgentes corresponden a trabajos coordinados con prioridad. En consolas la urgencia se confirma según disponibilidad, por eso figura como “Consultar”.</p>
   </div>
   <div class="price-groups">
-    {groups.map((group, index) => <section class={`price-group price-group-${group.key}`}>
+    {groups.map((group, index) => <section id={group.key === 'playstation' ? 'consolas' : `precios-${group.key}`} class={`price-group price-group-${group.key}`}>
       <div class="price-group-head"><span class="price-group-kicker">0{index + 1} / SERVICIOS</span><h3>{group.icon} {group.label}</h3></div>
       <div class="price-card-grid">
         {group.items.map(([name, detail, normal, urgent]) => <article class="price-card">

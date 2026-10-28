@@ -39,4 +39,24 @@ assert(read('pclafcontrol.html').includes('0;url=https://operando.app/'));
 assert(read('demos/demo.html').includes('noindex, follow'));
 for (const match of home.matchAll(/href="#([^"]+)"/g)) assert(home.includes(`id="${match[1]}"`), `Ancla inexistente: ${match[1]}`);
 assert(!/Disallow: \/(?:admin|metricas)\.html/.test(read('robots.txt')), 'El rastreo debe permitir leer el noindex');
+// Revisa la salida completa, incluidas las rutas que no provienen de HTML legacy.
+const sitemapUrls = [...sitemap.matchAll(/<loc>(.*?)<\/loc>/g)].map(match => match[1]);
+for (const url of sitemapUrls) {
+  const file = new URL(url).pathname.slice(1) || 'index.html';
+  const html = read(file);
+  const head = html.slice(0, html.indexOf('</head>'));
+  assert(head.includes(`rel="canonical" href="${url}"`), `Canonical faltante o incorrecto: ${file}`);
+  assert(!/<meta[^>]+name="robots"[^>]+content="[^"]*noindex/.test(head), `URL noindex en sitemap: ${file}`);
+  const body = html.replace(/<script\b[^>]*>[\s\S]*?<\/script>|<style\b[^>]*>[\s\S]*?<\/style>/gi, '');
+  for (const match of body.matchAll(/<a\b[^>]*href="([^"]+)"/g)) {
+    const target = new URL(match[1], url);
+    if (target.origin !== 'https://www.pclaf.com.ar') continue;
+    const targetFile = target.pathname.slice(1) || 'index.html';
+    assert(existsSync(`dist/${targetFile}`), `Enlace roto desde ${file}: ${targetFile}`);
+    if (target.hash && targetFile.endsWith('.html')) {
+      const id = decodeURIComponent(target.hash.slice(1));
+      assert(read(targetFile).includes(`id="${id}"`) || read(targetFile).includes(`id='${id}'`), `Ancla rota desde ${file}: ${targetFile}#${id}`);
+    }
+  }
+}
 console.log(`SEO verificado: ${titles.size} demos indexables, enlaces y sitemap coherentes; rutas retiradas excluidas y home sin contenido obsoleto.`);
