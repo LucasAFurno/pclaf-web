@@ -42,6 +42,7 @@ assert(!delivered.includes('Entrega estimada'), 'Un trabajo entregado no debe mo
 assert(delivered.includes('PCLAF -') && delivered.includes('HP Notebook') && delivered.includes('G10'), 'Los nombres originales deben conservarse');
 assert(delivered.includes('Ver resultado del servicio') && delivered.includes('Ver diagnóstico inicial'));
 assert(delivered.includes('Consultar por este arreglo'));
+assert.equal((delivered.match(/Consultar por este arreglo/g) || []).length, 2, 'Debe haber una sola consulta por reparación, sin duplicarla en el resumen');
 const url = vm.runInContext('repairWhatsApp(fixture.machines[0],fixture.machines[0].repairs[0])', context);
 assert(decodeURIComponent(url).includes('#101') && decodeURIComponent(url).includes('PRUEBA'));
 await vm.runInContext("showMachine('m2')", context);
