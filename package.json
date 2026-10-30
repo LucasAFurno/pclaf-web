@@ -13,7 +13,8 @@
     "verify:links": "node scripts/verify-local-links.mjs",
     "verify:booking": "node scripts/verify-booking.mjs",
     "verify:seo": "node scripts/verify-seo.mjs",
-    "check": "npm run build && npm run verify:output && npm run verify:catalog && npm run verify:sitemap && npm run verify:links && npm run verify:booking && npm run verify:seo"
+    "verify:history": "node scripts/verify-history.mjs",
+    "check": "npm run build && npm run verify:output && npm run verify:catalog && npm run verify:sitemap && npm run verify:links && npm run verify:booking && npm run verify:seo && npm run verify:history"
   },
   "devDependencies": {
     "astro": "^5.16.0"
