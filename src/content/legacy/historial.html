@@ -140,7 +140,7 @@ footer a:hover{color:var(--red);}
 .search-block{padding:24px}.search-input{font-size:16px}.search-heading{font-size:21px}.search-sub{font-size:14px}
 .machine-card:focus-visible,.repair-head:focus-visible,a:focus-visible,button:focus-visible{outline:2px solid #fff;outline-offset:3px}
 .machine-model,.machine-stat,.client-meta,.history-model,.repair-date,.mt-date{font-size:12px}.status-badge{font-size:11px}.mt-note{font-size:14px}.mt-title,.repair-title{font-size:14px}
-.equipment-summary{padding:22px;background:var(--black2);border:1px solid var(--border2);border-left:3px solid var(--red);border-radius:12px;margin-bottom:24px}.equipment-summary h2{font-size:25px;line-height:1.2;color:#fff}.equipment-summary p{font-size:14px;line-height:1.6;color:var(--text2);margin-top:8px}.equipment-summary .summary-problem{color:var(--text);font-weight:600}.summary-update{display:grid;gap:4px;margin-top:16px;font-size:13px}.summary-update span,.summary-update time{color:var(--text3)}.summary-update strong{font-weight:600}
+.equipment-summary{padding:22px;background:var(--black2);border:1px solid var(--border2);border-left:3px solid var(--red);border-radius:12px;margin-bottom:24px}.equipment-summary h2{font-size:25px;line-height:1.2;color:#fff}.equipment-summary p{font-size:14px;line-height:1.6;color:var(--text2);margin-top:8px}.equipment-summary .summary-problem{color:var(--text);font-weight:600}
 .history-wa-link{display:inline-flex;justify-content:center;align-items:center;min-height:44px;padding:11px 16px;margin-top:16px;border:1px solid #29804a;border-radius:8px;background:#133b23;color:#ddffe7;font-size:14px;font-weight:700;text-decoration:none}.history-wa-link:hover{background:#1a4c2e}.repair-contact{margin-top:14px;border-top:1px solid var(--border)}
 .google-review-card{margin-top:18px;padding:18px 0 0;border-top:1px solid var(--border)}.google-review-card h3{font-size:16px;color:#fff}.google-review-card p{font-size:14px;line-height:1.6;color:var(--text2);margin:8px 0 14px}.google-review-link{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:11px 16px;background:#fff;color:#171717;border-radius:8px;text-decoration:none;font-size:14px;font-weight:700}
 @media(max-width:480px){.search-block{padding:18px}.search-row{flex-wrap:wrap}.search-input{width:100%;flex-basis:100%}.search-btn{width:100%;min-height:44px}.equipment-summary{padding:18px}.history-wa-link,.google-review-link{width:100%;text-align:center}.client-name{font-size:18px}.machine-grid{grid-template-columns:1fr 1fr}.machine-card{padding:13px;min-width:0}.machine-name,.machine-model{overflow-wrap:anywhere}.status-badge{max-width:100%;white-space:normal}}
@@ -340,13 +340,11 @@ function equipmentSummary(machine){
   const repair=latestRepair(machine);
   if(!repair)return '';
   const messages={entregado:'Este trabajo ya fue entregado.',listo:'Tu equipo está listo. Coordiná el retiro con el taller.',proceso:'Estamos trabajando en este equipo.',espera:'El trabajo se encuentra en espera. Podés consultarnos por WhatsApp.'};
-  const lastStep=(repair.steps||[]).filter(step=>['done','active'].includes(step.estado)).at(-1);
   return `<section class="equipment-summary" aria-label="Estado más reciente del equipo">
     <div class="section-label">Estado más reciente · Arreglo #${escapeText(repair.numero)}</div>
     <h2>${LABELS[repair.estado]||'Estado por confirmar'}</h2>
     <p class="summary-problem">${escapeText(repair.problema)}</p>
     <p>${messages[repair.estado]||'Consultanos si necesitás más información sobre este trabajo.'}</p>
-    ${lastStep?`<div class="summary-update"><span>Último avance registrado</span><strong>${escapeText(lastStep.titulo)}</strong>${lastStep.fecha?`<time>${escapeText(lastStep.fecha)}</time>`:''}</div>`:''}
     <a class="history-wa-link" href="${repairWhatsApp(machine,repair)}" target="_blank" rel="noopener noreferrer">Consultar por este arreglo</a>
   </section>`;
 }
